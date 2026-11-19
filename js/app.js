@@ -138,11 +138,11 @@ const DISTRICTS=[
   {id:'bruecke',name:'Zehnerbrücke',skill:'Plus über die 10',missions:[
     {title:'Kisten laden',desc:'Erst {N} 1 bis 10 voll machen, der Rest kommt {auf} {N} 2.',gen:'addGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 8 + 2 + 7 = 17.',gen:'addPath'},
-    {title:'Profi-Lader',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'addPro'}]},
+    {title:'Profi-Lader',desc:'Erst im Kopf rechnen, dann mit Kisten prüfen.',gen:'addPro'}]},
   {id:'tunnel',name:'Zehnertunnel',skill:'Minus über die 10',missions:[
     {title:'Kisten abladen',desc:'Erst {N} 2 leer machen, dann von {N} 1 abladen.',gen:'subGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 13 − 3 − 5 = 5.',gen:'subPath'},
-    {title:'Profi-Ablader',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'subPro'}]},
+    {title:'Profi-Ablader',desc:'Erst im Kopf rechnen, dann mit Kisten prüfen.',gen:'subPro'}]},
   {id:'familie',name:'Lieferviertel',skill:'Aufgabenfamilien',missions:[
     {title:'Familien bis 10',desc:'Eine Ladung, vier Aufgaben: Aufgabe, Tauschaufgabe, zwei Umkehraufgaben.',gen:'famTo10'},
     {title:'Familien bis 20',desc:'Große Familien über die 10.',gen:'famTo20'},
@@ -284,7 +284,7 @@ function buildBridge(p,op,mode){
       {big:1,tokens:[{n:a},op,{n:b},'=',{b:0}]},
       {label:'Rechenweg',minHint:1,tokens:[{n:a},op,{n:r,hint:1},op,{n:s,hint:2},'=',{n:res,hint:9}]}
     ],[{ans:res,prompt:add?`Über die ${T}!`:`Zurück über die ${T}!`,
-        hints:[add?`Erst bis ${T}: ${a} + ${r} = ${T}`:`Erst bis ${T}: ${a} ${MI} ${r} = ${T}`,`Dann noch ${s}: ${T} ${op} ${s} = □`]}],visual,{kind:'bridge',sc:{type:add?'add':'sub',a,b}});
+        hints:[add?`Erst bis ${T}: ${a} + ${r} = ${T}`:`Erst bis ${T}: ${a} ${MI} ${r} = ${T}`,`Dann noch ${s}: ${T} ${op} ${s} = □`]}],visual,{kind:'bridge',check:{mode:add?'add':'sub',a,b,msg:add?`Prüfe es mit Kisten! Lade die ${b} Kisten auf. Erst {N} 1!`:`Prüfe es mit Kisten! Lade ${b} Kisten ab. Erst {N} 2!`},sc:{type:add?'add':'sub',a,b}});
   }
   if(mode==='path'){
     visual.show='hint';
@@ -753,7 +753,7 @@ function renderDistrict(id){
 const World={mod:null,state:'idle',
   get(){
     if(this.state==='idle'){ this.state='loading';
-      import('./world3d.js?v=20261119f').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
+      import('./world3d.js?v=20261119g').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
         .catch(err=>{ console.warn('3D unavailable',err); this.fail(); }); }
     return this.state==='ready'?this.mod:null;
   },
@@ -970,6 +970,9 @@ function onBlankCorrect(){
     else { go(); burst(fxTarget(),10); }
     return;
   }
+  if(t.check&&!t.checkDone){ // Profi: answer in the head first, then prove it with crates
+    Sound.play('step'); M.phase='load'; M.ld=initLoad(t.check,t.skill); M.ld.check=true; drawRows(); drawBubble(); drawVisual(); return;
+  }
   const ai=t.blanks.findIndex(x=>x.auto); if(ai>=0){ t.blanks.forEach(x=>{ if(x.auto) x.val=x.ans; }); M.popB=ai; }
   completeTask();
 }
@@ -1147,7 +1150,7 @@ const KCOL={a:['rote','roten'],b:['blaue','blauen']};
 const someCrates=(n,k)=>n===1?`die ${KCOL[k][0]} Kiste`:`die ${n} ${KCOL[k][1]} Kisten`;
 function initLoad(L,did){
   const ld={mode:L.mode,spec:L,t1:[],t2:[],dock:0,out:0,target:0,n:0,total:0,acted:false,done:false,anim:null,pulse:0,msg:'',msgCls:'',blank:null};
-  if(L.mode==='add'){ for(let i=0;i<10;i++){ ld.t1.push(i<L.a%10?'a':'e'); ld.t2.push('e'); } ld.dock=L.b; ld.msg=L.single?`Lade ${someCrates(L.b,'b')} auf.`:`Lade die ${L.b} Kisten auf. Erst {N} 1!`; }
+  if(L.mode==='add'){ for(let i=0;i<10;i++){ ld.t1.push(i<L.a%10?'a':'e'); ld.t2.push('e'); } ld.dock=L.b; ld.msg=L.msg||(L.single?`Lade ${someCrates(L.b,'b')} auf.`:`Lade die ${L.b} Kisten auf. Erst {N} 1!`); }
   else if(L.mode==='fill'){ for(let i=0;i<10;i++) ld.t1.push(i<L.n?'a':'e'); ld.dock=10-L.n+3; ld.msg='Mach {N} 1 voll!'; }
   else if(L.mode==='couple'){ ld.total=L.op==='+'?L.a+L.b:L.b; ld.msg=L.op==='+'?`Hänge ${L.a} ${col(L.a,'rot')} {NP} an die Lok!`:`Der Zug hat ${L.a} {NP}. Hänge ${L.b} ab!`; }
   else if(L.mode==='tens'){ ld.total=L.to-L.from; ld.msg=ld.total===1?'Hol {einen} {vollenA} {N} dazu!':`Hol ${ld.total} volle {NP} dazu!`; }
@@ -1255,9 +1258,12 @@ function loadHint(){
 function finishLoad(){
   const L=M.ld; L.done=true; M.busy=true;
   const T=L.spec;
-  loadMsg(L.mode==='take'?'Weggenommen!':L.mode==='tens'?'Angekommen!':L.mode==='couple'?(T.op==='+'?`Der Zug hat ${T.a+T.b} {NP}!`:`${T.a-T.b} {NP} bleiben am Zug.`):L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten {drin}.':'Alles geladen!','good');
+  if(L.check){ const t=curTask(),r=t.blanks[0]; loadMsg(`Stimmt: ${t.sc.a} ${t.sc.type==='add'?'+':MI} ${t.sc.b} = ${r.ans}!`,'good'); }
+  else loadMsg(L.mode==='take'?'Weggenommen!':L.mode==='tens'?'Angekommen!':L.mode==='couple'?(T.op==='+'?`Der Zug hat ${T.a+T.b} {NP}!`:`${T.a-T.b} {NP} bleiben am Zug.`):L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten {drin}.':'Alles geladen!','good');
   Sound.play('step'); burst($('#m-visual'),14);
-  setTimeout(()=>{ if(!M||current!=='mission') return; M.busy=false; const t=curTask(); if(L.blank!=null) t.blanks[L.blank].actDone=true; else t.loadDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; drawAll(); },L.blank!=null?900:1500);
+  setTimeout(()=>{ if(!M||current!=='mission') return; M.busy=false; const t=curTask();
+    if(L.check){ t.checkDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; onBlankCorrect(); return; }
+    if(L.blank!=null) t.blanks[L.blank].actDone=true; else t.loadDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; drawAll(); },L.blank!=null?900:1500);
 }
 let drag=null;
 document.addEventListener('pointerdown',e=>{
