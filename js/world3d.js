@@ -372,7 +372,15 @@ function L_couple(sc, n){
   lay.tens = all; lay.noRails = true; lay.loco = {x: xr - locoLen/2, z: 0}; lay.tracks = {x0: xr - locoLen - .3 - all.length*sp - 2.5, x1: xr + 3};
   return lay;
 }
-function loadInit(t){ const sc=t.sc; if(t.load&&t.load.mode==='couple') return L_couple(sc,0); return sc.type==='add'?L_add(sc,0):sc.type==='sub'?L_sub(sc,0):L_pair(sc,0,true); }
+function loadLayout(V){
+  const t=V.t, sc=t.sc, L=V.ld||{}, sp=L.spec||t.load||{};
+  if(sp.mode==='couple') return L_couple(sc, L.n||0);
+  if(sp.mode==='tens'){ const lay=L_ana(sc,0); lay.tens=ids('T',sp.from+(L.n||0)).map(id=>({id,kind:'a'})); return lay; }
+  if(sp.mode==='take') return L_fam(sc,'base');
+  if(sp.mode==='add'&&(sc.type==='fam'||sc.type==='ana')){ const lay=L_add({a:sp.a,b:sp.b},0); if(sp.a+sp.b<=10){ lay.carriers=1; lay.slots[2]=Array(10).fill(null); } return lay; }
+  if(sp.mode==='sub'&&sp.a<=10){ const lay=newLay(1); seq(lay, ids('n',sp.a)); lay.spots=sp.b; return lay; }
+  return sc.type==='add'?L_add(sc,0):sc.type==='sub'?L_sub(sc,0):L_pair(sc,0,true);
+}
 function layoutFor(V){
   const t=V.t, sc=t.sc, done=V.done, b=done?null:t.blanks[V.bi], step=done?99:V.bi, h=b?b.h:0, load=!!t.load; let lay;
   if(sc.type==='add'||sc.type==='sub'){
@@ -408,7 +416,7 @@ function apply(lay, instant){
   for(const [id,g] of [...C.tens]){ if(!wantT.has(id)||g.userData.kind!==wantT.get(id).kind){ C.tens.delete(id); tween(g, g.position.clone().add(new THREE.Vector3(40,0,0)), {dur:900, done:()=>C.scene.remove(g)}); } }
   for(const [id,t] of wantT){ const pos=t.pos||tenWorld(t.j); let g=C.tens.get(id);
     if(!g){ g=makeCarrier(0,true,t.kind,.62,lay.noRails); g.userData.kind=t.kind; C.tens.set(id,g); if(instant) g.position.copy(pos); else { g.position.copy(pos).add(new THREE.Vector3(-42,0,0)); tween(g,pos,{dur:1000,delay:t.j*.12}); } }
-    else if(g.position.distanceTo(pos)>.01) tween(g,pos,{dur:650}); }
+    else { const mv=C.tweens.find(x=>x.obj===g); if(!(mv&&mv.to.distanceTo(pos)<.01)){ if(g.position.distanceTo(pos)<=.01){ C.tweens=C.tweens.filter(x=>x.obj!==g); g.position.copy(pos); } else tween(g,pos,{dur:650}); } } }
   const want = new Map();
   for(const t of [1,2]) lay.slots[t].forEach((id,i)=>{ if(id&&lay.carriers>=t) want.set(id,{t,i}); });
   lay.pallet.forEach((id,k)=>{ if(id) want.set(id,{k}); });
@@ -418,7 +426,9 @@ function apply(lay, instant){
   for(const [id,loc] of want){
     const pos = loc.k!=null ? palletWorld(loc.k) : slotWorld(loc.t, loc.i); let m=C.byId.get(id);
     if(!m){ m=newCrate(id[0]==='r'?'a':'b', pos); m.userData.id=id; C.byId.set(id,m); if(!instant){ m.position.y+=6; fly(m,pos,0,d); d+=.035; } }
-    else { const mv=C.tweens.find(t=>t.obj===m); if(m.position.distanceTo(pos)>.02 && !(mv&&mv.to.distanceTo(pos)<.02)){ if(instant){ C.tweens=C.tweens.filter(t=>t.obj!==m); m.position.copy(pos); } else { fly(m,pos,1.4,d); d+=.07; } } }
+    else { const mv=C.tweens.find(t=>t.obj===m), there=m.position.distanceTo(pos)<=.02;
+      if(!(mv&&mv.to.distanceTo(pos)<.02)){ // not already on its way here: drop a pending move elsewhere, or fly
+        if(there||instant){ C.tweens=C.tweens.filter(t=>t.obj!==m); m.position.copy(pos); } else { fly(m,pos,1.4,d); d+=.07; } } }
     if(loc.k!=null) C.pallet[loc.k]=m; else C.slots[loc.t][loc.i]=m;
   }
   [...C.ghosts,...C.spots].forEach(g=>{ C.scene.remove(g); g.material.dispose(); }); C.ghosts=[]; C.spots=[];
@@ -514,13 +524,14 @@ export function sync(host, V, api){
   if(C.key !== key){
     const first = C.key===null; C.key=key;
     if(!first){ C.byId.forEach(m=>vanish(m)); C.byId=new Map(); C.user={zoom:1,px:0,pz:0}; updateCtl(); }
-    C.phase=V.phase; apply(V.phase==='load'?loadInit(V.t):layoutFor(V), first); kick(); return;
+    C.phase=V.phase; C.ldRef=V.phase==='load'?V.ld:null; apply(V.phase==='load'?loadLayout(V):layoutFor(V), first); kick(); return;
   }
-  if(V.phase==='load' && V.ld && V.ld.mode==='couple'){ C.phase='load'; apply(L_couple(V.t.sc, V.ld.n), false); kick(); return; }
+  if(V.phase==='load' && V.ld && C.ldRef!==V.ld){ C.ldRef=V.ld; C.phase='load'; apply(loadLayout(V), false); kick(); return; } // a new hands-on step
+  if(V.phase==='load' && V.ld && (V.ld.mode==='couple'||V.ld.mode==='tens')){ C.phase='load'; apply(loadLayout(V), false); kick(); return; }
   if(V.phase==='load' && V.ld){
     C.phase='load'; const L=V.ld;
     if(L.anim){ const a=L.anim; L.anim=null;
-      if(L.mode==='sub'){ const m=C.slots[a.t][a.i]; C.slots[a.t][a.i]=null; const k=L.out-1; if(m){ C.pallet[k]=m; fly(m, palletWorld(k), C.pending===m?.35:1.6); } if(a.t===2&&C.slots[2].every(x=>!x)) C.bounce={t:2,t0:performance.now()}; }
+      if(L.mode==='sub'||L.mode==='take'){ const m=C.slots[a.t][a.i]; C.slots[a.t][a.i]=null; const k=L.out-1; if(m){ C.pallet[k]=m; fly(m, palletWorld(k), C.pending===m?.35:1.6); } if(a.t===2&&C.slots[2].every(x=>!x)) C.bounce={t:2,t0:performance.now()}; }
       else { let m=C.pending&&C.pallet.includes(C.pending)?C.pending:null; if(!m) for(let k=C.pallet.length-1;k>=0;k--) if(C.pallet[k]){ m=C.pallet[k]; break; }
         if(m){ const j=C.pallet.indexOf(m); if(j>=0) C.pallet[j]=null; C.slots[a.t][a.i]=m; fly(m, slotWorld(a.t,a.i), C.pending===m?.45:1.7); }
         if(a.t===1&&L.t1.indexOf('e')<0) setTimeout(()=>{ if(C){ C.bounce={t:1,t0:performance.now()}; badge(); } },440); }
@@ -549,8 +560,8 @@ function onDown(e){
     const [a,b]=[...C.ptrs.values()]; C.pan=null; C.pinch={d:Math.hypot(a.x-b.x,a.y-b.y), mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; return;
   }
   if(C.ptrs.size>2) return;
-  if(canLoad() && C.view.ld.mode==='couple'){
-    const objs=[...C.tens.values()]; if(C.yard&&C.yard.userData.loco) objs.push(C.yard.userData.loco);
+  if(canLoad() && (C.view.ld.mode==='couple'||C.view.ld.mode==='tens')){
+    const objs=[...C.tens.values(), ...Object.values(C.carriers)]; if(C.yard&&C.yard.userData.loco) objs.push(C.yard.userData.loco);
     if(pickDeep(e,objs)){ C.drag={carrier:1,kind:'tap',id:e.pointerId,x0:e.clientX,y0:e.clientY,moved:false}; return; }
   }
   else if(canLoad()){
@@ -558,8 +569,8 @@ function onDown(e){
     const h=pick(e,[...crates,...carrierHits()]);
     if(h){ const o=h.object; let t=o.userData.carrier||0; if(!t) for(const k of [1,2]) if(C.slots[k].includes(o)) t=k;
       let d=null;
-      if(L.mode!=='sub'){ if(C.pallet.includes(o)) d={mesh:o,kind:'pallet'}; else if(t) d={carrier:t,kind:'tap'}; }
-      else if(t){ const arr=C.slots[t]; let m=null; for(let i=arr.length-1;i>=0;i--) if(arr[i]){ m=arr[i]; break; } d={carrier:t,mesh:m,kind:'unload'}; }
+      if(L.mode!=='sub'&&L.mode!=='take'){ if(C.pallet.includes(o)) d={mesh:o,kind:'pallet'}; else if(t) d={carrier:t,kind:'tap'}; }
+      else if(t){ const arr=C.slots[t], want=L.mode==='take'?L.spec.kind:null; let m=null; for(let i=arr.length-1;i>=0;i--) if(arr[i]&&(!want||arr[i].userData.kind===want)){ m=arr[i]; break; } d={carrier:t,mesh:m,kind:'unload'}; }
       if(d){ Object.assign(d,{id:e.pointerId,x0:e.clientX,y0:e.clientY,moved:false}); C.drag=d; return; } }
   }
   C.pan={id:e.pointerId, x:e.clientX, y:e.clientY, moved:false};

@@ -21,6 +21,8 @@ Kurze Missionen in einer Spielstadt üben das Rechnen über die 10, so wie es in
 2. **Rechenweg selbst (Mission 2):** Der Rechenweg wird wie in der Schule eingetragen.
 3. **Profi (Mission 3):** Im Kopf rechnen, der Tipp zeigt den Rechenweg.
 
+In allen Stadtteilen packt das Kind selbst mit an: Im Herzhafen wird das Boot be- und entladen, im Lieferviertel lädt es die Kisten einer Aufgabenfamilie auf und nimmt für die Umkehraufgaben selbst Kisten weg, im Hochhausviertel holt es jede volle Palette selbst dazu, am Güterbahnhof hängt es volle Wagen an die Lok. Nur die Profi-Missionen (Mission 3) auf der Zehnerbrücke und im Zehnertunnel sind bewusst Kopfrechnen.
+
 Hinweise führen Schritt für Schritt durch den Rechenweg. Es gibt keine Zeitlimits.
 
 Die 3D-Ansicht lässt sich mit zwei Fingern zoomen und mit einem Finger auf freier Fläche verschieben (am Computer: Mausrad und Ziehen). Die Knöpfe + und − zoomen ebenfalls, der dritte Knopf holt die Ansicht zurück. Bei jeder neuen Aufgabe stellt sich die Ansicht wieder von selbst ein.

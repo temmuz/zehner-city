@@ -246,7 +246,7 @@ function tx(s,did){
   if(typeof s!=='string'||s.indexOf('{')<0) return s;
   const N=nounOf(did),G=(m,n,f)=>N.g==='m'?m:N.g==='n'?n:f,inn=N.p==='in';
   const T={N:N.n,NP:N.pl,ein:G('ein','ein','eine'),Ein:G('Ein','Ein','Eine'),einen:G('einen','ein','eine'),den:G('den','das','die'),der:G('der','das','die'),
-    er:G('er','es','sie'),voller:G('voller','volles','volle'),vollem:G('vollem','vollem','voller'),jeder:G('jeder','jedes','jede'),Jeder:G('Jeder','Jedes','Jede'),
+    er:G('er','es','sie'),voller:G('voller','volles','volle'),vollenA:G('vollen','volles','volle'),vollem:G('vollem','vollem','voller'),jeder:G('jeder','jedes','jede'),Jeder:G('Jeder','Jedes','Jede'),
     auf:N.p,Auf:inn?'In':'Auf',aufdem:inn?G('im','im','in der'):G('auf dem','auf dem','auf der'),drauf:inn?'hinein':'drauf',drin:inn?'drin':'drauf',hinauf:inn?'hinein':'hinauf'};
   return s.replace(/\{(\w+)\}/g,(m,k)=>k in T?T[k]:m);
 }
@@ -288,11 +288,11 @@ function buildBridge(p,op,mode){
   }
   if(mode==='path'){
     visual.show='hint';
-    return task([{long:1,tokens:[{n:a},op,{n:b},'=',{n:a},op,{b:0},op,{b:1},'=',{b:2}]}],[
+    return task([{long:1,loadRow:1,tokens:[{n:a},op,{n:b},'=',{n:a},op,{b:0},op,{b:1},'=',{b:2}]}],[
       {ans:r,vis:0,prompt:add?`Erst bis zur ${T}.`:`Erst zurück bis zur ${T}.`,hints:h0},
       {ans:s,vis:1,prompt:`Jetzt der Rest von der ${b}.`,hints:h1},
       {ans:res,vis:2,prompt:'Und das Ergebnis?',hints:h2}
-    ],visual,{kind:'bridge',sc:{type:add?'add':'sub',a,b}});
+    ],visual,{kind:'bridge',load:{mode:add?'add':'sub',a,b},sc:{type:add?'add':'sub',a,b}});
   }
   const ld=mode==='load';
   visual.show='always'; if(ld){ visual.noanim=1; visual.loaded=1; }
@@ -324,18 +324,20 @@ function buildPair(p,style){
     visual=Object.assign({},v10,{show:'always'});
   } else if(style==='love'){
     rows=[{big:1,tokens:[{n,heart:1},'+',{b:0},'=',{n:10}]}];
-    blank={ans:k,prompt:`Wer ist in die ${n} verliebt?`,hints:['Zusammen sind sie 10.','Zähle die freien Plätze.']};
-    visual=Object.assign({},v10,{show:'hint'});
+    blank={ans:k,prompt:`Wer ist in die ${n} verliebt?`,hints:['Zusammen sind sie 10.','Zähle die Kisten, die du aufgeladen hast.']};
+    return task(rows,[blank],{type:'frame10',n,op:'+',show:'always',fixed:1,noanim:1,loaded:1},{kind:'pair',load:{mode:'fill',n},sc:{type:'pair',op:'+',n}});
   } else {
     const f=p.f;
     if(f===0){ rows=[{big:1,tokens:[{n},'+',{b:0},'=',{n:10}]}]; blank={ans:k,prompt:'Ergänze bis 10.'}; visual=Object.assign({},v10,{show:'hint'}); }
     else if(f===1){ rows=[{big:1,tokens:[{b:0},'+',{n},'=',{n:10}]}]; blank={ans:k,prompt:'Welche Zahl fehlt?'}; visual=Object.assign({},v10,{show:'hint'}); }
-    else if(f===2){ rows=[{big:1,tokens:[{n:10},MI,{n},'=',{b:0}]}]; blank={ans:k,prompt:`Lade ${n} Kisten ab.`}; visual={type:'frame10',n,op:MI,show:'hint'}; }
-    else { rows=[{big:1,tokens:[{n:10},MI,{b:0},'=',{n}]}]; blank={ans:k,prompt:`Wie viele abladen, damit ${n} bleiben?`}; visual={type:'frame10',n:k,op:MI,show:'hint'}; }
+    else if(f===2){ rows=[{big:1,tokens:[{n:10},MI,{n},'=',{b:0}]}]; blank={ans:k,prompt:'Wie viele Kisten sind noch {aufdem} {N}?'}; visual={type:'frame10',n,op:MI,show:'hint'}; }
+    else { rows=[{big:1,tokens:[{n:10},MI,{b:0},'=',{n}]}]; blank={ans:k,prompt:'Wie viele Kisten hast du abgeladen?'}; visual={type:'frame10',n:k,op:MI,show:'hint'}; }
     blank.hints=[`Wer ist in die ${n} verliebt?`,'Schau auf {den} {N}.'];
   }
   const sc=style==='mix'&&p.f===2?{type:'pair',op:'−',take:n,f:2}:style==='mix'&&p.f===3?{type:'pair',op:'−',take:k,f:3}:{type:'pair',op:'+',n};
-  return task(rows,[blank],visual,{kind:'pair',sc});
+  const load=sc.op==='+'?{mode:'fill',n}:sc.f===2?{mode:'sub',a:10,b:n}:{mode:'sub',a:10,b:k,msg:`Lade ab, bis nur noch ${n} Kisten {aufdem} {N} sind.`};
+  if(sc.op==='+') visual=Object.assign({},v10,{show:'always',fixed:1,noanim:1,loaded:1});
+  return task(rows,[blank],visual,{kind:'pair',load,sc});
 }
 
 function buildFam(p,mode){
@@ -344,7 +346,7 @@ function buildFam(p,mode){
     const sumHints=c>10?[`Erst bis 10: ${a} + ${10-a} = 10`,`Dann noch ${b-(10-a)}: 10 + ${b-(10-a)} = □`]:[`Zähle von ${a} aus ${b} weiter.`,'Schau auf {den} {N}.'];
     const fv=c>10?{type:'frame20',a,b,op:'+',show:'hint',byHint:true}:{type:'frame20',a,b,op:'+',show:'hint',fixed:2};
     return task([
-      {label:'Aufgabe',tokens:[{n:a},'+',{n:b},'=',{b:0}]},
+      {label:'Aufgabe',loadRow:1,tokens:[{n:a},'+',{n:b},'=',{b:0}]},
       {label:'Tauschaufgabe',tokens:[{n:b},'+',{n:a},'=',{b:1}]},
       {label:'Umkehraufgabe',tokens:[{n:c},MI,{n:b},'=',{b:2}]},
       {label:'Umkehraufgabe',tokens:[{n:c},MI,{n:a},'=',{b:3}]}
@@ -353,32 +355,32 @@ function buildFam(p,mode){
       {ans:c,vis:1,prompt:'Tauschaufgabe!',hints:['Tauschen ändert das Ergebnis nicht.',`Schau oben: ${a} + ${b} = ${c}`]},
       {ans:a,vis:1,prompt:'Umkehraufgabe!',hints:[`Nimm von ${c} die ${b} weg.`,'Welche Zahl bleibt übrig?']},
       {ans:b,vis:1,prompt:'Noch eine Umkehraufgabe!',hints:[`Nimm von ${c} die ${a} weg.`,'Welche Zahl bleibt übrig?']}
-    ],Object.assign({},H,{show:'always'}),{kind:'fam',side:true,sc:{type:'fam',a,b,mode:'basic'}});
+    ].map((x,i)=>i===2?Object.assign(x,{act:{mode:'take',kind:'b',n:b,a,b}}):i===3?Object.assign(x,{act:{mode:'take',kind:'a',n:a,a,b}}):x),Object.assign({},H,{show:'always'}),{kind:'fam',side:true,load:{mode:'add',a,b,single:c<=10},sc:{type:'fam',a,b,mode:'basic'}});
   }
   return task([
-    {label:'Bekannt',known:1,tokens:[{n:a},'+',{n:b},'=',{n:c}]},
+    {label:'Bekannt',known:1,loadRow:1,tokens:[{n:a},'+',{n:b},'=',{n:c}]},
     {label:'Tauschaufgabe',tokens:[{n:b},'+',{n:a},'=',{b:0}]},
     {label:'Umkehraufgabe',tokens:[{n:c},MI,{n:b},'=',{b:1}]},
     {label:'Umkehraufgabe',tokens:[{n:c},MI,{b:2},'=',{n:a}]}
   ],[
     {ans:c,prompt:'Tauschaufgabe!',hints:['Tauschen ändert das Ergebnis nicht.',`Schau oben: ${a} + ${b} = ${c}`]},
-    {ans:a,prompt:'Umkehraufgabe!',hints:[`Die Familie: ${a}, ${b} und ${c}.`,'Welche Zahl bleibt übrig?']},
-    {ans:b,prompt:'Welche Zahl fehlt?',hints:[`Was nimmst du von ${c} weg, damit ${a} bleibt?`,'Schau ins Zahlenhaus.']}
-  ],Object.assign({},H,{show:'hint',fixed:1}),{kind:'fam',side:true,sc:{type:'fam',a,b,mode:'detective'}});
+    {ans:a,prompt:'Umkehraufgabe!',hints:[`Die Familie: ${a}, ${b} und ${c}.`,'Welche Zahl bleibt übrig?'],act:{mode:'take',kind:'b',n:b,a,b}},
+    {ans:b,prompt:'Welche Zahl fehlt?',hints:[`Was nimmst du von ${c} weg, damit ${a} bleibt?`,'Schau, was übrig ist.']}
+  ],Object.assign({},H,{show:'hint',fixed:1}),{kind:'fam',side:true,load:{mode:'add',a,b,single:c<=10},sc:{type:'fam',a,b,mode:'detective'}});
 }
 
 /* Analogy tasks: 4 + 5 = 9 -> 14 + 5 = 19 (full trucks are whole tens and just stay parked; only the loose crates change) */
 function buildAna(p){
   const a=p.a,b=p.b,op=p.op,Ts=p.Ts,base=op==='+'?a+b:a-b;
-  const rows=[{label:'Nur Kisten',tokens:[{n:a},op,{n:b},'=',{b:0}]}];
+  const rows=[{label:'Nur Kisten',loadRow:1,tokens:[{n:a},op,{n:b},'=',{b:0}]}];
   const blanks=[{ans:base,prompt:'Erst nur die Kisten rechnen.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf {den} {N}.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}}];
   Ts.forEach((T,i)=>{
     const x=T+a,res=op==='+'?x+b:x-b,fl=T/10;
     rows.push({label:fl===1?'+ 1 {N}':`+ ${fl} {NP}`,tokens:[{n:x,ones:1},op,{n:b,ones:1},'=',{b:i+1}]});
     blanks.push({ans:res,prompt:fl===1?'{Ein} {voller} {N} mehr: + 10.':`${fl} volle {NP} mehr: + ${T}.`,
-      hints:[`Die Einer: ${a} ${op} ${b} = ${base}`,`${T} + ${base} = □`],visual:{type:'ze',x,b,op,show:'hint'}});
+      hints:[`Die Einer: ${a} ${op} ${b} = ${base}`,`${T} + ${base} = □`],visual:{type:'ze',x,b,op,show:'hint'},act:{mode:'tens',from:i?Ts[i-1]/10:0,to:fl}});
   });
-  return task(rows,blanks,null,{kind:'ana',side:true,sc:{type:'ana',a,b,op,Ts}});
+  return task(rows,blanks,null,{kind:'ana',side:true,load:op==='+'?{mode:'add',a,b,single:true}:{mode:'sub',a,b},sc:{type:'ana',a,b,op,Ts}});
 }
 
 function buildTens(p){
@@ -751,11 +753,11 @@ function renderDistrict(id){
 const World={mod:null,state:'idle',
   get(){
     if(this.state==='idle'){ this.state='loading';
-      import('./world3d.js?v=20261119e').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
+      import('./world3d.js?v=20261119f').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
         .catch(err=>{ console.warn('3D unavailable',err); this.fail(); }); }
     return this.state==='ready'?this.mod:null;
   },
-  fail(){ this.state='failed'; if(this.mod) this.mod.dispose(); if(M&&M.phase==='load'&&M.ld&&M.ld.mode==='couple'){ curTask().loadDone=true; M.phase='calc'; M.ld=null; } if(M){ M.tasks.forEach(t=>localize(t,t.skill)); if(M.ld) M.ld.msg=tx(M.ld.msg,curDid()); } if(M&&current==='mission'){ M.lastVis=null; const el=$('#m-visual'); if(el) el.innerHTML=''; drawVisual(); drawRows(); } },
+  fail(){ this.state='failed'; if(this.mod) this.mod.dispose(); if(M&&M.phase==='load'&&M.ld&&['couple','take','tens'].includes(M.ld.mode)){ const t=curTask(); if(M.ld.blank!=null) t.blanks[M.ld.blank].actDone=true; else t.loadDone=true; M.phase='calc'; M.ld=null; } if(M){ M.tasks.forEach(t=>localize(t,t.skill)); if(M.ld) M.ld.msg=tx(M.ld.msg,curDid()); } if(M&&current==='mission'){ M.lastVis=null; const el=$('#m-visual'); if(el) el.innerHTML=''; drawVisual(); drawRows(); } },
   dispose(){ if(this.mod) this.mod.dispose(); }
 };
 const WORLD_OF={herz:'harbor',bruecke:'bridge',tunnel:'tunnel',familie:'suburb',tower:'tower',flug:'station'};
@@ -790,7 +792,7 @@ function startMission(did,mi){
 }
 const curTask=()=>M.tasks[M.ti];
 const curBlank=()=>curTask().blanks[M.bi];
-function prepTask(){ const t=curTask(); M.bi=t.blanks.findIndex(b=>!b.auto&&b.val==null); M.entry=''; if(t.load&&!t.loadDone&&!(t.load.mode==='couple'&&World.state==='failed')){ M.phase='load'; M.ld=initLoad(t); } else { M.phase='calc'; M.ld=null; } }
+function prepTask(){ const t=curTask(); M.bi=t.blanks.findIndex(b=>!b.auto&&b.val==null); M.entry=''; if(t.load&&!t.loadDone&&!(t.load.mode==='couple'&&World.state==='failed')){ M.phase='load'; M.ld=initLoad(t.load,t.skill); } else { M.phase='calc'; M.ld=null; } }
 const sceneOf=()=>M.did==='hq'?'hq':M.did;
 function renderMissionShell(){
   if(!M){ show('city'); return; }
@@ -840,7 +842,7 @@ function tokHTML(tok,t){
 }
 function visibleRows(t,compact){
   const h=curH();
-  if(M.phase==='load'){ const g=t.rows.filter(r=>r.goal); return g.length?g:t.rows.filter(r=>r.big||r.loadRow); }
+  if(M.phase==='load'&&M.ld&&M.ld.blank==null){ const g=t.rows.filter(r=>r.goal); return g.length?g:t.rows.filter(r=>r.big||r.loadRow); }
   let rows=t.rows.filter(r=>{ if(r.minHint&&h<r.minHint) return false; if(r.step!=null) return !M.taskDone&&M.bi===r.step; if(r.final) return M.taskDone; return true; });
   if(compact&&!M.taskDone&&rows.length>2) rows=rows.filter(r=>r.goal||r.known||r.tokens.some(tk=>tk&&tk.b===M.bi));
   return rows;
@@ -963,7 +965,7 @@ function onBlankCorrect(){
   if(next>=0){
     M.stepMsg=pick(STEPOK); Sound.play('step');
     const stepped=t.rows.some(r=>r.step!=null);
-    const go=()=>{ if(!M||current!=='mission') return; M.busy=false; M.bi=next; drawRows(); drawBubble(); drawVisual(); };
+    const go=()=>{ if(!M||current!=='mission') return; M.busy=false; M.bi=next; startAct(next); drawRows(); drawBubble(); drawVisual(); };
     if(stepped){ M.busy=true; drawRows(); drawBubble(); burst(fxTarget(),10); setTimeout(go,700); }
     else { go(); burst(fxTarget(),10); }
     return;
@@ -1141,14 +1143,23 @@ function renderParents(){
    The concrete step before the written method. The child moves the crates;
    the rule "truck 1 first" (or "empty truck 2 first" for minus) makes the split at 10 happen. */
 const col=(n,c)=>c+(n===1?'en':'e'); // "1 roten", "3 rote"
-function initLoad(t){
-  const L=t.load,ld={mode:L.mode,t1:[],t2:[],dock:0,out:0,target:0,acted:false,done:false,anim:null,pulse:0,msg:'',msgCls:''};
-  if(L.mode==='add'){ for(let i=0;i<10;i++){ ld.t1.push(i<L.a%10?'a':'e'); ld.t2.push('e'); } ld.dock=L.b; ld.msg=`Lade die ${L.b} Kisten auf. Erst {N} 1!`; }
+const KCOL={a:['rote','roten'],b:['blaue','blauen']};
+const someCrates=(n,k)=>n===1?`die ${KCOL[k][0]} Kiste`:`die ${n} ${KCOL[k][1]} Kisten`;
+function initLoad(L,did){
+  const ld={mode:L.mode,spec:L,t1:[],t2:[],dock:0,out:0,target:0,n:0,total:0,acted:false,done:false,anim:null,pulse:0,msg:'',msgCls:'',blank:null};
+  if(L.mode==='add'){ for(let i=0;i<10;i++){ ld.t1.push(i<L.a%10?'a':'e'); ld.t2.push('e'); } ld.dock=L.b; ld.msg=L.single?`Lade ${someCrates(L.b,'b')} auf.`:`Lade die ${L.b} Kisten auf. Erst {N} 1!`; }
   else if(L.mode==='fill'){ for(let i=0;i<10;i++) ld.t1.push(i<L.n?'a':'e'); ld.dock=10-L.n+3; ld.msg='Mach {N} 1 voll!'; }
-  else if(L.mode==='couple'){ ld.n=0; ld.total=L.op==='+'?L.a+L.b:L.b; ld.msg=L.op==='+'?`Hänge ${L.a} ${col(L.a,'rot')} {NP} an die Lok!`:`Der Zug hat ${L.a} {NP}. Hänge ${L.b} ab!`; }
-  else { for(let i=0;i<10;i++){ ld.t1.push(i<Math.min(L.a,10)?'n':'e'); ld.t2.push(i<(L.a>=10?L.a%10:0)?'n':'e'); } ld.target=L.b; ld.msg=`Lade ${L.b} Kisten ab. Erst {N} 2!`; }
-  ld.msg=tx(ld.msg,t.skill);
+  else if(L.mode==='couple'){ ld.total=L.op==='+'?L.a+L.b:L.b; ld.msg=L.op==='+'?`Hänge ${L.a} ${col(L.a,'rot')} {NP} an die Lok!`:`Der Zug hat ${L.a} {NP}. Hänge ${L.b} ab!`; }
+  else if(L.mode==='tens'){ ld.total=L.to-L.from; ld.msg=ld.total===1?'Hol {einen} {vollenA} {N} dazu!':`Hol ${ld.total} volle {NP} dazu!`; }
+  else if(L.mode==='take'){ const q=[...Array(L.a).fill('a'),...Array(L.b).fill('b')]; for(let i=0;i<10;i++){ ld.t1.push(q[i]||'e'); ld.t2.push(q[10+i]||'e'); } ld.target=L.n; ld.msg=L.msg||`Nimm ${someCrates(L.n,L.kind)} weg.`; }
+  else { for(let i=0;i<10;i++){ ld.t1.push(i<Math.min(L.a,10)?'n':'e'); ld.t2.push(i<(L.a>10?L.a%10:0)?'n':'e'); } ld.target=L.b; ld.msg=L.msg||(L.a<=10?`Lade ${L.b} Kisten ab.`:`Lade ${L.b} Kisten ab. Erst {N} 2!`); }
+  ld.msg=tx(ld.msg,did);
   return ld;
+}
+// hands-on step in the middle of a task (before blank i); needs the 3D view
+function startAct(i){
+  const t=curTask(),b=t.blanks[i]; if(!b||!b.act||b.actDone||World.state==='failed') return false;
+  M.phase='load'; M.ld=initLoad(b.act,t.skill); M.ld.blank=i; return true;
 }
 function loadSceneHTML(){
   const L=M.ld,cell=(k,t,i)=>k==='e'||k==='x'?{k:'e'}:{k,anim:!!(L.anim&&L.anim.t===t&&L.anim.i===i)};
@@ -1163,7 +1174,7 @@ function loadSceneHTML(){
 }
 function drawLoadBubble(el){
   const L=M.ld,mood=L.msgCls==='good'?'happy':L.msgCls==='hint'?'think':'';
-  const tip=!L.acted&&M.ti===0?tx(L.mode==='couple'?'Tippe auf einen {N} oder auf die Lok.':L.mode==='sub'?'Tippe auf {einen} {N} oder zieh Kisten zum Abladeplatz.':'Tippe auf {einen} {N} oder zieh die Kisten {hinauf}.',curDid()):'';
+  const tip=!L.acted&&M.ti===0?tx(L.mode==='take'?'Tippe auf {den} {N} oder zieh die Kisten weg.':L.mode==='tens'?'Tippe auf {den} {N}.':L.mode==='couple'?'Tippe auf einen {N} oder auf die Lok.':L.mode==='sub'?'Tippe auf {einen} {N} oder zieh Kisten zum Abladeplatz.':'Tippe auf {einen} {N} oder zieh die Kisten {hinauf}.',curDid()):'';
   el.className='bubble'+(L.msgCls?' '+L.msgCls:'');
   el.innerHTML=`<span class="ava ${mood}">${fox(mood)}</span><div class="msg"><span class="main">${fmt(L.msg)}</span>${tip?`<span class="sub">${fmt(tip)}</span>`:''}</div>${Speech.ok?`<button class="iconbtn soft" data-act="speak" aria-label="Vorlesen">${icon('speaker')}</button>`:''}`;
   M.lastSpeech=L.msg;
@@ -1174,8 +1185,21 @@ function loadAct(t){
   if(!M||M.phase!=='load'||M.busy) return;
   const L=M.ld; if(L.done) return;
   L.acted=true;
+  if(L.mode==='take'){
+    if(L.out>=L.target) return;
+    const k=L.spec.kind,arr=t===2?L.t2:L.t1,i=arr.lastIndexOf(k);
+    if(i<0){ const o=t===2?1:2,other=(t===2?L.t1:L.t2).lastIndexOf(k)>=0; if(other){ loadMsg(`Die ${KCOL[k][1]} Kisten sind {auf} {N} ${o}.`,'hint'); L.pulse=o; } drawVisual(); return; }
+    arr[i]='x'; L.anim={t,i}; L.out++; Sound.play('tap');
+    if(L.msgCls==='hint') loadMsg('Weiter so!','');
+    drawVisual(); if(L.out===L.target) finishLoad(); return;
+  }
+  if(L.mode==='tens'){
+    if(L.n>=L.total) return; L.n++; Sound.play('thud');
+    if(L.n<L.total) loadMsg(`Noch ${L.total-L.n}!`,'');
+    drawVisual(); if(L.n===L.total) finishLoad(); return;
+  }
   if(L.mode==='couple'){
-    const T=curTask().load; if(L.n>=L.total) return;
+    const T=L.spec; if(L.n>=L.total) return;
     L.n++; Sound.play('thud');
     if(T.op==='+'&&L.n===T.a&&L.n<L.total){ setTimeout(()=>Sound.play('honk'),120); loadMsg(`Jetzt ${T.b} ${col(T.b,'blau')} {NP} dazu!`,'good'); }
     else if(L.msgCls==='hint') loadMsg('Weiter so!','');
@@ -1220,17 +1244,20 @@ function loadAct(t){
 }
 function loadHint(){
   const L=M.ld; if(!L||L.done) return;
-  if(L.mode==='couple'){ const T=curTask().load; loadMsg(T.op==='+'?(L.n<T.a?`Tippe auf einen roten {N}. Noch ${T.a-L.n}.`:`Tippe auf einen blauen {N}. Noch ${L.total-L.n}.`):`Tippe auf den Zug. Noch ${L.total-L.n} {NP} abhängen.`,'hint'); Sound.play('tap'); drawVisual(); return; }
+  if(L.mode==='take'){ L.pulse=L.t2.lastIndexOf(L.spec.kind)>=0?2:1; loadMsg(`Tippe auf {den} {N}. Noch ${L.target-L.out} ${KCOL[L.spec.kind][0]} weg.`,'hint'); Sound.play('tap'); drawVisual(); return; }
+  if(L.mode==='tens'){ loadMsg(`Tippe auf {den} {N}. Noch ${L.total-L.n}.`,'hint'); Sound.play('tap'); drawVisual(); return; }
+  if(L.mode==='add'&&L.spec.single){ L.pulse=1; loadMsg(`Tippe auf {den} {N}. Noch ${L.dock} Kisten.`,'hint'); Sound.play('tap'); drawVisual(); return; }
+  if(L.mode==='couple'){ const T=L.spec; loadMsg(T.op==='+'?(L.n<T.a?`Tippe auf einen roten {N}. Noch ${T.a-L.n}.`:`Tippe auf einen blauen {N}. Noch ${L.total-L.n}.`):`Tippe auf den Zug. Noch ${L.total-L.n} {NP} abhängen.`,'hint'); Sound.play('tap'); drawVisual(); return; }
   if(L.mode==='sub'){ const two=lastIdx(L.t2,'n')>=0; L.pulse=two?2:1; loadMsg(two?'Tippe auf {N} 2, bis {er} leer ist.':'Jetzt von {N} 1 abladen.','hint'); }
   else { const one=L.t1.indexOf('e')>=0; L.pulse=one?1:2; loadMsg(one?'Tippe auf {N} 1, bis {er} voll ist.':'Jetzt kommt der Rest {auf} {N} 2.','hint'); }
   Sound.play('tap'); drawVisual();
 }
 function finishLoad(){
   const L=M.ld; L.done=true; M.busy=true;
-  const T=curTask().load;
-  loadMsg(L.mode==='couple'?(T.op==='+'?`Der Zug hat ${T.a+T.b} {NP}!`:`${T.a-T.b} {NP} bleiben am Zug.`):L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten {drin}.':'Alles geladen!','good');
+  const T=L.spec;
+  loadMsg(L.mode==='take'?'Weggenommen!':L.mode==='tens'?'Angekommen!':L.mode==='couple'?(T.op==='+'?`Der Zug hat ${T.a+T.b} {NP}!`:`${T.a-T.b} {NP} bleiben am Zug.`):L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten {drin}.':'Alles geladen!','good');
   Sound.play('step'); burst($('#m-visual'),14);
-  setTimeout(()=>{ if(!M||current!=='mission') return; M.busy=false; curTask().loadDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; drawAll(); },1500);
+  setTimeout(()=>{ if(!M||current!=='mission') return; M.busy=false; const t=curTask(); if(L.blank!=null) t.blanks[L.blank].actDone=true; else t.loadDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; drawAll(); },L.blank!=null?900:1500);
 }
 let drag=null;
 document.addEventListener('pointerdown',e=>{
