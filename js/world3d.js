@@ -7,10 +7,11 @@ import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js
 import {RoundedBoxGeometry} from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js/+esm';
 
 const MODELS = new URL('../assets/models/', import.meta.url).href;
+const EXT = window.ZC_MODEL_EXT || '.glb'; // the Claude artifact copy serves the same models as .json (glTF)
 const loader = new GLTFLoader();
 const cache = new Map();
 function load(name){
-  if(!cache.has(name)) cache.set(name, loader.loadAsync(MODELS + name + '.glb').then(g => {
+  if(!cache.has(name)) cache.set(name, loader.loadAsync(MODELS + name + EXT).then(g => {
     g.scene.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
     return g.scene;
   }));
