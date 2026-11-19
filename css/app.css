@@ -537,6 +537,11 @@ mark{background:var(--mark-bg);color:var(--ink);border-radius:6px;padding:0 .15e
 .world3d{position:relative;width:100%;aspect-ratio:16/9;max-height:min(460px,52vh);min-height:230px;border-radius:16px;overflow:hidden;background:var(--surface-2);touch-action:none;box-shadow:inset 0 0 0 1px var(--line)}
 .world3d canvas{display:block;width:100%;height:100%;touch-action:none}
 .w3-wait{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-soft);font-weight:700}
+.w3-ctl{position:absolute;right:10px;top:10px;z-index:2;display:flex;flex-direction:column;gap:6px}
+.w3-ctl button{width:42px;height:42px;display:grid;place-items:center;border:0;border-radius:12px;background:rgba(255,255,255,.86);color:#26324a;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s}
+.w3-ctl button:active{transform:scale(.92)}
+.w3-ctl svg{width:22px;height:22px}
+.w3-ctl button:focus-visible{outline:3px solid var(--focus,#2f6fe0);outline-offset:2px}
 @media (max-width:640px){.world3d{aspect-ratio:4/3}}
 #m-visual{width:100%}
 .scene{height:58px;background:var(--asphalt)}

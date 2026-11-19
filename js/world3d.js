@@ -84,13 +84,20 @@ function makeEngine(host){
   host.innerHTML = ''; host.appendChild(renderer.domElement);
   const cam = new THREE.PerspectiveCamera(32, 1, .5, 400);
   const E = { host, renderer, cam, scene:null, world:null, alive:true, raf:0, last:0, tweens:[], byId:new Map(), slots:{1:[],2:[]}, pallet:[], tens:new Map(), carriers:{}, ghosts:[], spots:[], hl:[], badge:null,
-    drag:null, pending:null, key:null, phase:null, camGoal:{x:0,z:0,d:30}, camCur:null, ray:new THREE.Raycaster(), ndc:new THREE.Vector2(), dragPlane:new THREE.Plane(new THREE.Vector3(0,1,0),-2.6), tmp:new THREE.Vector3(), v:new THREE.Vector3(), api:null, view:null, water:null, pulse:null, bounce:null };
+    drag:null, pending:null, key:null, user:{zoom:1,px:0,pz:0}, ptrs:new Map(), pinch:null, pan:null, snap:false, bounds:{hw:10,hd:6}, frameIns:null, ctl:null, phase:null, camGoal:{x:0,z:0,d:30}, camCur:null, ray:new THREE.Raycaster(), ndc:new THREE.Vector2(), dragPlane:new THREE.Plane(new THREE.Vector3(0,1,0),-2.6), tmp:new THREE.Vector3(), v:new THREE.Vector3(), api:null, view:null, water:null, pulse:null, bounce:null };
   const resize = () => { const r = host.getBoundingClientRect(); if(!r.width || !r.height) return; renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); if(E.lastLay) frame(E.lastLay); E.camCur = null; };
   E.resize = resize; resize();
   try{ E.ro = new ResizeObserver(resize); E.ro.observe(host); }catch(e){}
   const el = renderer.domElement;
   el.addEventListener('pointerdown', onDown); el.addEventListener('pointermove', onMove); el.addEventListener('pointerup', onUp);
-  el.addEventListener('pointercancel', () => { if(C && C.drag){ if(C.drag.mesh) returnHome(C.drag.mesh); C.drag = null; } });
+  el.addEventListener('pointercancel', onCancel);
+  el.addEventListener('wheel', e => { if(!C) return; e.preventDefault(); C.api && C.api.touch(); zoomBy(Math.exp(e.deltaY * (e.ctrlKey ? .01 : .0015))); }, {passive:false});
+  const ctl = document.createElement('div'); ctl.className = 'w3-ctl';
+  const ico = d => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  ctl.innerHTML = `<button type="button" data-z="in" aria-label="Näher heran">${ico('M12 5v14M5 12h14')}</button><button type="button" data-z="out" aria-label="Weiter weg">${ico('M5 12h14')}</button><button type="button" data-z="reset" aria-label="Ansicht zurücksetzen" hidden>${ico('M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5M9 12h6M12 9v6')}</button>`;
+  ctl.addEventListener('pointerdown', ev => ev.stopPropagation());
+  ctl.addEventListener('click', ev => { const b = ev.target.closest('button'); if(!b || !C) return; C.api && C.api.touch(); const k = b.dataset.z; if(k==='in') zoomBy(.72, true); else if(k==='out') zoomBy(1.38, true); else resetView(); });
+  host.appendChild(ctl); E.ctl = ctl;
   el.addEventListener('contextmenu', e => e.preventDefault());
   return E;
 }
@@ -418,13 +425,30 @@ function frame(lay){
   if(lay.carriers>0){ const b=padBase(); add(b.x-2.8,b.x+2.8,b.z-1.8,b.z+1.8); }
   lay.tens.forEach((t,j)=>{ const p=tenWorld(j); add(p.x-L*.66,p.x+L*.66,p.z-Wd*.66,p.z+Wd*.66); });
   if(xmin>xmax) add(-6,6,-3,3);
-  const cx=(xmin+xmax)/2, cz=(zmin+zmax)/2, hw=(xmax-xmin)/2+1.4, hd=(zmax-zmin)/2+.8;
-  // fit into the part of the view that the floating panels leave free, and centre the scene there
-  const r=C.host.getBoundingClientRect(), W=r.width||1, H=r.height||1, ins=C.inset||{l:0,t:0,r:0,b:0};
-  const ew=Math.max(80,W-ins.l-ins.r), eh=Math.max(80,H-ins.t-ins.b);
-  cam.setViewOffset(W, H, W/2-(ins.l+ew/2), H/2-(ins.t+eh/2), W, H);
-  C.camGoal={x:cx, z:cz+.5, d:Math.max(hw/(tan*(ew/H)), (hd*.8+1.8)/(tan*(eh/H)), 15)};
+  const cx=(xmin+xmax)/2, cz=(zmin+zmax)/2, hw=(xmax-xmin)/2+.6, hd=(zmax-zmin)/2+.4;
+  // fit into the part of the view that the floating panels leave free (equation panel on the left or on top,
+  // whichever leaves the scene bigger) and centre the scene there
+  const r=C.host.getBoundingClientRect(), W=r.width||1, H=r.height||1, base=C.inset||{l:0,t:0,r:0,b:0};
+  let best=null;
+  for(const ins of [base, base.alt].filter(Boolean)){
+    const ew=Math.max(80,W-ins.l-(ins.r||0)), eh=Math.max(80,H-ins.t-ins.b);
+    const d=Math.max(hw/(tan*(ew/H)), (hd*.78+1.4)/(tan*(eh/H)), 10);
+    if(!best||d<best.d) best={d,ins,ew,eh};
+  }
+  cam.setViewOffset(W, H, W/2-(best.ins.l+best.ew/2), H/2-(best.ins.t+best.eh/2), W, H);
+  C.camGoal={x:cx, z:cz+.4, d:best.d}; C.bounds={hw,hd}; C.frameIns=best.ins;
+  if(C.ctl) C.ctl.style.top=Math.round(best.ins.t+10)+'px';
 }
+/* ---------- zoom and pan (pinch, drag on empty ground, mouse wheel, buttons) ---------- */
+const ZMIN=.4, ZMAX=1.9;
+function zoomBy(f, smooth){ if(!C) return; const u=C.user; u.zoom=Math.min(ZMAX, Math.max(ZMIN, u.zoom*f)); if(!smooth) C.snap=true; updateCtl(); kick(); }
+function panBy(dx, dy){
+  if(!C) return; const H=C.host.getBoundingClientRect().height||1, cc=C.camCur||C.camGoal, tan=Math.tan(C.cam.fov*Math.PI/360), wpp=2*cc.d*tan/H, u=C.user, B=C.bounds;
+  u.px=Math.max(-B.hw-2, Math.min(B.hw+2, u.px-dx*wpp)); u.pz=Math.max(-B.hd-2, Math.min(B.hd+2, u.pz-dy*wpp/.68));
+  C.snap=true; updateCtl(); kick();
+}
+function resetView(){ if(!C) return; C.user={zoom:1,px:0,pz:0}; updateCtl(); kick(); }
+function updateCtl(){ if(!C||!C.ctl) return; const u=C.user, moved=Math.abs(u.zoom-1)>.02||Math.abs(u.px)>.05||Math.abs(u.pz)>.05; C.ctl.querySelector('[data-z="reset"]').hidden=!moved; }
 function rekey(lay){
   const map=new Map(), used=new Set(), kindOf=id=>id[0]==='r'?'a':'b';
   for(const t of [1,2]) lay.slots[t].forEach((id,i)=>{ const m=C.slots[t][i]; if(id&&m&&m.userData.kind===kindOf(id)&&!used.has(m)){ map.set(id,m); used.add(m); } });
@@ -454,7 +478,7 @@ export function sync(host, V, api){
   const key = V.key;
   if(C.key !== key){
     const first = C.key===null; C.key=key;
-    if(!first){ C.byId.forEach(m=>vanish(m)); C.byId=new Map(); }
+    if(!first){ C.byId.forEach(m=>vanish(m)); C.byId=new Map(); C.user={zoom:1,px:0,pz:0}; updateCtl(); }
     C.phase=V.phase; apply(V.phase==='load'?loadInit(V.t):layoutFor(V), first); kick(); return;
   }
   if(V.phase==='load' && V.ld){
@@ -477,32 +501,61 @@ export function sync(host, V, api){
 /* ---------- touch and mouse for hands-on loading ---------- */
 function pick(e, objs){ const r=C.renderer.domElement.getBoundingClientRect(); C.ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); C.ray.setFromCamera(C.ndc, C.cam); return C.ray.intersectObjects(objs, false)[0] || null; }
 function carrierHits(){ return Object.values(C.carriers).map(g=>g.userData.hit); }
+const canLoad = () => C.view && C.view.phase==='load' && C.view.ld && !C.view.ld.done && !C.view.busy;
 function onDown(e){
-  if(!C||!C.view||C.view.phase!=='load'||!C.view.ld||C.view.ld.done||C.view.busy) return;
-  C.api.touch(); const L=C.view.ld, crates=[...C.pallet,...C.slots[1],...C.slots[2]].filter(Boolean);
-  const h=pick(e,[...crates,...carrierHits()]); if(!h) return;
-  const o=h.object; let t=o.userData.carrier||0; if(!t) for(const k of [1,2]) if(C.slots[k].includes(o)) t=k;
-  let d=null;
-  if(L.mode!=='sub'){ if(C.pallet.includes(o)) d={mesh:o,kind:'pallet'}; else if(t) d={carrier:t,kind:'tap'}; }
-  else if(t){ const arr=C.slots[t]; let m=null; for(let i=arr.length-1;i>=0;i--) if(arr[i]){ m=arr[i]; break; } d={carrier:t,mesh:m,kind:'unload'}; }
-  if(!d) return;
-  Object.assign(d,{id:e.pointerId,x0:e.clientX,y0:e.clientY,moved:false}); C.drag=d;
+  if(!C) return; C.api && C.api.touch();
+  C.ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
   try{ C.renderer.domElement.setPointerCapture(e.pointerId); }catch(_){}
   e.preventDefault();
+  if(C.ptrs.size===2){ // second finger: pinch zoom, drop whatever the first finger was doing
+    if(C.drag){ if(C.drag.mesh && C.drag.moved) returnHome(C.drag.mesh); C.drag=null; }
+    const [a,b]=[...C.ptrs.values()]; C.pan=null; C.pinch={d:Math.hypot(a.x-b.x,a.y-b.y), mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; return;
+  }
+  if(C.ptrs.size>2) return;
+  if(canLoad()){
+    const L=C.view.ld, crates=[...C.pallet,...C.slots[1],...C.slots[2]].filter(Boolean);
+    const h=pick(e,[...crates,...carrierHits()]);
+    if(h){ const o=h.object; let t=o.userData.carrier||0; if(!t) for(const k of [1,2]) if(C.slots[k].includes(o)) t=k;
+      let d=null;
+      if(L.mode!=='sub'){ if(C.pallet.includes(o)) d={mesh:o,kind:'pallet'}; else if(t) d={carrier:t,kind:'tap'}; }
+      else if(t){ const arr=C.slots[t]; let m=null; for(let i=arr.length-1;i>=0;i--) if(arr[i]){ m=arr[i]; break; } d={carrier:t,mesh:m,kind:'unload'}; }
+      if(d){ Object.assign(d,{id:e.pointerId,x0:e.clientX,y0:e.clientY,moved:false}); C.drag=d; return; } }
+  }
+  C.pan={id:e.pointerId, x:e.clientX, y:e.clientY, moved:false};
 }
 function onMove(e){
-  if(!C||!C.drag||e.pointerId!==C.drag.id) return; const d=C.drag;
-  if(!d.moved&&d.mesh&&Math.hypot(e.clientX-d.x0,e.clientY-d.y0)>7){ d.moved=true; C.tweens=C.tweens.filter(t=>t.obj!==d.mesh); }
-  if(d.moved){ const r=C.renderer.domElement.getBoundingClientRect(); C.ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); C.ray.setFromCamera(C.ndc,C.cam); if(C.ray.ray.intersectPlane(C.dragPlane,C.tmp)) d.goal=C.tmp.clone(); C.api.touch(); kick(); }
+  if(!C) return; const p=C.ptrs.get(e.pointerId); if(!p) return; const px=p.x, py=p.y; p.x=e.clientX; p.y=e.clientY;
+  if(C.pinch && C.ptrs.size>=2){ const [a,b]=[...C.ptrs.values()], d=Math.hypot(a.x-b.x,a.y-b.y), mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    if(C.pinch.d>12 && d>12) zoomBy(C.pinch.d/d); panBy(mx-C.pinch.mx, my-C.pinch.my); C.pinch={d,mx,my}; return; }
+  const d=C.drag;
+  if(d && e.pointerId===d.id){
+    const far=Math.hypot(e.clientX-d.x0,e.clientY-d.y0)>9;
+    if(!d.mesh){ if(far){ C.drag=null; C.pan={id:e.pointerId, x:e.clientX, y:e.clientY, moved:true}; panBy(e.clientX-d.x0, e.clientY-d.y0); } return; } // a swipe that began on a vehicle moves the view
+    if(!d.moved && far){ d.moved=true; C.tweens=C.tweens.filter(t=>t.obj!==d.mesh); }
+    if(d.moved){ const r=C.renderer.domElement.getBoundingClientRect(); C.ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); C.ray.setFromCamera(C.ndc,C.cam); if(C.ray.ray.intersectPlane(C.dragPlane,C.tmp)) d.goal=C.tmp.clone(); C.api.touch(); kick(); }
+    return;
+  }
+  const pn=C.pan;
+  if(pn && e.pointerId===pn.id){
+    if(!pn.moved){ if(Math.hypot(e.clientX-pn.x,e.clientY-pn.y)<6) return; pn.moved=true; panBy(e.clientX-pn.x, e.clientY-pn.y); }
+    else panBy(e.clientX-px, e.clientY-py);
+  }
 }
 function onUp(e){
-  if(!C||!C.drag||e.pointerId!==C.drag.id) return; const d=C.drag; C.drag=null;
+  if(!C) return; C.ptrs.delete(e.pointerId);
+  if(C.pinch){ if(C.ptrs.size<2){ C.pinch=null; if(C.ptrs.size===1){ const [id,p]=[...C.ptrs.entries()][0]; C.pan={id, x:p.x, y:p.y, moved:true}; } } return; }
+  if(C.pan && e.pointerId===C.pan.id){ C.pan=null; return; }
+  const d=C.drag; if(!d || e.pointerId!==d.id) return; C.drag=null;
   if(!d.moved){ if(d.kind==='pallet') C.api.loadMsg('Zieh die Kiste {auf} {einen} {N}. Oder tippe auf {den} {N}.','hint'); else C.api.loadAct(d.carrier); kick(); return; }
   C.pending=d.mesh;
   if(d.kind==='unload'){ const r=C.renderer.domElement.getBoundingClientRect(); const b=padBase(); C.ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); C.ray.setFromCamera(C.ndc,C.cam); if(C.ray.ray.intersectPlane(C.dragPlane,C.tmp)&&Math.abs(C.tmp.x-b.x)<4&&Math.abs(C.tmp.z-b.z)<3.4) C.api.loadAct(d.carrier); }
   else { const h=pick(e,carrierHits()); if(h) C.api.loadAct(h.object.userData.carrier); }
   if(C.pending){ returnHome(C.pending); C.pending=null; }
   kick();
+}
+function onCancel(e){
+  if(!C) return; C.ptrs.delete(e.pointerId); if(C.ptrs.size<2) C.pinch=null; if(C.pan && C.pan.id===e.pointerId) C.pan=null;
+  if(C.drag && C.drag.id===e.pointerId){ if(C.drag.mesh) returnHome(C.drag.mesh); C.drag=null; }
 }
 
 /* ---------- animation loop ---------- */
@@ -523,7 +576,7 @@ function loop(now){
     C.byId.forEach(m=>{ if(!m.userData.squash) m.scale.setScalar(C.hl.includes(m.material)?CS*(1+.07*k):CS); }); busy=true; }
   if(C.water){ C.water.material.map.offset.x=(now/60000)%1; C.water.material.map.offset.y=(now/90000)%1; C.water.position.y=.05+Math.sin(now/900)*.03; busy=true; }
   if(C.scene){
-    const g=C.camGoal; if(!C.camCur) C.camCur={x:g.x,z:g.z,d:g.d}; const cc=C.camCur, f=1-Math.exp(-dt*3);
+    const a=C.camGoal, u=C.user, g={x:a.x+u.px, z:a.z+u.pz, d:a.d*u.zoom}; if(!C.camCur||C.snap){ C.camCur={x:g.x,z:g.z,d:g.d}; C.snap=false; } const cc=C.camCur, f=1-Math.exp(-dt*3);
     if(Math.abs(cc.x-g.x)+Math.abs(cc.z-g.z)+Math.abs(cc.d-g.d)>.01){ cc.x+=(g.x-cc.x)*f; cc.z+=(g.z-cc.z)*f; cc.d+=(g.d-cc.d)*f; busy=true; }
     C.cam.position.set(cc.x, .8+cc.d*.68, cc.z+cc.d*.73); C.cam.lookAt(cc.x,.8,cc.z);
     if(C.scene.fog){ C.scene.fog.near=cc.d*1.15; C.scene.fog.far=cc.d*2.8; }

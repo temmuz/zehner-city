@@ -766,10 +766,10 @@ function worldView(){
 function worldInset(){
   const host=$('#world3d'),rows=$('#m-rows'),bub=$('#m-bubble'); if(!host||!rows||!bub) return {l:0,t:0,r:0,b:0};
   const h=host.getBoundingClientRect(),r=rows.getBoundingClientRect(),u=bub.getBoundingClientRect();
-  const ins={l:0,t:0,r:0,b:Math.max(0,h.bottom-u.top+6)};
+  const bot=Math.max(0,h.bottom-u.top+6);
   const right=Math.max(0,...[...rows.querySelectorAll('.row')].map(x=>{ let m=0; [...x.children].forEach(c=>{ m=Math.max(m,c.getBoundingClientRect().right); }); return m; }))-h.left+10;
-  if(r.height>h.height*.28&&right<h.width*.5) ins.l=right; else ins.t=Math.max(0,r.bottom-h.top+6);
-  return ins;
+  // two candidates: scene right of the equation panel, or below it; the 3D view uses whichever shows it bigger
+  return {l:Math.round(right),t:0,r:0,b:Math.round(bot),alt:{l:0,t:Math.round(Math.max(0,r.bottom-h.top+6)),r:0,b:Math.round(bot)}};
 }
 const worldApi={loadAct:t=>loadAct(t),loadMsg:(m,c)=>loadMsg(m,c),sound:n=>Sound.play(n),touch:()=>{ lastInput=Date.now(); Sound.ensure(); },failed:()=>World.fail()};
 

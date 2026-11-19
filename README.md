@@ -23,6 +23,8 @@ Kurze Missionen in einer Spielstadt üben das Rechnen über die 10, so wie es in
 
 Hinweise führen Schritt für Schritt durch den Rechenweg. Es gibt keine Zeitlimits.
 
+Die 3D-Ansicht lässt sich mit zwei Fingern zoomen und mit einem Finger auf freier Fläche verschieben (am Computer: Mausrad und Ziehen). Die Knöpfe + und − zoomen ebenfalls, der dritte Knopf holt die Ansicht zurück. Bei jeder neuen Aufgabe stellt sich die Ansicht wieder von selbst ein.
+
 ## Für Eltern
 
 - Beim ersten Start fragt das Spiel nach dem Vornamen des Kindes. Der Name lässt sich im Eltern-Bereich (Schloss-Symbol oben rechts) ändern.
