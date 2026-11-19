@@ -15,7 +15,15 @@ Kurze Missionen in einer Spielstadt üben das Rechnen über die 10, so wie es in
 - **Analogieaufgaben:** 4 + 5 = 9, also 14 + 5 = 19
 - **Zahlenraum bis 100:** 30 + 40 = 70, 38 + 5 = 38 + 2 + 3 = 43
 
-Hinweise führen Schritt für Schritt durch den Rechenweg, mit Zwanzigerfeld und Zahlenstrahl. Es gibt keine Zeitlimits.
+## So wird gespielt
+
+1. **Kisten laden (Mission 1):** Das Kind lädt die Kisten selbst auf zwei Laster mit je 10 Plätzen (Zwanzigerfeld). Laster 1 muss erst voll sein, dann kommt der Rest auf Laster 2. So entdeckt es die Zerlegung selbst. Danach wird der Rechenweg aufgeschrieben: 8 + 5 = 8 + 2 + 3 = 13. Bei Minus wird abgeladen: erst Laster 2 leer machen.
+2. **Rechenweg selbst (Mission 2):** Der Rechenweg wird wie in der Schule eingetragen.
+3. **Profi (Mission 3):** Im Kopf rechnen, der Tipp zeigt den Rechenweg.
+
+Zusätzlich gibt es einen **Fahr-Modus** in 3D: Mit dem Auto fährt man durch eine Landschaft zu den richtigen Zahlen.
+
+Hinweise führen Schritt für Schritt durch den Rechenweg. Es gibt keine Zeitlimits.
 
 ## Für Eltern
 

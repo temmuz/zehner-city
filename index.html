@@ -31,7 +31,7 @@
   --coin:#f2b01e; --coin-edge:#a46c00;
   --dot-a:#df3f35; --dot-b:#2a66dc; --dot-x:#c3d3f2; --ones:#1f5fd0;
   --key-bg:#fbf8f1; --key-ink:#191d25; --key-shadow:#bdb6a6;
-  --sky-1:#86cdee; --sky-2:#e4f6fc;
+  --sky-1:#86cdee; --sky-2:#e4f6fc; --sky-top:#8ed5f3; --sky-bot:#ffe6c2; --skyline:#a8c5cb; --skyline-2:#c6dcdf; --skyline-win:#eef8fa; --tk-bed:#3a3f4b; --truck-2:#139b97;
   --d-herz:#d93a74; --d-bruecke:#dd5f12; --d-tunnel:#6648d8; --d-familie:#0c8a7b; --d-tower:#2465cf; --d-flug:#067c99; --d-hq:#2d313c; --d-garage:#ffc83d;
   --shadow:0 2px 0 rgba(25,35,45,.10),0 10px 26px rgba(25,35,45,.08);
   --font-display:"Oswald","Impact","Haettenschweiler","Arial Narrow Bold",sans-serif;
@@ -48,7 +48,7 @@
     --go:#22b36f; --go-deep:#0f6a41; --go-soft:#123826; --go-ink:#8eecbc; --on-go:#ffffff; --on-tile:#ffffff;
     --stop:#ff6d60; --stop-soft:#3c1b1b; --coin:#f5bd36; --coin-edge:#a87406;
     --dot-a:#ff5a4f; --dot-b:#5a8cff; --dot-x:#2b3858; --ones:#86b3ff;
-    --key-bg:#2a3142; --key-ink:#eef1f6; --key-shadow:#0b0d13; --sky-1:#18264a; --sky-2:#3b2c5e;
+    --key-bg:#2a3142; --key-ink:#eef1f6; --key-shadow:#0b0d13; --sky-1:#18264a; --sky-2:#3b2c5e; --sky-top:#121a38; --sky-bot:#45295a; --skyline:#1f2640; --skyline-2:#2a2f50; --skyline-win:#ffd04f; --tk-bed:#59617a; --truck-2:#1bb3ae;
     --d-herz:#e0457f; --d-bruecke:#e46a1c; --d-tunnel:#7357e6; --d-familie:#13998a; --d-tower:#2f72dd; --d-flug:#0a8bab; --d-hq:#262b38; --d-garage:#ffd04f;
     --shadow:0 2px 0 rgba(0,0,0,.35),0 10px 26px rgba(0,0,0,.3);
     color-scheme:dark;
@@ -63,7 +63,7 @@
   --go:#22b36f; --go-deep:#0f6a41; --go-soft:#123826; --go-ink:#8eecbc; --on-go:#ffffff; --on-tile:#ffffff;
   --stop:#ff6d60; --stop-soft:#3c1b1b; --coin:#f5bd36; --coin-edge:#a87406;
   --dot-a:#ff5a4f; --dot-b:#5a8cff; --dot-x:#2b3858; --ones:#86b3ff;
-  --key-bg:#2a3142; --key-ink:#eef1f6; --key-shadow:#0b0d13; --sky-1:#18264a; --sky-2:#3b2c5e;
+  --key-bg:#2a3142; --key-ink:#eef1f6; --key-shadow:#0b0d13; --sky-1:#18264a; --sky-2:#3b2c5e; --sky-top:#121a38; --sky-bot:#45295a; --skyline:#1f2640; --skyline-2:#2a2f50; --skyline-win:#ffd04f; --tk-bed:#59617a; --truck-2:#1bb3ae;
   --d-herz:#e0457f; --d-bruecke:#e46a1c; --d-tunnel:#7357e6; --d-familie:#13998a; --d-tower:#2f72dd; --d-flug:#0a8bab; --d-hq:#262b38; --d-garage:#ffd04f;
   --shadow:0 2px 0 rgba(0,0,0,.35),0 10px 26px rgba(0,0,0,.3);
   color-scheme:dark;
@@ -252,7 +252,7 @@ mark{background:var(--mark-bg);color:var(--ink);border-radius:6px;padding:0 .15e
 .bubble .msg{font-size:clamp(17px,1.9vw,20px);font-weight:600;line-height:1.35;min-width:0}
 .bubble .step{display:block;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:2px}
 .bubble .sub{display:block;margin-top:6px;font-weight:700}
-.bubble .oktag{display:inline-block;padding:0 8px;border-radius:8px;background:var(--go);color:var(--on-go);font-size:.85em;margin-right:4px}
+.oktag{display:inline-block;padding:0 8px;border-radius:8px;background:var(--go);color:var(--on-go);font-size:.85em;margin-right:6px}
 .bubble.hint{background:var(--marking-soft);border-color:var(--marking)}
 .bubble.good{background:var(--go-soft);border-color:var(--go)}
 .bubble.good .main{color:var(--go-ink);font-weight:800}
@@ -430,6 +430,159 @@ mark{background:var(--mark-bg);color:var(--ink);border-radius:6px;padding:0 .15e
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,160%);background:var(--asphalt);color:var(--on-asphalt);padding:12px 18px;border-radius:14px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.3);transition:transform .3s;z-index:50;max-width:calc(100% - 32px);text-align:center}
 .toast.on{transform:translate(-50%,0)}
 
+
+/* ---------- scenery, trucks, fox, effects ---------- */
+.scene{grid-area:road;position:relative;height:112px;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,var(--sky-top),var(--sky-bot))}
+.scene .skyline{position:absolute;left:0;right:0;bottom:30px;width:100%;height:82px}
+.sk{fill:var(--skyline)}.sk2{fill:var(--skyline-2)}.skw{fill:var(--skyline-win)}
+.scene .lm{position:absolute;bottom:30px;left:56%;width:118px;height:auto;color:var(--tc)}
+.lm .lm-a{fill:currentColor}.lm .lm-b{fill:currentColor;opacity:.62}.lm .lm-w{fill:var(--lm-w,#fff)}.lm .lm-d{fill:rgba(0,0,0,.42)}
+.lm .lm-s{fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.lm .lm-t{font:700 12px var(--font-display);fill:var(--lm-w,#fff)}
+.street{position:absolute;left:0;right:0;bottom:0;height:32px;background:var(--asphalt)}
+.street::before{content:"";position:absolute;left:0;right:0;top:14px;height:4px;background:repeating-linear-gradient(90deg,var(--marking) 0 22px,transparent 22px 40px);opacity:.8}
+.scene .road-cp{position:absolute;top:auto;bottom:5px;width:24px;height:24px;margin:0 0 0 -12px;border:0;background:none;border-radius:0}
+.scene .road-cp svg{width:100%;height:100%;display:block;animation:spin 2.4s ease-in-out infinite}
+.scene .road-cp.done{opacity:0}
+.scene .road-cp.got{animation:collect .7s ease-out forwards}
+.scene .road-cp.got svg{animation:none}
+.scene .road-flag{top:auto;bottom:12px;transform:translateX(-50%)}
+.scene .road-veh{bottom:6px}
+.scene .road-veh.air{bottom:42px}
+.scene.air .road-cp{bottom:52px}
+.convoy{width:100%;max-width:470px;display:grid;gap:0}
+.truck{width:100%;height:auto;display:block;overflow:visible}
+.tk-bed{fill:var(--tk-bed)}
+.tk-slot{fill:var(--surface-2);stroke:var(--line);stroke-width:2;stroke-dasharray:5 4}
+.tk-slot.gap{stroke:var(--marking-deep);stroke-width:3;fill:var(--marking-soft);stroke-dasharray:7 5;transform-box:fill-box;transform-origin:center;animation:pulse 1.3s ease-in-out infinite}
+.tk-cab{stroke:rgba(0,0,0,.35);stroke-width:2}.tk-cab1{fill:#c46a3f}.tk-cab2{fill:#3f8984}
+.tk-glass{fill:#bfe6f5}.tk-num{fill:#fff}.tk-numt{font:800 11px var(--font-body);fill:#1c1f26}.tk-light{fill:#ffe27a}
+.tk-tire{fill:#1c1f26}.tk-rim{fill:#c3cad3}
+.tk-badge{animation:pop .4s both}.tk-badge rect{fill:var(--go)}.tk-badge text{font:800 13px var(--font-body);fill:#fff}
+.crate{transform-box:fill-box;transform-origin:center bottom}
+.crate rect{stroke:rgba(0,0,0,.32);stroke-width:2}
+.crate.ca rect{fill:var(--dot-a)}.crate.cb rect{fill:var(--dot-b)}
+.crate .plank{stroke:rgba(0,0,0,.22);stroke-width:2.5;fill:none}
+.crate .xmark{stroke:var(--stop);stroke-width:4;stroke-linecap:round}
+.crate.anim{animation:drop .45s cubic-bezier(.3,1.4,.5,1) both}
+.crate.hl rect{stroke:var(--marking);stroke-width:5}
+.crate.hl{animation:wiggle 1.2s ease-in-out infinite}
+.crate.anim.hl{animation:drop .45s cubic-bezier(.3,1.4,.5,1) both,wiggle 1.2s .6s ease-in-out infinite}
+.crate.keep rect{stroke:var(--go);stroke-width:4}
+.crate.gone{opacity:.25}
+.crate.gone.hl{opacity:.7}
+.crate.gone.anim{animation:unload .5s ease-in both}
+.row.step .eq{--eqs:clamp(40px,6vw,72px)}
+.row.long .eq{--eqs:clamp(28px,3.9vw,46px)}
+.row.goal .rlabel,.row.final .rlabel{flex:none}
+.row.goal .eq{--eqs:clamp(22px,2.6vw,30px);background:var(--asphalt);color:var(--on-asphalt);padding:6px 14px;border-radius:12px}
+.row.goal .op{color:var(--on-asphalt-soft)}
+.row.goal .blank{border:0;background:var(--asphalt-2);color:var(--on-asphalt);height:1.2em;border-radius:8px}
+.row.goal .blank.ok{background:var(--go);color:var(--on-go)}
+.row.final .eq{--eqs:clamp(26px,3.4vw,40px);background:var(--go-soft);color:var(--go-ink);padding:6px 16px;border-radius:12px}
+.row.final .op{color:var(--go-ink)}
+.dots{display:flex;gap:6px;margin-bottom:6px}
+.dots i{width:11px;height:11px;border-radius:50%;background:var(--line)}
+.dots i.done{background:var(--go)}.dots i.cur{background:var(--marking-deep);box-shadow:0 0 0 3px var(--marking-ring)}
+.fox{width:100%;height:100%;display:block}
+.fx-o{fill:#f0892a}.fx-in{fill:#c25e14}.fx-w{fill:#fff6ea}.fx-k{fill:#1c1f26}.fx-wd{fill:#fff}
+.fx-m{fill:none;stroke:#1c1f26;stroke-width:2.4;stroke-linecap:round}
+.fx-hs{fill:none;stroke:#2b2f3a;stroke-width:3.5;stroke-linecap:round}.fx-hp{fill:#2b2f3a}
+.bubble .ava{width:54px;height:54px;padding:3px;border-radius:16px}
+.bubble .ava.happy .fox{animation:hop .5s}
+.radio-ava{padding:4px}
+.taskcard{position:relative}
+.stamp{position:absolute;left:50%;top:42%;font-family:var(--font-display);font-size:clamp(46px,7vw,86px);text-transform:uppercase;color:var(--sunset);-webkit-text-stroke:4px var(--surface);paint-order:stroke fill;text-shadow:0 6px 0 rgba(0,0,0,.18);pointer-events:none;opacity:0;white-space:nowrap;z-index:5}
+.stamp.on{animation:stamp 1.3s ease-out both}
+.fx-layer{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.spark{position:absolute;width:11px;height:11px;border-radius:3px;animation:burst .8s ease-out forwards}
+.flycoin{position:absolute;width:30px;height:30px;transition:transform .7s cubic-bezier(.5,-.3,.6,1)}
+.flycoin svg{width:100%;height:100%}
+.streak{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:99px;background:var(--sunset);color:#fff;font-weight:800;font-size:15px;white-space:nowrap}
+.streak svg{width:18px;height:18px;fill:#ffe27a}
+.streak.pop{animation:bump .5s}
+.intro{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(10,12,18,.5);animation:fadeout .4s 1.9s forwards;cursor:pointer}
+.intro-band{width:100%;padding:24px 16px;background:linear-gradient(115deg,var(--tc),var(--sunset));color:#fff;text-align:center;transform:skewY(-4deg);box-shadow:0 10px 0 rgba(0,0,0,.25);animation:slam .5s cubic-bezier(.2,1.3,.4,1) both}
+.intro-band h1{font-family:var(--font-display);font-weight:700;font-size:clamp(40px,8vw,92px);line-height:.95;text-transform:uppercase;text-shadow:0 4px 0 rgba(0,0,0,.25)}
+.intro-band .eyebrow{color:#fff;opacity:.92}
+.tile .tile-art{position:absolute;right:6px;bottom:30px;width:56%;max-width:150px;height:auto;color:rgba(255,255,255,.3);--lm-w:var(--tc);pointer-events:none}
+.tile>*:not(.tile-art){position:relative}
+.welcome-fox{width:112px;height:112px;margin:0 auto;background:var(--asphalt);border-radius:30px;padding:8px}
+.mbtns{display:grid;gap:8px}
+.btn-drive{background:var(--asphalt);color:var(--on-asphalt);box-shadow:0 4px 0 #000}
+.btn-drive:active{box-shadow:0 1px 0 #000}
+.radio-btns{display:flex;flex-direction:column;gap:10px}
+@media (max-width:640px){.radio-btns{grid-column:1/-1;flex-direction:row}.radio-btns .btn{flex:1}}
+
+/* ---------- 3D drive mode ---------- */
+#screen-drive{padding:0;overflow:hidden;position:relative}
+.drive{position:absolute;inset:0;background:linear-gradient(180deg,var(--sky-top),var(--sky-bot));-webkit-user-select:none;user-select:none}
+.drive-canvas{position:absolute;inset:0;touch-action:none}
+.drive-canvas canvas{display:block;width:100%;height:100%;touch-action:none}
+.dpanel{background:var(--surface);color:var(--ink);border-radius:18px;box-shadow:0 4px 0 rgba(0,0,0,.12),0 10px 24px rgba(0,0,0,.18)}
+.dtop{position:absolute;top:12px;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:flex-start;pointer-events:none}
+.dtop>*{pointer-events:auto}
+.dtop .dbtn{width:48px;height:48px;background:var(--surface);color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.dtop .dbtn.armed{width:auto;padding:0 12px;background:var(--marking);color:var(--marking-ink);font-weight:700}
+.dtask{flex:1;min-width:0;padding:10px 16px;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none!important;max-width:620px;margin:0 auto}
+.dtask .rows{align-items:center}
+.dtask .row{justify-content:center}
+.dtask .eq{--eqs:clamp(30px,4.6vw,52px)}
+.dtask .row.step .eq{--eqs:clamp(34px,5vw,58px)}
+.dtask .row.goal .eq{--eqs:clamp(18px,2.2vw,24px)}
+.dtask .row.final .eq{--eqs:clamp(22px,3vw,32px)}
+.dtask .rlabel{display:none}
+.dside{display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none!important}
+.dcount{padding:8px 12px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dbottom{position:absolute;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:flex-end;pointer-events:none}
+.dbubble{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;padding:8px 14px 8px 8px;max-width:560px;pointer-events:none}
+.dbubble .ava{width:50px;height:50px;border-radius:14px;background:var(--asphalt);padding:3px}
+.dbubble .msg{font-size:clamp(16px,1.8vw,19px);font-weight:700;line-height:1.3}
+.dbubble .sub{display:block;font-weight:700;color:var(--ink-soft);margin-top:2px}
+.dbubble.hint{background:var(--marking-soft)}.dbubble.good{background:var(--go-soft)}.dbubble.reveal{background:var(--stop-soft)}
+.dtools{margin-left:auto;display:flex;gap:8px;pointer-events:auto}
+.dvisual{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);width:min(440px,calc(100% - 32px));padding:10px;pointer-events:none}
+.dhelp{position:absolute;left:50%;top:58%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;background:rgba(10,12,18,.72);color:#fff;font-weight:700;font-size:16px;pointer-events:none;text-align:center;max-width:calc(100% - 32px);animation:pulse 1.6s ease-in-out infinite}
+.dhelp .ic{width:18px;height:18px}
+.dloading{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;font-weight:800;font-size:18px;color:var(--ink);background:var(--bg)}
+.dloading .fox{width:96px;height:96px;animation:hop 1s ease-in-out infinite}
+.darrows{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.darrow{position:absolute;left:0;top:0;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:#33465f;color:#fff;font-weight:800;font-size:18px;display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.3)}
+.darrow::after{content:"";position:absolute;right:-13px;top:50%;margin-top:-9px;border:9px solid transparent;border-left:13px solid #33465f;border-right:0}
+.drive .stamp{top:38%}
+@media (max-width:640px){.dtask{padding:8px 10px}.dtop .dside .streak{display:none}.dbubble .ava{width:42px;height:42px}}
+
+
+/* ---------- hands-on crate loading ---------- */
+.loadscene{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;width:100%}
+@media (max-width:760px){.loadscene{grid-template-columns:minmax(0,1fr)}}
+.trucks{display:grid;gap:4px;min-width:0;justify-items:center}
+.truckbtn{display:block;width:100%;max-width:470px;border:0;background:none;padding:4px 6px;border-radius:14px;cursor:pointer;touch-action:manipulation;color:inherit}
+.truckbtn:hover{background:var(--surface-2)}
+.loadscene.sub .truckbtn{touch-action:none}
+.truckbtn.pulse{animation:nudge .8s ease-in-out 3;background:var(--marking-soft)}
+.dock{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:14px;background:var(--surface-2);border:2px dashed var(--line);justify-self:center}
+.dock-label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.pallet{--cr:clamp(30px,3.6vw,40px);display:grid;grid-template-columns:repeat(5,var(--cr));gap:6px;padding:8px;border-radius:8px;background:#9b7b55;min-height:calc(var(--cr) + 16px);min-width:calc(var(--cr) * 5 + 40px)}
+.dcrate,.dspot{width:var(--cr);height:var(--cr);border-radius:5px;display:block}
+.dcrate{background:linear-gradient(transparent 30%,rgba(0,0,0,.18) 30%,rgba(0,0,0,.18) 36%,transparent 36%,transparent 64%,rgba(0,0,0,.18) 64%,rgba(0,0,0,.18) 70%,transparent 70%) var(--dot-b);border:2px solid rgba(0,0,0,.3)}
+.dcrate[data-drag]{cursor:grab;touch-action:none}
+.dspot{border:2px dashed rgba(255,255,255,.65)}
+.dcrate.ghost{position:fixed;left:0;top:0;width:40px;height:40px;z-index:70;box-shadow:0 8px 18px rgba(0,0,0,.3);pointer-events:none}
+.padcol.locked .pad{opacity:.35;pointer-events:none;filter:grayscale(.6)}
+.lockhint{display:none;margin:0;text-align:center;font-weight:700;color:var(--ink-soft)}
+.padcol.locked .lockhint{display:block}
+@keyframes nudge{0%,100%{transform:none}50%{transform:translateY(-4px)}}
+@keyframes drop{from{transform:translateY(-38px);opacity:0}to{transform:none;opacity:1}}
+@keyframes unload{from{opacity:1;transform:none}to{opacity:.25;transform:translateY(-8px)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+@keyframes spin{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.25)}}
+@keyframes collect{0%{opacity:1;transform:none}100%{transform:translateY(-44px) scale(1.5);opacity:0}}
+@keyframes stamp{0%{transform:translate(-50%,-50%) scale(2.2) rotate(-8deg);opacity:0}18%{transform:translate(-50%,-50%) scale(1) rotate(-8deg);opacity:1}78%{opacity:1}100%{transform:translate(-50%,-62%) scale(1) rotate(-8deg);opacity:0}}
+@keyframes burst{to{transform:translate(var(--dx),var(--dy)) rotate(200deg) scale(.4);opacity:0}}
+@keyframes slam{from{transform:skewY(-4deg) translateX(-110%)}to{transform:skewY(-4deg)}}
+@keyframes fadeout{to{opacity:0;visibility:hidden}}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(.84)}}
 @keyframes blink{50%{opacity:0}}
@@ -460,6 +613,7 @@ mark{background:var(--mark-bg);color:var(--ink);border-radius:6px;padding:0 .15e
   <main class="screen" id="screen-city"></main>
   <main class="screen" id="screen-district" hidden></main>
   <main class="screen" id="screen-mission" hidden></main>
+  <main class="screen" id="screen-drive" hidden></main>
   <main class="screen" id="screen-result" hidden></main>
   <main class="screen" id="screen-garage" hidden></main>
   <main class="screen" id="screen-gate" hidden></main>
@@ -494,6 +648,7 @@ const ICONS={
   check:'<path d="M10 25l9 9 19-20"/>',
   del:'<path d="M18 12h20a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H18L6 24z"/><path d="M23 19l10 10M33 19L23 29"/>',
   play:'<path d="M17 11l20 13-20 13z"/>',
+  car:'<path d="M9 29l4-10c1-3 3-4 6-4h10c3 0 5 1 6 4l4 10"/><rect x="5" y="28" width="38" height="10" rx="3"/><circle cx="14" cy="40" r="3"/><circle cx="34" cy="40" r="3"/>',
   parent:'<circle cx="17" cy="15" r="6"/><path d="M5 40c1-8 5.5-12 12-12s11 4 12 12"/><circle cx="34" cy="21" r="4.5"/><path d="M28 40c.5-6 3-9 6-9s6 3 7 9"/>'
 };
 const icon=(n,cls='')=>`<svg viewBox="0 0 48 48" class="ic ${cls}" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
@@ -601,15 +756,15 @@ const PNT=Object.fromEntries(PAINTS.map(p=>[p.id,p]));
 /* ================= districts ================= */
 const DISTRICTS=[
   {id:'herz',name:'Herzhafen',skill:'Verliebte Zahlen',missions:[
-    {title:'Das Zehnerfeld',desc:'Wie viele Plätze sind bis 10 noch frei?',gen:'pairFrame'},
+    {title:'Laster voll machen',desc:'Lade Kisten auf, bis 10 auf dem Laster sind.',gen:'pairFrame'},
     {title:'Verliebte Zahlen',desc:'Finde den Partner. Zusammen sind sie immer 10.',gen:'pairLove'},
     {title:'Herz-Mix',desc:'Plus und Minus mit der 10.',gen:'pairMix'}]},
   {id:'bruecke',name:'Zehnerbrücke',skill:'Plus über die 10',missions:[
-    {title:'Mit Rechenweg',desc:'Schritt für Schritt: erst bis zur 10, dann weiter.',gen:'addGuided'},
+    {title:'Kisten laden',desc:'Erst Laster 1 bis 10 voll machen, der Rest kommt auf Laster 2.',gen:'addGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 8 + 2 + 7 = 17.',gen:'addPath'},
     {title:'Profi-Fahrt',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'addPro'}]},
   {id:'tunnel',name:'Zehnertunnel',skill:'Minus über die 10',missions:[
-    {title:'Mit Rechenweg',desc:'Schritt für Schritt: erst zurück bis zur 10, dann weiter.',gen:'subGuided'},
+    {title:'Kisten abladen',desc:'Erst Laster 2 leer machen, dann von Laster 1 abladen.',gen:'subGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 13 − 3 − 5 = 5.',gen:'subPath'},
     {title:'Profi-Fahrt',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'subPro'}]},
   {id:'familie',name:'Familienplatz',skill:'Aufgabenfamilien',missions:[
@@ -694,6 +849,8 @@ const Sound={ctx:null,
     case 'wrong': this.tone(260,0,.16,'sine',.1); this.tone(220,.12,.2,'sine',.08); break;
     case 'coin': [1318,1760].forEach((f,i)=>this.tone(f,i*.07,.12,'square',.04)); break;
     case 'win': [523,659,784,1047,1318].forEach((f,i)=>this.tone(f,i*.11,.24,'triangle',.12)); break;
+    case 'honk': this.tone(440,0,.09,'square',.05); this.tone(440,.13,.12,'square',.05); break;
+    case 'start': [392,523,659,784].forEach((f,i)=>this.tone(f,i*.07,.14,'triangle',.1)); break;
     case 'buy': [392,523,659,784,1047].forEach((f,i)=>this.tone(f,i*.06,.16,'square',.045)); break;
   } }catch(e){} }
 };
@@ -707,68 +864,76 @@ function task(rows,blanks,visual,extra){
   return Object.assign({rows,visual:visual||null,blanks:blanks.map(b=>Object.assign({val:null,wrong:0,h:0,revealed:false,hints:[]},b))},extra||{});
 }
 
-/* Bridging through a ten — the school's method: "erst bis zur 10, dann weiter".
+/* Bridging through a ten - the school's method: "erst bis zur 10, dann weiter".
    a + b: split b into r (to reach the ten T) and s (the rest): a + r + s.
-   a − b: split b into r (back down to T) and s (the rest): a − r − s.          */
+   a - b: split b into r (back down to T) and s (the rest): a - r - s.          */
 function buildBridge(p,op,mode){
   const a=p.a,b=p.b,add=op==='+';
   const T=add?Math.floor(a/10)*10+10:Math.floor(a/10)*10;
   const r=add?T-a:a-T, s=b-r, res=add?a+b:a-b;
   const small=T===10&&Math.max(a,res)<=20;
   const visual=small?{type:'frame20',a,b,op}:{type:'line',a,b,op,T};
-  const zur=`zur ${T}`;
+  const look=small?'Schau auf die Laster.':'Schau auf den Zahlenstrahl.';
+  const h0=add?[T===10?`Wer ist in die ${a} verliebt?`:`Einer: ${a%10} + □ = 10`,small?'Zähle die freien Plätze.':look]
+              :[`${a} = ${T} + ${r}`,small?'Zähle die Kisten auf Laster 2.':look];
+  const h1=[`${b} ${MI} ${r} = □`,small?(add?'Zähle die Kisten auf Laster 2.':'Zähle die wackelnden Kisten.'):look];
+  const h2=add?[`${T} und noch ${s}.`,small?'Laster 1 hat 10. Dazu Laster 2.':look]
+              :[T===10?`Wer ist in die ${s} verliebt?`:`10 ${MI} ${s} = ${10-s}`,small?'Zähle die Kisten, die bleiben.':look];
   if(mode==='pro'){
     visual.show='hint'; visual.byHint=true;
     return task([
-      {label:'Aufgabe',tokens:[{n:a},op,{n:b},'=',{b:0}]},
+      {big:1,tokens:[{n:a},op,{n:b},'=',{b:0}]},
       {label:'Rechenweg',minHint:1,tokens:[{n:a},op,{n:r,hint:1},op,{n:s,hint:2},'=',{n:res,hint:9}]}
-    ],[
-      {ans:res,prompt:add?`Rechne geschickt: erst bis ${zur}, dann weiter!`:`Rechne geschickt: erst zurück bis ${zur}, dann weiter!`,
-       hints:[add?`Erst bis ${zur}: ${a} + ${r} = ${T}.`:`Erst zurück bis ${zur}: ${a} ${MI} ${r} = ${T}.`,
-              `Die ${b} zerlegst du in ${r} und ${s}. Jetzt noch: ${T} ${op} ${s} = □`]}
+    ],[{ans:res,prompt:add?`Über die ${T}!`:`Zurück über die ${T}!`,
+        hints:[add?`Erst bis ${T}: ${a} + ${r} = ${T}`:`Erst bis ${T}: ${a} ${MI} ${r} = ${T}`,`Dann noch ${s}: ${T} ${op} ${s} = □`]}],visual,{kind:'bridge'});
+  }
+  if(mode==='path'){
+    visual.show='hint';
+    return task([{long:1,tokens:[{n:a},op,{n:b},'=',{n:a},op,{b:0},op,{b:1},'=',{b:2}]}],[
+      {ans:r,vis:0,prompt:add?`Erst bis zur ${T}.`:`Erst zurück bis zur ${T}.`,hints:h0},
+      {ans:s,vis:1,prompt:`Jetzt der Rest von der ${b}.`,hints:h1},
+      {ans:res,vis:2,prompt:'Und das Ergebnis?',hints:h2}
     ],visual,{kind:'bridge'});
   }
-  const g=mode==='guided';
-  visual.show=g?'always':'hint';
-  const b0=add
-    ?{ans:r,vis:0,prompt:g?`Erst bis ${zur}: ${a} + □ = ${T}`:`Wie viel fehlt von ${a} bis ${zur}?`,
-      hints:[T===10?`Welche Zahl ist in die ${a} verliebt? ${a} + □ = 10`:`Schau nur auf die Einer: ${a%10} + □ = 10.`,
-             small?'Zähle die gelb umrandeten freien Plätze in der ersten Reihe.':`Zähle auf dem Zahlenstrahl von ${a} bis ${T}.`]}
-    :{ans:r,vis:0,prompt:g?`Erst zurück bis ${zur}: ${a} ${MI} □ = ${T}`:`Wie viel ziehst du ab, um von ${a} genau bei ${T} zu landen?`,
-      hints:[`${a} ist ${T} und ${r}. Nimm erst die ${r} weg.`,
-             small?'Zähle die markierten Punkte in der zweiten Reihe.':`Zähle auf dem Zahlenstrahl von ${a} zurück bis ${T}.`]};
-  const b1={ans:s,vis:1,prompt:g?`Zerlege die ${b}: ${b} = ${r} + □`:`Wie viel bleibt von der ${b} noch übrig?`,
-    hints:[`Von der ${b} hast du schon ${r} ${add?'benutzt':'abgezogen'}. ${b} ${MI} ${r} = □`,
-           small?(add?'Zähle die markierten blauen Punkte in der zweiten Reihe.':'Zähle die markierten Punkte in der ersten Reihe.'):`${r} und □ sind zusammen ${b}.`]};
-  const b2={ans:res,vis:2,prompt:`${a} ${op} ${r} = ${T}. Jetzt weiter: ${T} ${op} ${s} = □`,
-    hints:add
-      ?[`Zum Zehner ${T} kommen noch ${s} Einer dazu.`,small?`Oben ist die Reihe voll, das sind 10. Unten liegen noch ${s} Punkte.`:`Gehe von ${T} aus ${s} Schritte weiter.`]
-      :[T===10?`Welche Zahl ist in die ${s} verliebt? 10 ${MI} ${s} = □`:`Denk an 10 ${MI} ${s} = ${10-s}. Also ist ${T} ${MI} ${s} = □`,
-        small?'Zähle die grün umrandeten Punkte, die übrig bleiben.':`Gehe von ${T} aus ${s} Schritte zurück.`]};
+  const ld=mode==='load';
+  visual.show='always'; if(ld){ visual.noanim=1; visual.loaded=1; }
   return task([
-    {label:'Aufgabe',tokens:[{n:a},op,{n:b},'=',{b:3}]},
-    {label:'Rechenweg',tokens:[{n:a},op,{b:0},op,{b:1},'=',{b:2}]}
-  ],[b0,b1,b2,{ans:res,auto:true}],visual,{kind:'bridge'});
+    {goal:1,label:'Auftrag',tokens:[{n:a},op,{n:b},'=',{b:3}]},
+    {step:0,tokens:[{n:a},op,{b:0},'=',{n:T}]},
+    {step:1,tokens:[{n:b},'=',{n:r},'+',{b:1}]},
+    {step:2,tokens:[{n:T},op,{n:s},'=',{b:2}]},
+    {final:1,tokens:[{n:a},op,{n:r},op,{n:s},'=',{n:res}]}
+  ],[
+    {ans:r,vis:0,prompt:ld?(add?'Wie viele passten noch auf Laster 1?':'Wie viele hast du von Laster 2 abgeladen?'):(add?`Bis zur ${T}!`:`Zurück bis zur ${T}!`),hints:h0},
+    {ans:s,vis:1,prompt:ld?(add?'Wie viele kamen auf Laster 2?':'Wie viele dann von Laster 1?'):`Zerlege die ${b}.`,hints:h1},
+    {ans:res,vis:2,prompt:ld?(add?'Wie viele Kisten sind es zusammen?':'Wie viele Kisten sind noch da?'):'Jetzt weiter!',hints:h2},
+    {ans:res,auto:true}
+  ],visual,ld?{kind:'bridge',load:{mode:add?'add':'sub',a,b}}:{kind:'bridge'});
 }
 
 function buildPair(p,style){
   const n=p.n,k=10-n; let rows,blank,visual;
   const v10={type:'frame10',n,op:'+'};
+  if(style==='load'){
+    rows=[{big:1,tokens:[{n},'+',{b:0},'=',{n:10}]}];
+    blank={ans:k,prompt:'Wie viele Kisten hast du aufgeladen?',hints:['Zähle die blauen Kisten.',`${n} + □ = 10`]};
+    return task(rows,[blank],{type:'frame10',n,op:'+',show:'always',fixed:1,noanim:1,loaded:1},{kind:'pair',load:{mode:'fill',n}});
+  }
   if(style==='frame'){
-    rows=[{tokens:[{n},'+',{b:0},'=',{n:10}]}];
-    blank={ans:k,prompt:`Im Zehnerfeld sind ${n} Punkte. Wie viele fehlen bis 10?`,hints:['Zähle die gelb umrandeten freien Plätze.',`${n} und □ sind verliebte Zahlen. Zusammen sind sie 10.`]};
+    rows=[{big:1,tokens:[{n},'+',{b:0},'=',{n:10}]}];
+    blank={ans:k,prompt:'Wie viele Kisten passen noch drauf?',hints:['Zähle die freien Plätze.',`${n} + □ = 10`]};
     visual=Object.assign({},v10,{show:'always'});
   } else if(style==='love'){
-    rows=[{tokens:[{n,heart:1},'+',{b:0},'=',{n:10}]}];
-    blank={ans:k,prompt:`Welche Zahl ist in die ${n} verliebt?`,hints:[`Verliebte Zahlen sind zusammen 10. ${n} + □ = 10`,'Schau ins Zehnerfeld und zähle die freien Plätze.']};
+    rows=[{big:1,tokens:[{n,heart:1},'+',{b:0},'=',{n:10}]}];
+    blank={ans:k,prompt:`Wer ist in die ${n} verliebt?`,hints:['Zusammen sind sie 10.','Zähle die freien Plätze.']};
     visual=Object.assign({},v10,{show:'hint'});
   } else {
     const f=p.f;
-    if(f===0){ rows=[{tokens:[{n},'+',{b:0},'=',{n:10}]}]; blank={ans:k,prompt:`Ergänze bis 10: ${n} + □ = 10`}; visual=Object.assign({},v10,{show:'hint'}); }
-    else if(f===1){ rows=[{tokens:[{b:0},'+',{n},'=',{n:10}]}]; blank={ans:k,prompt:`Welche Zahl fehlt vorne? □ + ${n} = 10`}; visual=Object.assign({},v10,{show:'hint'}); }
-    else if(f===2){ rows=[{tokens:[{n:10},MI,{n},'=',{b:0}]}]; blank={ans:k,prompt:`Von 10 nimmst du ${n} weg. Wie viele bleiben?`}; visual={type:'frame10',n,op:MI,show:'hint'}; }
-    else { rows=[{tokens:[{n:10},MI,{b:0},'=',{n}]}]; blank={ans:k,prompt:`Wie viele nimmst du von 10 weg, damit ${n} übrig bleiben?`}; visual={type:'frame10',n:k,op:MI,show:'hint'}; }
-    blank.hints=[`Denk an die verliebten Zahlen: Welche Zahl gehört zur ${n}?`,'Schau ins Zehnerfeld.'];
+    if(f===0){ rows=[{big:1,tokens:[{n},'+',{b:0},'=',{n:10}]}]; blank={ans:k,prompt:'Ergänze bis 10.'}; visual=Object.assign({},v10,{show:'hint'}); }
+    else if(f===1){ rows=[{big:1,tokens:[{b:0},'+',{n},'=',{n:10}]}]; blank={ans:k,prompt:'Welche Zahl fehlt?'}; visual=Object.assign({},v10,{show:'hint'}); }
+    else if(f===2){ rows=[{big:1,tokens:[{n:10},MI,{n},'=',{b:0}]}]; blank={ans:k,prompt:`Lade ${n} Kisten ab.`}; visual={type:'frame10',n,op:MI,show:'hint'}; }
+    else { rows=[{big:1,tokens:[{n:10},MI,{b:0},'=',{n}]}]; blank={ans:k,prompt:`Wie viele abladen, damit ${n} bleiben?`}; visual={type:'frame10',n:k,op:MI,show:'hint'}; }
+    blank.hints=[`Wer ist in die ${n} verliebt?`,'Schau auf den Laster.'];
   }
   return task(rows,[blank],visual,{kind:'pair'});
 }
@@ -776,7 +941,7 @@ function buildPair(p,style){
 function buildFam(p,mode){
   const a=p.a,b=p.b,c=a+b,H={type:'house',a,b,c};
   if(mode==='basic'){
-    const sumHints=c>10?[`Erst bis zur 10: ${a} + ${10-a} = 10.`,`Dann noch der Rest: 10 + ${b-(10-a)} = □`]:[`Zähle von ${a} aus ${b} weiter.`,`Stell dir ${a} rote und ${b} blaue Punkte vor.`];
+    const sumHints=c>10?[`Erst bis 10: ${a} + ${10-a} = 10`,`Dann noch ${b-(10-a)}: 10 + ${b-(10-a)} = □`]:[`Zähle von ${a} aus ${b} weiter.`,'Schau auf den Laster.'];
     const fv=c>10?{type:'frame20',a,b,op:'+',show:'hint',byHint:true}:{type:'frame20',a,b,op:'+',show:'hint',fixed:2};
     return task([
       {label:'Aufgabe',tokens:[{n:a},'+',{n:b},'=',{b:0}]},
@@ -784,10 +949,10 @@ function buildFam(p,mode){
       {label:'Umkehraufgabe',tokens:[{n:c},MI,{n:b},'=',{b:2}]},
       {label:'Umkehraufgabe',tokens:[{n:c},MI,{n:a},'=',{b:3}]}
     ],[
-      {ans:c,vis:0,prompt:`Rechne zuerst: ${a} + ${b} = □`,hints:sumHints,visual:fv},
-      {ans:c,vis:1,prompt:'Tauschaufgabe: Die beiden Zahlen tauschen den Platz.',hints:['Beim Tauschen bleibt das Ergebnis gleich!',`Schau in die erste Zeile: ${a} + ${b} = ${c}.`]},
-      {ans:a,vis:1,prompt:`Umkehraufgabe: Jetzt rechnest du rückwärts. ${c} ${MI} ${b} = □`,hints:[`Im Zahlenhaus wohnen ${c}, ${a} und ${b}. Nimm von ${c} die ${b} weg.`,'Welche Zahl aus dem Zahlenhaus bleibt übrig?']},
-      {ans:b,vis:1,prompt:`Noch eine Umkehraufgabe: ${c} ${MI} ${a} = □`,hints:[`Nimm von ${c} die ${a} weg.`,'Welche Zahl aus dem Zahlenhaus bleibt übrig?']}
+      {ans:c,vis:0,prompt:`Rechne: ${a} + ${b}`,hints:sumHints,visual:fv},
+      {ans:c,vis:1,prompt:'Tauschaufgabe!',hints:['Tauschen ändert das Ergebnis nicht.',`Schau oben: ${a} + ${b} = ${c}`]},
+      {ans:a,vis:1,prompt:'Umkehraufgabe!',hints:[`Nimm von ${c} die ${b} weg.`,'Welche Zahl im Haus bleibt übrig?']},
+      {ans:b,vis:1,prompt:'Noch eine Umkehraufgabe!',hints:[`Nimm von ${c} die ${a} weg.`,'Welche Zahl im Haus bleibt übrig?']}
     ],Object.assign({},H,{show:'always'}),{kind:'fam',side:true});
   }
   return task([
@@ -796,24 +961,22 @@ function buildFam(p,mode){
     {label:'Umkehraufgabe',tokens:[{n:c},MI,{n:b},'=',{b:1}]},
     {label:'Umkehraufgabe',tokens:[{n:c},MI,{b:2},'=',{n:a}]}
   ],[
-    {ans:c,prompt:'Finde das Ergebnis der Tauschaufgabe.',hints:['Beim Tauschen bleibt das Ergebnis gleich!',`Schau auf die bekannte Aufgabe: ${a} + ${b} = ${c}.`]},
-    {ans:a,prompt:`Umkehraufgabe: ${c} ${MI} ${b} = □`,hints:[`Die Familie heißt ${a}, ${b} und ${c}.`,'Welche Zahl aus dem Zahlenhaus bleibt übrig?']},
-    {ans:b,prompt:`Welche Zahl fehlt? ${c} ${MI} □ = ${a}`,hints:[`Was musst du von ${c} wegnehmen, damit ${a} übrig bleibt?`,'Schau ins Zahlenhaus.']}
+    {ans:c,prompt:'Tauschaufgabe!',hints:['Tauschen ändert das Ergebnis nicht.',`Schau oben: ${a} + ${b} = ${c}`]},
+    {ans:a,prompt:'Umkehraufgabe!',hints:[`Die Familie: ${a}, ${b} und ${c}.`,'Welche Zahl im Haus bleibt übrig?']},
+    {ans:b,prompt:'Welche Zahl fehlt?',hints:[`Was nimmst du von ${c} weg, damit ${a} bleibt?`,'Schau ins Zahlenhaus.']}
   ],Object.assign({},H,{show:'hint',fixed:1}),{kind:'fam',side:true});
 }
 
-/* Analogy tasks: 4 + 5 = 9 → 14 + 5 = 19 (the lift goes up whole tens, the ones stay the same) */
+/* Analogy tasks: 4 + 5 = 9 -> 14 + 5 = 19 (the lift goes up whole tens, the ones stay the same) */
 function buildAna(p){
   const a=p.a,b=p.b,op=p.op,Ts=p.Ts,base=op==='+'?a+b:a-b;
   const rows=[{label:'Erdgeschoss',tokens:[{n:a},op,{n:b},'=',{b:0}]}];
-  const blanks=[{ans:base,prompt:'Rechne zuerst die kleine Aufgabe im Erdgeschoss.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau ins Zwanzigerfeld.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}}];
+  const blanks=[{ans:base,prompt:'Erst unten rechnen.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf den Laster.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}}];
   Ts.forEach((T,i)=>{
     const x=T+a,res=op==='+'?x+b:x-b,fl=T/10;
     rows.push({label:`${fl}. Stock`,tokens:[{n:x,ones:1},op,{n:b,ones:1},'=',{b:i+1}]});
-    blanks.push({ans:res,
-      prompt:fl===1?`Der Fahrstuhl fährt einen Zehner hoch. Unten war ${a} ${op} ${b} = ${base}. Und ${x} ${op} ${b} = □`:`Jetzt geht es ${fl} Zehner hoch! Die Einer rechnest du wie im Erdgeschoss.`,
-      hints:[`Schau auf die Einer: ${a} ${op} ${b} = ${base}. Die Zehner bleiben gleich.`,`${x} ist ${T} und ${a}. Also: ${T} + ${base} = □`],
-      visual:{type:'ze',x,b,op,show:'hint'}});
+    blanks.push({ans:res,prompt:fl===1?'Fahrstuhl hoch! 1 Zehner mehr.':`Fahrstuhl hoch! ${fl} Zehner mehr.`,
+      hints:[`Die Einer: ${a} ${op} ${b} = ${base}`,`${T} + ${base} = □`],visual:{type:'ze',x,b,op,show:'hint'}});
   });
   return task(rows,blanks,null,{kind:'ana',side:true});
 }
@@ -821,11 +984,11 @@ function buildAna(p){
 function buildTens(p){
   const a=p.a,b=p.b,op=p.op,base=op==='+'?a+b:a-b;
   return task([
-    {label:'Mit Einern',tokens:[{n:a},op,{n:b},'=',{b:0}]},
-    {label:'Mit Zehnern',tokens:[{n:a*10},op,{n:b*10},'=',{b:1}]}
+    {label:'Einer',tokens:[{n:a},op,{n:b},'=',{b:0}]},
+    {label:'Zehner',tokens:[{n:a*10},op,{n:b*10},'=',{b:1}]}
   ],[
-    {ans:base,prompt:'Rechne zuerst die kleine Aufgabe.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau ins Zwanzigerfeld.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}},
-    {ans:base*10,prompt:`Jetzt mit Zehnern: ${a} Zehner ${op==='+'?'plus':'minus'} ${b} Zehner.`,hints:[`${a*10} sind ${a} Zehner. ${b*10} sind ${b} Zehner.`,`${a} ${op} ${b} = ${base}. Also sind es ${base} Zehner = □`],visual:{type:'ze',x:a*10,b:b*10,op,show:'hint',tens:1}}
+    {ans:base,prompt:'Erst mit Einern.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf den Laster.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}},
+    {ans:base*10,prompt:'Jetzt mit Zehnern!',hints:[`${a} ${op} ${b} = ${base}`,`${base} Zehner = □`],visual:{type:'ze',x:a*10,b:b*10,op,show:'hint',tens:1}}
   ],null,{kind:'tens',side:true});
 }
 
@@ -846,13 +1009,13 @@ const POOLS={
 };
 const opKey=op=>op==='+'?'+':'-';
 const GEN={
-  pairFrame:{n:6,pool:POOLS.pair,key:p=>'pair:'+p.n,build:p=>buildPair(p,'frame')},
+  pairFrame:{n:5,pool:POOLS.pair,key:p=>'pair:'+p.n,build:p=>buildPair(p,'load')},
   pairLove:{n:6,pool:POOLS.pair,key:p=>'pair:'+p.n,build:p=>buildPair(p,'love')},
   pairMix:{n:6,pool:POOLS.pairMix,key:p=>'pair:'+p.n,build:p=>buildPair(p,'mix')},
-  addGuided:{n:4,pool:POOLS.add20,key:p=>`add:${p.a}+${p.b}`,build:p=>buildBridge(p,'+','guided')},
+  addGuided:{n:4,pool:POOLS.add20,key:p=>`add:${p.a}+${p.b}`,build:p=>buildBridge(p,'+','load')},
   addPath:{n:5,pool:POOLS.add20,key:p=>`add:${p.a}+${p.b}`,build:p=>buildBridge(p,'+','path')},
   addPro:{n:6,pool:POOLS.add20,key:p=>`add:${p.a}+${p.b}`,build:p=>buildBridge(p,'+','pro')},
-  subGuided:{n:4,pool:POOLS.sub20,key:p=>`sub:${p.a}-${p.b}`,build:p=>buildBridge(p,MI,'guided')},
+  subGuided:{n:4,pool:POOLS.sub20,key:p=>`sub:${p.a}-${p.b}`,build:p=>buildBridge(p,MI,'load')},
   subPath:{n:5,pool:POOLS.sub20,key:p=>`sub:${p.a}-${p.b}`,build:p=>buildBridge(p,MI,'path')},
   subPro:{n:6,pool:POOLS.sub20,key:p=>`sub:${p.a}-${p.b}`,build:p=>buildBridge(p,MI,'pro')},
   famTo10:{n:3,pool:POOLS.fam10,key:p=>`fam:${Math.max(p.a,p.b)}+${Math.min(p.a,p.b)}`,build:p=>buildFam(p,'basic')},
@@ -915,39 +1078,57 @@ function recommended(){
 function missionLabel(r){ if(!r) return ''; if(r.did==='hq') return 'Tagesauftrag der Zentrale'; const D=DIST[r.did]; return `${D.name} · Mission ${r.mi+1}: ${D.missions[r.mi].title}`; }
 
 /* ================= visuals ================= */
-function frame20(v,stage,nocap){
-  const a=v.a,b=v.b,op=v.op; const cells=Array.from({length:20},()=>({k:'e'})); let cap='';
-  if(op==='+'){
-    const sum=a+b,br=sum>10;
+/* The school's 20-dot field drawn as two flatbed trucks with 10 crate slots each (5 + 5).
+   Bridging through 10 = fill truck 1 first, the rest goes on truck 2 (minus: empty truck 2 first). */
+const SLOT_X=i=>14+i*42+(i>=5?14:0);
+function crateSVG(x,c){
+  return `<g class="crate ${c.k==='a'?'ca':'cb'}${c.hl?' hl':''}${c.k==='x'?' gone':''}${c.keep?' keep':''}${c.anim?' anim':''}" style="animation-delay:${(c.d||0).toFixed(2)}s"><rect x="${x}" y="22" width="38" height="40" rx="5"/><path d="M${x+5} 35h28M${x+5} 49h28" class="plank"/>${c.k==='x'?`<path d="M${x+9} 32l20 20M${x+29} 32l-20 20" class="xmark"/>`:''}</g>`;
+}
+function truckSVG(cells,num,badge){
+  let s='<svg viewBox="0 0 540 106" class="truck" aria-hidden="true"><rect x="4" y="64" width="452" height="12" rx="3" class="tk-bed"/><rect x="223" y="18" width="6" height="46" rx="2" class="tk-bed"/>';
+  cells.forEach((c,i)=>{ const x=SLOT_X(i); s+=(c.k==='e'||c.k==='gap')?`<rect x="${x}" y="22" width="38" height="40" rx="5" class="tk-slot${c.k==='gap'?' gap':''}"/>`:crateSVG(x,c); });
+  s+=`<path d="M458 76V38q0-10 10-10h32q8 0 13 7l17 21v20z" class="tk-cab tk-cab${num}"/><path d="M468 36h30l13 18h-43z" class="tk-glass"/><circle cx="480" cy="66" r="8" class="tk-num"/><text x="480" y="70" text-anchor="middle" class="tk-numt">${num}</text><rect x="524" y="58" width="12" height="8" rx="3" class="tk-light"/>`;
+  [52,168,330,496].forEach(x=>{ s+=`<circle cx="${x}" cy="88" r="15" class="tk-tire"/><circle cx="${x}" cy="88" r="6" class="tk-rim"/>`; });
+  if(badge) s+='<g class="tk-badge"><rect x="190" y="0" width="72" height="22" rx="11"/><text x="226" y="16" text-anchor="middle">10 voll</text></g>';
+  return s+'</svg>';
+}
+function frame20(v,stage){
+  const a=v.a,b=v.b,op=v.op,cells=Array.from({length:20},()=>({k:'e'}));
+  let two,badge=false;
+  if(v.loaded){
+    two=true;
+    if(op==='+'){ const sum=a+b; for(let i=0;i<a;i++) cells[i]={k:'a'}; for(let i=a;i<sum;i++) cells[i]={k:'b'};
+      if(stage===0) for(let i=a;i<10;i++) cells[i].hl=1; else if(stage===1) for(let i=10;i<sum;i++) cells[i].hl=1;
+      badge=true; }
+    else { const res=a-b; for(let i=0;i<a;i++) cells[i]={k:i<res?'n':'x'};
+      if(stage===0) for(let i=10;i<a;i++) cells[i].hl=1; else if(stage===1) for(let i=res;i<10;i++) cells[i].hl=1; else for(let i=0;i<res;i++) cells[i].keep=1; }
+  } else if(op==='+'){
+    const sum=a+b,br=sum>10; two=br;
     for(let i=0;i<a;i++) cells[i]={k:'a'};
-    if(br&&stage===0){ for(let i=a;i<10;i++) cells[i]={k:'gap'}; cap=`Rot: die ${a}. Gelb umrandet: die freien Plätze bis 10.`; }
+    if(br&&stage===0){ for(let i=a;i<10;i++) cells[i]={k:'gap'}; }
     else{
-      for(let i=a;i<sum;i++) cells[i]={k:'b'};
-      if(br&&stage===1){ for(let i=10;i<sum;i++) cells[i].hl=1; cap=`Blau: die ${b}. Erst wird die obere Reihe voll, der Rest kommt nach unten.`; }
-      else if(br){ for(let i=0;i<10;i++) cells[i].ten=1; for(let i=10;i<sum;i++) cells[i].hl=1; cap='Oben ist die Reihe voll: 10. Unten liegt der Rest.'; }
-      else cap=`Rot: ${a}, blau: ${b}.`;
+      const fresh=!br||stage===1;
+      for(let i=a;i<sum;i++) cells[i]={k:'b',anim:fresh,d:(i-a)*.07};
+      if(br){ for(let i=10;i<sum;i++) cells[i].hl=1; if(stage>=2) badge=true; }
     }
   } else {
-    const res=a-b,br=a>10&&res<10;
+    const res=a-b,br=a>10&&res<10; two=a>10;
     for(let i=0;i<a;i++) cells[i]={k:'n'};
-    if(br&&stage===0){ for(let i=10;i<a;i++) cells[i].hl=1; cap='Nimm zuerst die markierten Punkte in der zweiten Reihe weg.'; }
-    else if(br&&stage===1){ for(let i=10;i<a;i++) cells[i]={k:'x'}; const s=b-(a-10); for(let i=10-s;i<10;i++) cells[i].hl=1; cap='Jetzt nimmst du oben den Rest weg.'; }
-    else{ for(let i=res;i<a;i++) cells[i]={k:'x'}; for(let i=0;i<res;i++) cells[i].keep=1; cap='Grün umrandet: Diese Punkte bleiben übrig.'; }
+    if(br&&stage===0){ for(let i=10;i<a;i++) cells[i].hl=1; }
+    else if(br&&stage===1){ for(let i=10;i<a;i++) cells[i]={k:'x',anim:true,d:(a-1-i)*.07}; const s=b-(a-10); for(let i=10-s;i<10;i++) cells[i].hl=1; badge=true; }
+    else { for(let i=res;i<a;i++) cells[i]={k:'x',anim:!br||i<10,d:Math.max(0,Math.min(a,10)-1-i)*.07}; for(let i=0;i<res;i++) cells[i].keep=1; }
   }
-  const row=st=>{ let h=''; for(let i=st;i<st+10;i++){ if(i===st+5) h+='<span class="fsep"></span>'; const c=cells[i]; h+=`<span class="cell${c.ten?' ten':''}"><span class="dot ${c.k}${c.hl?' hl':''}${c.keep?' keep':''}"></span></span>`; } return `<div class="frow">${h}</div>`; };
-  return `<figure class="vis"><div class="frame" role="img" aria-label="Zwanzigerfeld">${row(0)}${row(10)}</div>${nocap?'':`<figcaption>${cap}</figcaption>`}</figure>`;
+  if(v.noanim) cells.forEach(c=>{ c.anim=false; });
+  return `<figure class="vis convoy" role="img" aria-label="${a} ${op==='+'?'plus':'minus'} ${b}: Kisten auf Lastern">${truckSVG(cells.slice(0,10),1,badge)}${two?truckSVG(cells.slice(10),2,false):''}</figure>`;
 }
-function frame10(v,stage,nocap){
-  const n=v.n,op=v.op; let h='';
+function frame10(v,stage){
+  const n=v.n,op=v.op,cells=[];
   for(let i=0;i<10;i++){
-    if(i===5) h+='<span class="fsep"></span>';
-    let k,x='';
-    if(op==='+') k=i<n?'a':(stage>=1?'b':'gap');
-    else if(i>=10-n) k='x'; else { k='n'; x=' keep'; }
-    h+=`<span class="cell"><span class="dot ${k}${x}"></span></span>`;
+    if(op==='+') cells.push(i<n?{k:'a'}:(stage>=1?{k:'b',anim:true,d:(i-n)*.07,hl:v.loaded?1:0}:{k:'gap'}));
+    else cells.push(i>=10-n?{k:'x',anim:true,d:(9-i)*.07}:{k:'n',keep:1});
   }
-  const cap=op==='+'?(stage>=1?`Rot: ${n}, blau: ${10-n}. Zusammen sind es 10.`:`Rot: ${n}. Gelb umrandet: die freien Plätze.`):'Grün umrandet: Diese Punkte bleiben übrig.';
-  return `<figure class="vis"><div class="frame" role="img" aria-label="Zehnerfeld"><div class="frow">${h}</div></div>${nocap?'':`<figcaption>${cap}</figcaption>`}</figure>`;
+  if(v.noanim) cells.forEach(c=>{ c.anim=false; });
+  return `<figure class="vis convoy" role="img" aria-label="Laster mit 10 Plätzen">${truckSVG(cells,1,op==='+'&&stage>=1)}</figure>`;
 }
 function numline(v,stage,nocap){
   const a=v.a,b=v.b,op=v.op,T=v.T,add=op==='+';
@@ -967,12 +1148,12 @@ function numline(v,stage,nocap){
   return `<figure class="vis" style="width:100%">${svg}${nocap?'':`<figcaption>${cap}</figcaption>`}</figure>`;
 }
 function house(v,stage){
-  return `<figure class="vis"><div class="house" role="img" aria-label="Zahlenhaus"><div class="roof">${stage>=1?v.c:'?'}</div><div class="floor"><span>${v.a}</span><span>${v.b}</span></div></div><figcaption>Das Zahlenhaus: ${stage>=1?v.c:'?'} = ${v.a} + ${v.b}</figcaption></figure>`;
+  return `<figure class="vis"><div class="house" role="img" aria-label="Zahlenhaus"><div class="roof">${stage>=1?v.c:'?'}</div><div class="floor"><span>${v.a}</span><span>${v.b}</span></div></div></figure>`;
 }
 function zeTable(v){
   const zr=n=>[n>=10?Math.floor(n/10):'',n%10];
   const [z1,e1]=zr(v.x),[z2,e2]=zr(v.b);
-  return `<figure class="vis"><table class="ze"><thead><tr><th></th><th>Z</th><th>E</th></tr></thead><tbody><tr><td class="zop"></td><td class="z">${z1}</td><td class="e">${e1}</td></tr><tr><td class="zop">${v.op}</td><td class="z">${z2}</td><td class="e">${e2}</td></tr></tbody></table><figcaption>${v.tens?'Z = Zehner. Hier rechnest du mit den Zehnern.':'Z = Zehner, E = Einer. Die Einer rechnest du wie unten.'}</figcaption></figure>`;
+  return `<figure class="vis"><table class="ze"><thead><tr><th></th><th>Z</th><th>E</th></tr></thead><tbody><tr><td class="zop"></td><td class="z">${z1}</td><td class="e">${e1}</td></tr><tr><td class="zop">${v.op}</td><td class="z">${z2}</td><td class="e">${e2}</td></tr></tbody></table></figure>`;
 }
 function renderVisual(v,stage,nocap){
   switch(v.type){
@@ -984,17 +1165,48 @@ function renderVisual(v,stage,nocap){
   } return '';
 }
 
+/* ================= scenery ================= */
+function skyline(seed){
+  let s=seed*7919+13; const r=()=>{ s=(s*9301+49297)%233280; return s/233280; };
+  let back='',front='',x=-10;
+  while(x<1010){ const w=30+Math.floor(r()*46),h=46+Math.floor(r()*66); back+=`<rect x="${x}" y="${120-h}" width="${w}" height="${h}" class="sk2"/>`; x+=w+2; }
+  x=-20;
+  while(x<1020){ const w=40+Math.floor(r()*52),h=22+Math.floor(r()*54),y=120-h; front+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" class="sk"/>`;
+    for(let wy=y+7;wy<114;wy+=13) for(let wx=x+6;wx<x+w-9;wx+=11) if(r()>.5) front+=`<rect x="${wx}" y="${wy}" width="5" height="6" class="skw"/>`;
+    x+=w+4+Math.floor(r()*16); }
+  return `<svg class="skyline" viewBox="0 0 1000 120" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${back}${front}</svg>`;
+}
+const LANDMARK={
+  herz:'<path class="lm-s" d="M22 80V12M10 12h80M22 24l14-12M72 12v24"/><rect class="lm-a" x="64" y="36" width="16" height="12" rx="2"/><path class="lm-a" d="M44 66h72l-10 14H54z"/><rect class="lm-b" x="58" y="54" width="22" height="12" rx="1"/><rect class="lm-b" x="84" y="50" width="16" height="16" rx="1"/><path class="lm-a" d="M100 30s-8-5-8-11a4 4 0 0 1 8-1.5 4 4 0 0 1 8 1.5c0 6-8 11-8 11z"/><path class="lm-s" style="stroke-width:1.5" d="M100 30v20"/>',
+  bruecke:'<path class="lm-s" d="M4 52Q60-4 116 52"/><path class="lm-s" style="stroke-width:2.5" d="M24 52V31M42 52V20M60 52V24M78 52V20M96 52V31"/><rect class="lm-a" x="0" y="50" width="120" height="7" rx="2"/><path class="lm-a" d="M14 57h8v23h-8zM98 57h8v23h-8z"/><rect class="lm-a" x="47" y="0" width="26" height="17" rx="3"/><text x="60" y="13" text-anchor="middle" class="lm-t">10</text>',
+  tunnel:'<path class="lm-b" d="M0 80Q12 30 56 24q46-2 64 56z"/><path class="lm-d" d="M38 80V62a18 18 0 0 1 36 0v18z"/><path class="lm-s" style="stroke-width:3" d="M34 80V62a22 22 0 0 1 44 0v18"/><rect class="lm-a" x="45" y="27" width="22" height="13" rx="2"/><text x="56" y="37" text-anchor="middle" class="lm-t" style="font-size:10px">10</text>',
+  familie:'<path class="lm-a" d="M4 80V52l18-16 18 16v28z"/><path class="lm-b" d="M38 80V44l22-20 22 20v36z"/><path class="lm-a" d="M80 80V56l18-15 18 15v24z"/><rect class="lm-w" x="54" y="50" width="12" height="12" rx="1"/><rect class="lm-w" x="17" y="60" width="10" height="9" rx="1"/><rect class="lm-w" x="93" y="62" width="10" height="9" rx="1"/>',
+  tower:'<rect class="lm-b" x="12" y="40" width="24" height="40"/><rect class="lm-b" x="84" y="28" width="26" height="52"/><rect class="lm-a" x="40" y="8" width="40" height="72" rx="3"/><path class="lm-s" d="M60 1v7"/><rect class="lm-w" x="56" y="14" width="8" height="62" rx="2" style="opacity:.45"/><rect class="lm-w" x="55" y="38" width="10" height="10" rx="2"/><g class="lm-w"><rect x="45" y="16" width="6" height="5"/><rect x="69" y="16" width="6" height="5"/><rect x="45" y="28" width="6" height="5"/><rect x="69" y="28" width="6" height="5"/><rect x="45" y="40" width="6" height="5"/><rect x="69" y="40" width="6" height="5"/><rect x="45" y="52" width="6" height="5"/><rect x="69" y="52" width="6" height="5"/><rect x="45" y="64" width="6" height="5"/><rect x="69" y="64" width="6" height="5"/></g>',
+  flug:'<rect class="lm-b" x="0" y="75" width="120" height="5"/><path class="lm-a" d="M24 80V36h12v44z"/><path class="lm-a" d="M15 22h30l-4 14H19z"/><rect class="lm-w" x="20" y="26" width="20" height="5" rx="1"/><path class="lm-a" d="M86 6c1.6 0 2.4 1.6 2.4 4v7l13 7.6v3.4L88.4 24.6V32l4.6 3.6V38L86 36.4 79 38v-2.4l4.6-3.6v-7.4L70.6 28v-3.4l13-7.6v-7c0-2.4.8-4 2.4-4z" transform="rotate(70 86 22)"/>',
+  hq:'<path class="lm-s" d="M46 80L57 24h6l11 56M50 62h20M53 44h14"/><path class="lm-s" d="M60 24V12"/><circle class="lm-a" cx="60" cy="10" r="4"/><path class="lm-s" style="stroke-width:3" d="M50 18q-5-6 0-12M70 18q5-6 0-12M43 22q-9-10 0-20M77 22q9-10 0-20"/>'
+};
+const lmSVG=(id,cls='')=>LANDMARK[id]?`<svg viewBox="0 0 120 80" class="lm ${cls}" aria-hidden="true">${LANDMARK[id]}</svg>`:'';
+function fox(mood){
+  const mouth=mood==='happy'?'<path d="M26 47q6 6 12 0" class="fx-m"/>':mood==='think'?'<path d="M29 49h7" class="fx-m"/>':'<path d="M28 47q4 3 8 0" class="fx-m"/>';
+  const brows=mood==='think'?'<path d="M19 25l7 2M45 25l-7 2" class="fx-m" style="stroke-width:2"/>':'';
+  return `<svg viewBox="0 0 64 64" class="fox" aria-hidden="true"><path d="M8 32L14 4l15 16z" class="fx-o"/><path d="M56 32L50 4 35 20z" class="fx-o"/><path d="M14 22l2.5-11 7 8z" class="fx-in"/><path d="M50 22l-2.5-11-7 8z" class="fx-in"/><circle cx="32" cy="36" r="22" class="fx-o"/><path d="M12 40Q32 66 52 40Q42 45 32 45Q22 45 12 40z" class="fx-w"/><circle cx="24" cy="32" r="3.4" class="fx-k"/><circle cx="40" cy="32" r="3.4" class="fx-k"/><circle cx="25.2" cy="30.8" r="1.1" class="fx-wd"/><circle cx="41.2" cy="30.8" r="1.1" class="fx-wd"/><ellipse cx="32" cy="42" rx="3.6" ry="2.6" class="fx-k"/>${mouth}${brows}<path d="M10 34Q10 9 32 9T54 34" class="fx-hs"/><rect x="5" y="30" width="8" height="12" rx="3" class="fx-hp"/><rect x="51" y="30" width="8" height="12" rx="3" class="fx-hp"/><path d="M9 42q1 12 14 12" class="fx-hs" style="stroke-width:2.5"/><circle cx="24" cy="54" r="3" class="fx-hp"/></svg>`;
+}
+
 /* ================= UI shell ================= */
 let current='city',curDistrict=null,M=null,pendingBuy=null,pbTimer=null,quitArmed=false,resetArmed=false,gateQ=null,lastInput=Date.now();
-const screens=['welcome','city','district','mission','result','garage','gate','parents'];
+const screens=['welcome','city','district','mission','drive','result','garage','gate','parents'];
 function show(name,arg){
-  if(current==='mission'&&name!=='mission'&&name!=='result'&&M){ clearTimeout(M.advanceTimer); }
+  if((current==='mission'||current==='drive')&&name!==current&&name!=='result'&&M){ clearTimeout(M.advanceTimer); }
+  if(current==='drive'&&name!=='drive') stopDrive();
+  if(name==='drive') $('#screen-mission').innerHTML='';
+  if(name==='mission') $('#screen-drive').innerHTML='';
   screens.forEach(s=>{ const el=$('#screen-'+s); if(el) el.hidden=s!==name; });
   current=name;
   if(name==='welcome') renderWelcome();
   else if(name==='city') renderCity();
   else if(name==='district'){ curDistrict=arg||curDistrict; renderDistrict(curDistrict); }
   else if(name==='mission') renderMissionShell();
+  else if(name==='drive') renderDriveShell();
   else if(name==='result') renderResult();
   else if(name==='garage') renderGarage();
   else if(name==='gate') renderGate();
@@ -1002,7 +1214,7 @@ function show(name,arg){
   const sc=$('#screen-'+name); if(sc) sc.scrollTop=0;
   drawHud();
 }
-function rerender(){ show(current==='mission'||current==='result'?'city':current,curDistrict); }
+function rerender(){ show(current==='mission'||current==='drive'||current==='result'?'city':current,curDistrict); }
 let toastT=null;
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2800); }
 function vehStyle(v){ const p=PNT[state.paintOf[v.id]||'std']||PNT.std; return `--v1:${p.c1||v.c1};--v2:${p.c2||v.c2}`; }
@@ -1023,7 +1235,7 @@ function bumpCoins(){ const c=$('#hud-coins'); c.classList.remove('bump'); void 
 function renderWelcome(){
   const v=VEH.jeep;
   $('#screen-welcome').innerHTML=`<div class="wrap"><div class="card gate welcome">
-    <div class="welcome-veh" style="${vehStyle(v)}">${vehSVG(v.id)}</div>
+    <div class="welcome-fox">${fox('happy')}</div>
     <div class="eyebrow">Funk von der Zentrale</div>
     <h1 class="welcome-h">Willkommen in Zehner-City!</h1>
     <p class="muted">Hier fährst du Missionen, rechnest geschickt über die 10 und verdienst Münzen für deine Garage.</p>
@@ -1045,22 +1257,22 @@ function renderCity(){
   const rec=recommended(),h=new Date().getHours(),greet=h<11?'Guten Morgen':h<18?'Hallo':'Guten Abend';
   const tiles=DISTRICTS.map((D,i)=>{
     const un=districtUnlocked(i),st=districtStars(D.id);
-    return `<button class="tile${un?'':' locked'}" style="--tc:var(--d-${D.id})" data-act="district" data-id="${D.id}">
+    return `<button class="tile${un?'':' locked'}" style="--tc:var(--d-${D.id})" data-act="district" data-id="${D.id}">${lmSVG(D.id,'tile-art')}
       <span class="tile-top">${dIcon(D.id)}${un?'':`<span class="tile-lock">${icon('lock')}</span>`}</span>
       <span class="tile-name">${D.name}</span><span class="tile-skill">${D.skill}</span>
       <span class="tile-foot">${un?`<span class="tile-bar"><i style="width:${Math.round(st/9*100)}%"></i></span>${STAR}${st}/9`:`<span class="tile-hint">Erst eine Mission in ${DISTRICTS[i-1].name}</span>`}</span></button>`;
   }).join('');
   const hqDone=day().hq,hqUn=hqUnlocked();
-  const hq=`<button class="tile hq${hqUn?'':' locked'}" data-act="hq"><span class="tile-top">${dIcon('hq')}${hqUn?'':`<span class="tile-lock">${icon('lock')}</span>`}</span>
+  const hq=`<button class="tile hq${hqUn?'':' locked'}" data-act="hq">${lmSVG('hq','tile-art')}<span class="tile-top">${dIcon('hq')}${hqUn?'':`<span class="tile-lock">${icon('lock')}</span>`}</span>
     <span class="tile-name">Zentrale</span><span class="tile-skill">Tagesauftrag · gemischte Aufgaben</span>
     <span class="tile-foot">${hqUn?(hqDone?'<span class="badge done">Heute erledigt</span>':`<span class="badge">${COIN.replace('class="coin"','class="coin" style="width:18px;height:18px"')} +30 Bonus</span>`):'<span class="tile-hint">Öffnet nach Mission 1 auf der Zehnerbrücke</span>'}</span></button>`;
   const v=VEH[state.active];
   const gar=`<button class="tile garage" data-act="garage"><span class="tile-top">${dIcon('garage')}<span class="badge">${COIN.replace('class="coin"','class="coin" style="width:18px;height:18px"')} ${state.coins}</span></span>
     <span class="tile-name">Garage</span><span class="tile-veh" style="${vehStyle(v)}">${vehSVG(v.id)}</span></button>`;
   $('#screen-city').innerHTML=`<div class="wrap city">
-    <section class="radio"><div class="radio-ava">${icon('radio')}</div>
+    <section class="radio"><div class="radio-ava">${fox('happy')}</div>
       <div><div class="eyebrow">Funk von der Zentrale</div><h1>${greet}${state.name?', '+esc(state.name):''}!</h1><p>Nächste Mission: <b>${esc(missionLabel(rec))}</b></p></div>
-      <button class="btn btn-go big" data-act="play-rec">${icon('play','fill')} Los geht's</button></section>
+      <div class="radio-btns"><button class="btn btn-go big" data-act="play-rec">${icon('play','fill')} Los geht's</button>${rec.did!=='hq'?`<button class="btn btn-drive big" data-act="drive" data-id="${rec.did}" data-mi="${rec.mi}">${icon('car')} Fahren</button>`:''}</div></section>
     <section class="map" aria-label="Stadtplan">${tiles}${hq}${gar}</section>
     ${goalHTML()}
   </div>`;
@@ -1083,14 +1295,14 @@ function goalHTML(){
 
 /* ---------- district ---------- */
 const HOWTO={
-  herz:()=>`<p class="lead">Verliebte Zahlen ergeben zusammen immer <b>10</b>.</p>
+  herz:()=>`<p class="lead">Verliebte Zahlen ergeben zusammen immer <b>10</b>: so viele Kisten passen auf einen Laster.</p>
     <div class="hearts">${[[1,9],[2,8],[3,7],[4,6],[5,5]].map(([x,y])=>`<span class="hpair">${x} ${HEART} ${y}</span>`).join('')}</div>
     <div class="visual">${frame10({n:7,op:'+'},1,true)}</div><div class="exsteps"><div>7 + 3 = 10</div><div>10 ${MI} 3 = 7</div></div>`,
-  bruecke:()=>`<p class="lead">Erst bis zur 10, dann weiter. Die 2. Zahl wird dafür zerlegt.</p>
+  bruecke:()=>`<p class="lead">Erst Laster 1 bis 10 voll machen. Der Rest kommt auf Laster 2.</p>
     <div class="exsteps"><div>8 + 5 = ?</div><div><mark>8 + 2</mark> = 10</div><div>10 + 3 = 13</div></div>
     <div class="visual">${frame20({a:8,b:5,op:'+'},2,true)}</div>
     <div class="exsteps"><div class="note">So schreibt ihr es in der Schule:</div><div>8 + 9 = 17</div><div>8 + 2 + 7 = 17</div></div>`,
-  tunnel:()=>`<p class="lead">Erst zurück bis zur 10, dann weiter. Die 2. Zahl wird dafür zerlegt.</p>
+  tunnel:()=>`<p class="lead">Erst Laster 2 leer machen. Dann den Rest von Laster 1 abladen.</p>
     <div class="exsteps"><div>13 ${MI} 8 = ?</div><div><mark>13 ${MI} 3</mark> = 10</div><div>10 ${MI} 5 = 5</div></div>
     <div class="visual">${frame20({a:13,b:8,op:MI},2,true)}</div>
     <div class="exsteps"><div class="note">So schreibt ihr es in der Schule:</div><div>13 ${MI} 8 = 5</div><div>13 ${MI} 3 ${MI} 5 = 5</div></div>`,
@@ -1110,7 +1322,7 @@ function renderDistrict(id){
     const un=missionUnlocked(id,mi),rec=state.missions[id+':'+mi],st=rec?rec.stars:0;
     return `<article class="mcard${un?'':' locked'}" style="--tc:var(--d-${id})"><span class="mnum">${mi+1}</span>
       <div><h3>${m.title}</h3><p>${m.desc}</p><div class="mstars" aria-label="${st} von 3 Sternen">${[1,2,3].map(i=>starOn(i<=st)).join('')}</div></div>
-      ${un?`<button class="btn btn-go" data-act="play" data-id="${id}" data-mi="${mi}">${icon('play','fill')} ${rec?'Nochmal':'Los!'}</button>`:`<span class="mlock">${icon('lock')}Erst Mission ${mi}</span>`}</article>`;
+      ${un?`<div class="mbtns"><button class="btn btn-go" data-act="play" data-id="${id}" data-mi="${mi}">${icon('play','fill')} ${rec?'Nochmal':'Los!'}</button><button class="btn btn-drive" data-act="drive" data-id="${id}" data-mi="${mi}">${icon('car')} Fahren</button></div>`:`<span class="mlock">${icon('lock')}Erst Mission ${mi}</span>`}</article>`;
   }).join('');
   $('#screen-district').innerHTML=`<div class="wrap"><div class="topbar"><button class="btn" data-act="home">${icon('back')} Stadt</button></div>
     <header class="dhead" style="--tc:var(--d-${id})">${dIcon(id)}<div><div class="eyebrow light">${D.skill}</div><h1>${D.name}</h1></div></header>
@@ -1118,41 +1330,51 @@ function renderDistrict(id){
 }
 
 /* ---------- mission ---------- */
-const PRAISE=['Super gemacht!','Klasse!','Volltreffer!','Stark gerechnet!','Mega!','Spitze!','Genau richtig!'];
-const PRAISE_HELP=['Geschafft! Mit Hilfe zählt es auch.','Gut durchgehalten!','Richtig! Weiter so.','Geschafft!'];
+const PRAISE=['Super!','Klasse!','Stark!','Mega!','Spitze!','Bingo!','Volltreffer!'];
+const PRAISE_HELP=['Geschafft!','Richtig!','Gut gemacht!'];
 const STEPOK=['Richtig!','Genau!','Stimmt!','Prima!'];
-function startMission(did,mi){
+const FLAME='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z"/></svg>';
+const reduceMotion=(()=>{ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } })();
+function startMission(did,mi,mode){
   let tasks,title,sub;
   if(did==='hq'){ tasks=genHQ(); title='Tagesauftrag'; sub='Zentrale'; mi=0; }
   else { const D=DIST[did],m=D.missions[mi]; tasks=sampleTasks(GEN[m.gen],GEN[m.gen].n,did); title=m.title; sub=D.name; }
   if(!tasks.length){ toast('Für diesen Auftrag gibt es noch keine Aufgaben.'); return; }
-  M={did,mi,title,sub,tasks,ti:0,bi:0,entry:'',firstTry:0,coins:0,taskDone:false,taskWrong:false,feedback:null,stepMsg:null,nudge:null,praise:'',before:unlockedNames(),finished:false};
-  prepTask(); quitArmed=false; show('mission');
+  M={did,mi,title,sub,tasks,mode:mode==='drive'?'drive':'keys',ti:0,bi:0,entry:'',firstTry:0,coins:0,streak:0,taskDone:false,taskWrong:false,feedback:null,stepMsg:null,nudge:null,praise:'',before:unlockedNames(),finished:false,intro:true,busy:false};
+  prepTask(); quitArmed=false; show(M.mode==='drive'?'drive':'mission');
 }
 const curTask=()=>M.tasks[M.ti];
 const curBlank=()=>curTask().blanks[M.bi];
-function prepTask(){ const t=curTask(); M.bi=t.blanks.findIndex(b=>!b.auto&&b.val==null); M.entry=''; }
+function prepTask(){ const t=curTask(); M.bi=t.blanks.findIndex(b=>!b.auto&&b.val==null); M.entry=''; if(t.load&&!t.loadDone&&M.mode!=='drive'){ M.phase='load'; M.ld=initLoad(t); } else { M.phase='calc'; M.ld=null; } }
+const sceneOf=()=>M.did==='hq'?'hq':M.did;
 function renderMissionShell(){
   if(!M){ show('city'); return; }
-  const v=VEH[state.active],air=v.cat==='luft';
-  $('#screen-mission').innerHTML=`<div class="mwrap">
+  const v=VEH[state.active],air=v.cat==='luft',sid=sceneOf(),seed=[...sid].reduce((s,c)=>s+c.charCodeAt(0),0);
+  $('#screen-mission').innerHTML=`<div class="mwrap" style="--tc:var(--d-${sid})">
     <div class="mtop"><button class="iconbtn" id="quit-btn" data-act="quit" aria-label="Mission beenden">${icon('close')}</button>
-      <div class="mtitle"><div class="eyebrow">${esc(M.sub)}</div><h2>${esc(M.title)}</h2></div><div class="mcount" id="m-count"></div></div>
-    <div class="road${air?' sky':''}" id="m-road">${air?'<span class="cloud1"></span><span class="cloud2"></span>':''}<div id="m-cps"></div><span class="road-flag">${FLAG}</span>
+      <div class="mtitle"><div class="eyebrow">${esc(M.sub)}</div><h2>${esc(M.title)}</h2></div><span class="streak" id="m-streak" hidden></span><div class="mcount" id="m-count"></div></div>
+    <div class="scene${air?' air':''}" id="m-road">${skyline(seed)}${lmSVG(sid)}<div class="street"></div><div id="m-cps"></div><span class="road-flag">${FLAG}</span>
       <span class="road-veh${air?' air':''}" id="m-veh" style="${vehStyle(v)};left:9%">${vehSVG(v.id)}</span></div>
-    <section class="taskcard" id="m-card"><div class="rows" id="m-rows"></div><div class="bubble" id="m-bubble" aria-live="polite"></div><div class="visual" id="m-visual"></div></section>
+    <section class="taskcard" id="m-card"><div class="rows" id="m-rows"></div><div class="bubble" id="m-bubble" aria-live="polite"></div><div class="visual" id="m-visual"></div><div class="stamp" id="m-stamp" aria-hidden="true"></div></section>
     <section class="padcol"><div class="pad" id="m-pad">${[1,2,3,4,5,6,7,8,9].map(d=>`<button class="key" data-act="digit" data-d="${d}">${d}</button>`).join('')}
       <button class="key del" data-act="del" aria-label="Löschen">${icon('del')}</button><button class="key" data-act="digit" data-d="0">0</button><button class="key ok" data-act="ok" aria-label="Prüfen">${icon('check')}</button></div>
-      <div class="tools"><button class="btn btn-gold" data-act="hint">${icon('bulb')} Tipp</button><button class="btn" data-act="speak"${Speech.ok?'':' hidden'}>${icon('speaker')} Vorlesen</button></div></section>
-  </div>`;
-  drawAll();
+      <p class="lockhint">Erst die Kisten bewegen.</p><div class="tools"><button class="btn btn-gold" data-act="hint">${icon('bulb')} Tipp</button><button class="btn" data-act="speak"${Speech.ok?'':' hidden'}>${icon('speaker')} Vorlesen</button></div></section>
+  </div>${introHTML()}`;
+  M.lastVis=null; drawAll();
 }
-function drawAll(){ drawCount(); drawRoad(); drawRows(); drawBubble(); drawVisual(); }
-function drawCount(){ $('#m-count').textContent=`Aufgabe ${Math.min(M.ti+1,M.tasks.length)} von ${M.tasks.length}`; }
+function introHTML(){
+  if(!M.intro) return '';
+  M.intro=false; Sound.play('start');
+  setTimeout(()=>{ const i=$('#m-intro'); if(i) i.remove(); },2400);
+  return `<div class="intro" id="m-intro" data-act="intro-close" style="--tc:var(--d-${sceneOf()})"><div class="intro-band"><div class="eyebrow">Mission · ${esc(M.sub)}</div><h1>${esc(M.title)}</h1></div></div>`;
+}
+function drawAll(){ if(M.mode==='drive'){ driveSync(); drawStreak(); return; } const pc=$('.padcol'); if(pc) pc.classList.toggle('locked',M.phase==='load'); drawCount(); drawRoad(); drawRows(); drawBubble(); drawVisual(); drawStreak(); }
+function drawCount(){ const el=$('#m-count'); if(el) el.textContent=`${Math.min(M.ti+1,M.tasks.length)} von ${M.tasks.length}`; }
 function drawRoad(){
+  const box=$('#m-cps'); if(!box) return;
   const n=M.tasks.length,done=M.ti+(M.taskDone?1:0),pos=p=>9+p*82;
-  let cps=''; for(let i=1;i<n;i++) cps+=`<span class="road-cp${i<=done?' done':''}" style="left:${pos(i/n)}%"></span>`;
-  $('#m-cps').innerHTML=cps;
+  let cps=''; for(let i=1;i<n;i++) cps+=`<span class="road-cp${i<done?' done':i===done?(M.taskDone?' got':' done'):''}" style="left:${pos(i/n)}%">${COIN}</span>`;
+  box.innerHTML=cps;
   const veh=$('#m-veh'); const left=pos(done/n)+'%';
   if(veh.style.left!==left){ veh.style.left=left; veh.classList.remove('go'); void veh.offsetWidth; veh.classList.add('go'); }
 }
@@ -1171,60 +1393,109 @@ function tokHTML(tok,t){
   if(tok.ones){ const s=String(tok.n); return `<span class="num">${s.slice(0,-1)}<span class="ones">${s.slice(-1)}</span></span>`; }
   return `<span class="num">${tok.n}</span>`;
 }
+function visibleRows(t,compact){
+  const h=curH();
+  if(M.phase==='load'){ const g=t.rows.filter(r=>r.goal); return g.length?g:t.rows.filter(r=>r.big); }
+  let rows=t.rows.filter(r=>{ if(r.minHint&&h<r.minHint) return false; if(r.step!=null) return !M.taskDone&&M.bi===r.step; if(r.final) return M.taskDone; return true; });
+  if(compact&&!M.taskDone&&rows.length>2) rows=rows.filter(r=>r.goal||r.known||r.tokens.some(tk=>tk&&tk.b===M.bi));
+  return rows;
+}
+function rowsHTML(rows,t){
+  return rows.map(r=>`<div class="row${r.known?' known':''}${r.goal?' goal':''}${r.step!=null||r.big?' step':''}${r.final?' final':''}${r.long?' long':''}">${r.label?`<span class="rlabel">${r.label}</span>`:''}<span class="eq">${r.tokens.map(tok=>tokHTML(tok,t)).join('')}</span></div>`).join('');
+}
 function drawRows(){
-  const t=curTask(),h=curH();
-  const rows=t.rows.filter(r=>!(r.minHint&&h<r.minHint));
-  const el=$('#m-rows'); el.className='rows'+(t.rows.length>=4?' rows-4':t.rows.length===3?' rows-3':'');
-  el.innerHTML=rows.map(r=>`<div class="row${r.known?' known':''}">${r.label?`<span class="rlabel">${r.label}</span>`:''}<span class="eq">${r.tokens.map(tok=>tokHTML(tok,t)).join('')}</span></div>`).join('');
+  const el=$('#m-rows'); if(!el) return;
+  const t=curTask(),rows=visibleRows(t,false),n=rows.filter(r=>!r.goal&&!r.final).length;
+  el.className='rows'+(n>=4?' rows-4':n===3?' rows-3':'');
+  el.innerHTML=rowsHTML(rows,t);
   M.popB=null;
   $('#m-card').classList.toggle('side',!!t.side);
 }
 const fmt=s=>esc(s).replace(/□/g,'<span class="qbox" aria-label="?"></span>');
-function drawBubble(){
-  const t=curTask(),b=curBlank(),el=$('#m-bubble');
-  const steps=t.blanks.filter(x=>!x.auto),stepNo=steps.indexOf(b)+1;
-  let cls='bubble',main='',sub='',pre='';
-  if(M.taskDone){ cls+=' good'; main=M.praise; sub=M.coinMsg||''; }
+function bubbleModel(){
+  const t=curTask(),b=curBlank(),steps=t.blanks.filter(x=>!x.auto),stepNo=steps.indexOf(b);
+  let cls='',main='',sub='',pre='',mood='';
+  if(M.taskDone){ cls='good'; main=M.praise; sub=M.coinMsg||''; mood='happy'; }
   else{
     main=b.prompt;
-    if(b.revealed){ cls+=' reveal'; sub=`Die Lösung ist ${b.ans}. Tippe die ${b.ans} ein.`; }
-    else if(b.h>0){ cls+=' hint'; sub=(M.feedback==='wrong'?'Fast! ':'Tipp: ')+b.hints[b.h-1]; }
-    else if(M.feedback==='wrong'){ cls+=' hint'; sub='Fast! Probier es nochmal.'; }
+    if(b.revealed){ cls='reveal'; sub=M.mode==='drive'?`Die Lösung ist ${b.ans}. Fahr zur grünen ${b.ans}!`:`Die Lösung ist ${b.ans}. Tippe sie ein.`; mood='think'; }
+    else if(b.h>0){ cls='hint'; sub=(M.feedback==='wrong'?'Fast! ':'')+b.hints[b.h-1]; mood='think'; }
+    else if(M.feedback==='wrong'){ cls='hint'; sub='Fast! Nochmal.'; mood='think'; }
     if(M.nudge) sub=M.nudge;
-    if(M.stepMsg&&!b.h&&!M.feedback) pre=`<span class="oktag">${esc(M.stepMsg)}</span>`;
+    if(M.stepMsg&&!b.h&&!M.feedback){ pre=`<span class="oktag">${esc(M.stepMsg)}</span>`; mood='happy'; }
   }
-  const stepHTML=!M.taskDone&&steps.length>1?`<span class="step">Schritt ${stepNo} von ${steps.length}</span>`:'';
-  el.className=cls;
-  el.innerHTML=`<span class="ava">${icon('radio')}</span><div class="msg">${stepHTML}<span class="main">${pre}${fmt(main)}</span>${sub?`<span class="sub">${fmt(sub)}</span>`:''}</div>${Speech.ok?`<button class="iconbtn soft" data-act="speak" aria-label="Vorlesen">${icon('speaker')}</button>`:''}`;
+  const dots=!M.taskDone&&steps.length>1?`<span class="dots" aria-label="Schritt ${stepNo+1} von ${steps.length}">${steps.map((x,i)=>`<i class="${i<stepNo?'done':i===stepNo?'cur':''}"></i>`).join('')}</span>`:'';
   M.lastSpeech=(main+'. '+sub).trim();
+  return {cls,mood,html:`<span class="ava ${mood}">${fox(mood)}</span><div class="msg">${dots}<span class="main">${pre}${fmt(main)}</span>${sub?`<span class="sub">${fmt(sub)}</span>`:''}</div>`};
 }
-function drawVisual(){
-  const t=curTask(),b=curBlank(),el=$('#m-visual'),h=b?b.h:0,parts=[];
+function drawBubble(){
+  if(M.mode==='drive'){ driveSync(); return; }
+  const el=$('#m-bubble'); if(!el) return;
+  if(M.phase==='load'){ drawLoadBubble(el); return; }
+  const m=bubbleModel();
+  el.className='bubble'+(m.cls?' '+m.cls:'');
+  el.innerHTML=m.html+(Speech.ok?`<button class="iconbtn soft" data-act="speak" aria-label="Vorlesen">${icon('speaker')}</button>`:'');
+}
+function visualHTML(){
+  const t=curTask(),b=curBlank(),h=b?b.h:0,parts=[];
   for(const v of [t.visual,b&&b.visual]){
     if(!v) continue;
     if(!(v.show==='always'||h>=1)) continue;
     let stage=v.fixed!=null?v.fixed:(b&&b.vis!=null?b.vis:0);
     if(v.byHint) stage=Math.max(stage,h);
     if(M.taskDone&&v.fixed==null) stage=3;
-    parts.push(renderVisual(v,stage));
+    parts.push(renderVisual(v,stage,true));
   }
-  el.innerHTML=parts.join(''); el.hidden=!parts.length;
+  return parts.join('');
 }
+function drawVisual(){
+  const el=$('#m-visual'); if(!el) return;
+  if(M.phase==='load'){ el.innerHTML=loadSceneHTML(); el.hidden=false; M.lastVis=null; return; }
+  const html=visualHTML();
+  if(html!==M.lastVis){ el.innerHTML=html; M.lastVis=html; }
+  el.hidden=!html;
+}
+function drawStreak(){
+  const el=$('#m-streak'); if(!el) return;
+  if(M.streak>=2){ const txt=`${FLAME} ${M.streak}`; if(el.innerHTML!==txt){ el.innerHTML=txt; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); } el.hidden=false; }
+  else el.hidden=true;
+}
+function stamp(text){ const s=$('#m-stamp'); if(!s) return; s.textContent=text; s.classList.remove('on'); void s.offsetWidth; s.classList.add('on'); }
+function fxLayer(){ let l=$('#fx-layer'); if(!l){ l=document.createElement('div'); l.id='fx-layer'; l.className='fx-layer'; document.body.appendChild(l); } return l; }
+function burst(el,n){
+  if(!el||reduceMotion) return; n=n||16;
+  const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,l=fxLayer(),cols=['var(--marking)','var(--go)','var(--sunset)','var(--dot-b)','var(--neon)'];
+  for(let i=0;i<n;i++){ const s=document.createElement('span'); s.className='spark'; const ang=Math.PI*2*i/n+Math.random()*.4,dist=50+Math.random()*70;
+    s.style.cssText=`left:${cx-5}px;top:${cy-5}px;background:${cols[i%cols.length]};--dx:${(Math.cos(ang)*dist).toFixed(0)}px;--dy:${(Math.sin(ang)*dist).toFixed(0)}px`;
+    l.appendChild(s); setTimeout(()=>s.remove(),850); }
+}
+function flyCoins(el,n){
+  const tgt=$('#hud-coins');
+  if(!el||!tgt||reduceMotion){ drawHud(); bumpCoins(); return; }
+  const a=el.getBoundingClientRect(),b=tgt.getBoundingClientRect(),l=fxLayer(),sx=a.left+a.width/2,sy=a.top+a.height/2;
+  for(let i=0;i<n;i++){
+    const c=document.createElement('span'); c.className='flycoin'; c.innerHTML=COIN; c.style.left=(sx-15)+'px'; c.style.top=(sy-15)+'px'; l.appendChild(c);
+    setTimeout(()=>{ c.style.transform=`translate(${b.left+20-sx}px,${b.top+20-sy}px) scale(.7)`; },40+i*90);
+    setTimeout(()=>{ c.remove(); if(i===n-1){ drawHud(); bumpCoins(); Sound.play('coin'); } },800+i*90);
+  }
+}
+const fxTarget=()=>$('#m-rows .blank.pop')||$('#m-rows .row.final .eq')||$('#d-task .blank.pop')||$('#d-task');
 function pressDigit(d){
-  if(!M||M.taskDone) return; const b=curBlank(); if(!b) return;
+  if(!M||M.taskDone||M.busy||M.phase==='load') return; const b=curBlank(); if(!b) return;
   const maxLen=Math.max(2,String(b.ans).length);
-  if(M.entry.length>=maxLen){ M.nudge='Drücke ✓ zum Prüfen oder ⌫ zum Löschen.'; drawBubble(); return; }
-  M.entry+=d; M.nudge=null; Sound.play('tap'); drawRows(); if(M.feedback){ M.feedback=null; } drawBubble();
+  if(M.entry.length>=maxLen){ M.nudge='Drücke ✓ oder ⌫.'; drawBubble(); return; }
+  M.entry+=d; M.nudge=null; M.stepMsg=null; Sound.play('tap'); drawRows(); if(M.feedback){ M.feedback=null; } drawBubble();
 }
-function pressDel(){ if(!M||M.taskDone) return; M.entry=M.entry.slice(0,-1); M.nudge=null; drawRows(); drawBubble(); }
+function pressDel(){ if(!M||M.taskDone||M.busy||M.phase==='load') return; M.entry=M.entry.slice(0,-1); M.nudge=null; drawRows(); drawBubble(); }
 function pressHint(){
-  if(!M||M.taskDone) return; const b=curBlank(); if(!b) return;
+  if(M&&M.phase==='load'){ loadHint(); return; }
+  if(!M||M.taskDone||M.busy) return; const b=curBlank(); if(!b) return;
   if(b.h<b.hints.length) b.h++;
   else if(!b.revealed){ b.revealed=true; M.taskWrong=true; }
-  M.feedback=null; M.nudge=null; Sound.play('tap'); drawRows(); drawBubble(); drawVisual();
+  M.feedback=null; M.nudge=null; M.stepMsg=null; Sound.play('tap'); drawRows(); drawBubble(); drawVisual();
 }
 function pressOk(){
-  if(!M) return;
+  if(!M||M.busy||M.phase==='load') return;
   if(M.taskDone){ nextTask(); return; }
   const b=curBlank(); if(!b) return;
   if(M.entry===''){ M.nudge='Tippe zuerst eine Zahl ein.'; drawBubble(); return; }
@@ -1232,26 +1503,38 @@ function pressOk(){
   M.entry=''; M.nudge=null;
   if(val===b.ans){ b.val=val; M.feedback=null; M.popB=M.bi; onBlankCorrect(); return; }
   b.wrong++; M.taskWrong=true; b.h=Math.min(b.hints.length,b.h+1); if(b.wrong>=3) b.revealed=true;
-  M.feedback='wrong'; Sound.play('wrong'); drawRows(); drawBubble(); drawVisual();
+  M.feedback='wrong'; M.stepMsg=null; Sound.play('wrong'); drawRows(); drawBubble(); drawVisual();
   const a=$('#m-rows .blank.active'); if(a) a.classList.add('shake');
 }
 function onBlankCorrect(){
   const t=curTask(),next=t.blanks.findIndex(x=>!x.auto&&x.val==null);
-  if(next>=0){ M.bi=next; M.stepMsg=pick(STEPOK); Sound.play('step'); drawRows(); drawBubble(); drawVisual(); return; }
-  t.blanks.forEach(x=>{ if(x.auto) x.val=x.ans; });
+  if(next>=0){
+    M.stepMsg=pick(STEPOK); Sound.play('step');
+    const stepped=t.rows.some(r=>r.step!=null);
+    const go=()=>{ if(!M||(current!=='mission'&&current!=='drive')) return; M.busy=false; M.bi=next; drawRows(); drawBubble(); drawVisual(); };
+    if(stepped){ M.busy=true; drawRows(); drawBubble(); burst(fxTarget(),10); setTimeout(go,M.mode==='drive'?350:700); }
+    else { go(); burst(fxTarget(),10); }
+    return;
+  }
+  const ai=t.blanks.findIndex(x=>x.auto); if(ai>=0){ t.blanks.forEach(x=>{ if(x.auto) x.val=x.ans; }); M.popB=ai; }
   completeTask();
 }
 function completeTask(){
-  const t=curTask(),clean=!M.taskWrong,c=clean?5:3;
-  M.taskDone=true; if(clean) M.firstTry++;
+  const t=curTask(),clean=!M.taskWrong;
+  M.taskDone=true;
+  if(clean){ M.firstTry++; M.streak++; } else M.streak=0;
+  const bonus=clean&&M.streak>=3&&M.streak%3===0?3:0, c=(clean?5:3)+bonus;
   M.coins+=c; state.coins+=c; recordTask(t,clean); save(true);
-  M.praise=clean?pick(PRAISE):pick(PRAISE_HELP); M.coinMsg=`+${c} Münzen`;
-  Sound.play('ok'); setTimeout(()=>Sound.play('coin'),200);
-  drawAll(); drawHud(); bumpCoins();
-  M.advanceTimer=setTimeout(nextTask,t.kind==='bridge'?2000:1500);
+  M.praise=clean?pick(PRAISE):pick(PRAISE_HELP);
+  M.coinMsg=`+${c} Münzen`+(bonus?` · ${M.streak}er-Serie!`:'');
+  Sound.play('ok'); setTimeout(()=>Sound.play('honk'),240);
+  drawAll();
+  stamp(bonus?`Serie ×${M.streak}!`:M.praise);
+  const tg=fxTarget(); burst(tg,18); flyCoins(tg,clean?3:2);
+  M.advanceTimer=setTimeout(nextTask,t.kind==='bridge'?2300:1700);
 }
 function nextTask(){
-  if(!M||current!=='mission') return;
+  if(!M||(current!=='mission'&&current!=='drive')) return;
   clearTimeout(M.advanceTimer);
   if(M.ti+1>=M.tasks.length){ finishMission(); return; }
   M.ti++; M.taskDone=false; M.taskWrong=false; M.feedback=null; M.stepMsg=null; M.nudge=null; prepTask(); drawAll();
@@ -1283,7 +1566,7 @@ function renderResult(){
     <ul class="rbreak"><li>Aufgaben <b>+${M.coins-R.bonus-R.daily}</b></li><li>Missions-Bonus <b>+${R.bonus}</b></li>${R.daily?`<li>Tagesauftrag <b>+${R.daily}</b></li>`:''}</ul>
     ${M.newUnlocks&&M.newUnlocks.length?`<div><span class="unlock">${STAR} Neu freigeschaltet: <b>${esc(M.newUnlocks.join(', '))}</b></span></div>`:''}
     <div class="rveh" style="${vehStyle(v)}">${vehSVG(v.id)}</div>
-    <div class="ractions">${next?`<button class="btn btn-go big" data-act="play" data-id="${next.did}" data-mi="${next.mi}">${icon('play','fill')} ${next.did===M.did?'Nächste Mission':esc(missionLabel(next).split(' · ')[0])}</button>`:''}
+    <div class="ractions">${next?`<button class="btn btn-go big" data-act="${M.mode==='drive'&&next.did!=='hq'?'drive':'play'}" data-id="${next.did}" data-mi="${next.mi}">${icon(M.mode==='drive'?'car':'play',M.mode==='drive'?'':'fill')} ${next.did===M.did?'Nächste Mission':esc(missionLabel(next).split(' · ')[0])}</button>`:''}
       <button class="btn big" data-act="replay">Nochmal</button><button class="btn big" data-act="home">Zur Stadt</button></div>
     ${goalHTML()}
   </div>`;
@@ -1402,6 +1685,504 @@ function renderParents(){
   </div></div>`;
 }
 
+/* ================= 3D drive mode (Three.js, loaded only when needed) ================= */
+/* A calm, naturally lit city seen from above. The answer to the current step stands on the road
+   as a number sign; drive into the right one. Controls: hold a finger (or the mouse) where you want
+   to go, or use the arrow keys. Steering, speed and camera are all smoothed. */
+const Drive={ctx:null,loading:null};
+const DRIVE_KEYS={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
+const CITY=256,GRID=64;
+function loadThree(){
+  if(window.THREE) return Promise.resolve(window.THREE);
+  if(Drive.loading) return Drive.loading;
+  Drive.loading=new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'; s.async=true;
+    s.onload=()=>window.THREE?res(window.THREE):rej(new Error('three missing'));
+    s.onerror=()=>{ Drive.loading=null; rej(new Error('three load failed')); };
+    (document.head||document.body).appendChild(s);
+  });
+  return Drive.loading;
+}
+function isDarkTheme(){ const t=document.documentElement.getAttribute('data-theme'); if(t) return t==='dark'; try{ return matchMedia('(prefers-color-scheme: dark)').matches; }catch(e){ return false; } }
+function renderDriveShell(){
+  if(!M){ show('city'); return; }
+  const fine=(()=>{ try{ return matchMedia('(pointer:fine)').matches; }catch(e){ return false; } })();
+  $('#screen-drive').innerHTML=`<div class="drive" style="--tc:var(--d-${sceneOf()})">
+    <div class="drive-canvas" id="drive-canvas"></div>
+    <div class="darrows" id="d-arrows"></div>
+    <div class="dtop">
+      <button class="iconbtn dbtn" id="quit-btn" data-act="quit" aria-label="Mission beenden">${icon('close')}</button>
+      <div class="dpanel dtask" id="d-task"></div>
+      <div class="dside"><div class="dpanel dcount" id="d-count"></div><span class="streak" id="m-streak" hidden></span></div>
+    </div>
+    <div class="dpanel dvisual" id="d-visual" hidden></div>
+    <div class="dbottom">
+      <div class="dpanel dbubble" id="d-bubble" aria-live="polite"></div>
+      <div class="dtools"><button class="btn btn-gold" data-act="hint">${icon('bulb')} Tipp</button>${Speech.ok?`<button class="btn" data-act="speak" aria-label="Vorlesen">${icon('speaker')}</button>`:''}</div>
+    </div>
+    <div class="dhelp" id="d-help">${fine?'Klicken und halten, wohin du fahren willst. Oder Pfeiltasten.':'Halte den Finger dorthin, wo du hinfahren willst.'}</div>
+    <div class="stamp" id="m-stamp" aria-hidden="true"></div>
+    <div class="dloading" id="d-loading">${fox('happy')}<span>Die Stadt wird gebaut …</span></div>
+  </div>${introHTML()}`;
+  M.lastVis=null; renderDriveHud(); drawStreak();
+  loadThree().then(()=>{ if(current==='drive'&&M) initDrive(); })
+    .catch(()=>{ toast('Fahren klappt hier gerade nicht. Du spielst mit Tasten weiter.'); if(M&&current==='drive'){ M.mode='keys'; show('mission'); } });
+}
+function renderDriveHud(){
+  const task=$('#d-task'); if(!task||!M) return;
+  const t=curTask();
+  task.innerHTML=`<div class="rows">${rowsHTML(visibleRows(t,true),t)}</div>`;
+  M.popB=null;
+  const m=bubbleModel(),bb=$('#d-bubble');
+  bb.className='dpanel dbubble'+(m.cls?' '+m.cls:''); bb.innerHTML=m.html;
+  $('#d-count').textContent=`${Math.min(M.ti+1,M.tasks.length)} von ${M.tasks.length}`;
+  const b=M.taskDone?null:curBlank(),vis=$('#d-visual'),vh=b&&b.h>=1?visualHTML():'';
+  if(vh!==M.lastVis){ vis.innerHTML=vh; M.lastVis=vh; }
+  vis.hidden=!vh;
+}
+function driveSync(){
+  renderDriveHud();
+  const D=Drive.ctx; if(!D||!M) return;
+  const key=M.taskDone?'done'+M.ti:M.ti+':'+M.bi;
+  if(key!==D.pickKey){ D.pickKey=key; clearPickups(); if(!M.taskDone) spawnPickups(); }
+  const b=!M.taskDone&&curBlank();
+  if(b&&b.revealed) D.pickups.forEach(p=>{ if(p.value===b.ans&&!p.revealed){ p.revealed=true; const old=p.sp.material.map; p.sp.material.map=signTexture(D.T,p.value,true); p.sp.material.needsUpdate=true; old.dispose(); p.sp.scale.set(4.4,4.4,1); } });
+}
+function mulberry(a){ return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function canvasTex(T,w,h,draw,wrap){
+  const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h);
+  const t=new T.CanvasTexture(c); t.encoding=T.sRGBEncoding; t.anisotropy=4;
+  if(wrap) t.wrapS=t.wrapT=T.RepeatWrapping;
+  return t;
+}
+function speckle(g,w,h,n,base){ g.fillStyle=base; g.fillRect(0,0,w,h); for(let i=0;i<n;i++){ const v=62+Math.floor(Math.random()*34); g.fillStyle=`rgba(${v},${v},${v+3},.55)`; g.fillRect(Math.random()*w,Math.random()*h,1.6,1.6); } }
+/* Box with UVs scaled to world size so window textures keep their proportions. */
+function boxGeo(T,w,h,d,tile){
+  const g=new T.BoxGeometry(w,h,d),uv=g.attributes.uv;
+  for(let i=0;i<uv.count;i++){ const f=Math.floor(i/4); let su=1,sv=1;
+    if(f<2){ su=d/tile; sv=h/tile; } else if(f<4){ su=w/tile; sv=d/tile; } else { su=w/tile; sv=h/tile; }
+    uv.setXY(i,uv.getX(i)*su,uv.getY(i)*sv); }
+  uv.needsUpdate=true; return g;
+}
+/* Open countryside: wide road grid, low houses with pitched roofs, fields, woods and a river with stone bridges. */
+function buildWorld(T,scene,dark,col){
+  const rand=mulberry(11),std=(c,o)=>new T.MeshStandardMaterial(Object.assign({color:col(c),roughness:.92,metalness:0},o||{}));
+  const R0=90,R1=104,inRiver=(z,m)=>z>R0-m&&z<R1+m;
+  const grassTex=canvasTex(T,128,128,(g,w,h)=>{ g.fillStyle=dark?'#4b5a3d':'#738c53'; g.fillRect(0,0,w,h); for(let i=0;i<1600;i++){ g.fillStyle=Math.random()<.5?'rgba(40,60,20,.13)':'rgba(210,225,160,.10)'; g.fillRect(Math.random()*w,Math.random()*h,2,2); } },true);
+  grassTex.repeat.set(70,70);
+  const ground=new T.Mesh(new T.PlaneGeometry(CITY+760,CITY+760),std('#ffffff',{map:grassTex}));
+  ground.rotation.x=-Math.PI/2; ground.position.set(CITY/2,0,CITY/2); ground.receiveShadow=true; scene.add(ground);
+  const water=new T.Mesh(new T.PlaneGeometry(CITY+760,R1-R0),std(dark?'#35566c':'#55869a',{roughness:.16,metalness:.15}));
+  water.rotation.x=-Math.PI/2; water.position.set(CITY/2,.012,(R0+R1)/2); scene.add(water);
+  [R0-1.1,R1+1.1].forEach(z=>{ const bank=new T.Mesh(new T.PlaneGeometry(CITY+760,2.2),std(dark?'#6c6752':'#b3a57d')); bank.rotation.x=-Math.PI/2; bank.position.set(CITY/2,.011,z); bank.receiveShadow=true; scene.add(bank); });
+  const roadTex=canvasTex(T,64,256,(g,w,h)=>{ speckle(g,w,h,1100,'#4c4f53'); g.fillStyle='rgba(236,233,224,.85)'; g.fillRect(30,24,4,92); g.fillStyle='rgba(236,233,224,.55)'; g.fillRect(4,0,2,h); g.fillRect(w-6,0,2,h); },true);
+  roadTex.repeat.set(1,(CITY+8)/32);
+  const roadMat=std('#ffffff',{map:roadTex,roughness:.96});
+  const plainTex=canvasTex(T,64,64,(g,w,h)=>speckle(g,w,h,320,'#4c4f53'),true);
+  const interMat=std('#ffffff',{map:plainTex,roughness:.96}),stone=std(dark?'#7b766b':'#a49c8e',{roughness:.85});
+  const N=CITY/GRID;
+  for(let k=0;k<=N;k++){
+    const a=new T.Mesh(new T.PlaneGeometry(8,CITY+8),roadMat); a.rotation.x=-Math.PI/2; a.position.set(k*GRID,.03,CITY/2); a.receiveShadow=true; scene.add(a);
+    const b=new T.Mesh(new T.PlaneGeometry(8,CITY+8),roadMat); b.rotation.set(-Math.PI/2,0,Math.PI/2); b.position.set(CITY/2,.02,k*GRID); b.receiveShadow=true; scene.add(b);
+    for(let j=0;j<=N;j++){ const c=new T.Mesh(new T.PlaneGeometry(8,8),interMat); c.rotation.x=-Math.PI/2; c.position.set(k*GRID,.045,j*GRID); c.receiveShadow=true; scene.add(c); }
+    [-4.6,4.6].forEach(dx=>{ const rail=new T.Mesh(new T.BoxGeometry(.55,.9,R1-R0+7),stone); rail.position.set(k*GRID+dx,.45,(R0+R1)/2); rail.castShadow=true; rail.receiveShadow=true; scene.add(rail); });
+  }
+  const winTex=canvasTex(T,64,64,(g,w,h)=>{ g.fillStyle='#ffffff'; g.fillRect(0,0,w,h); const gr=g.createLinearGradient(0,18,0,46); gr.addColorStop(0,'#3d4954'); gr.addColorStop(1,'#283139'); g.fillStyle=gr; g.fillRect(21,18,22,28); g.fillStyle='#f4f1ea'; g.fillRect(31,18,2,28); g.fillRect(21,30,22,2); },true);
+  const wallMats=['#e6dfd1','#d8c7a6','#eee8db','#c9b89f','#dcd3c4','#c7b192'].map(c=>std(c,{map:winTex}));
+  const roofMats=['#a3593f','#8d4e39','#5e656f','#6d5948','#9a6146'].map(c=>std(c,{roughness:.8}));
+  const pick=a=>a[Math.floor(rand()*a.length)];
+  const house=(x,z,rot)=>{
+    if(inRiver(z,5)) return;
+    const w=5+rand()*2.6,d=5+rand()*2.6,h=3+rand()*1.6,g=new T.Group(),wm=pick(wallMats);
+    g.position.set(x,0,z); g.rotation.y=rot;
+    const body=new T.Mesh(boxGeo(T,w,h,d,3.2),wm); body.position.y=h/2; body.castShadow=body.receiveShadow=true; g.add(body);
+    const tri=new T.Shape(); tri.moveTo(-w/2-.45,0); tri.lineTo(w/2+.45,0); tri.lineTo(0,1.5+rand()*.9); tri.closePath();
+    const rg=new T.ExtrudeGeometry(tri,{depth:d+.7,bevelEnabled:false}); rg.translate(0,0,-(d+.7)/2);
+    const roof=new T.Mesh(rg,pick(roofMats)); roof.position.y=h; roof.castShadow=true; roof.receiveShadow=true; g.add(roof);
+    scene.add(g);
+  };
+  const fieldTex=(a,b)=>{ const t=canvasTex(T,64,64,(g,w,h)=>{ g.fillStyle=a; g.fillRect(0,0,w,h); g.fillStyle=b; for(let y=0;y<h;y+=8) g.fillRect(0,y,w,3); },true); return t; };
+  const fieldMats=[fieldTex('#c8b46d','#b6a25c'),fieldTex('#8da35b','#7c924f'),fieldTex('#8a6c50','#795e45')].map(t=>std('#ffffff',{map:t}));
+  const field=(x0,z0,x1,z1)=>{ if(x1-x0<6||z1-z0<6) return; const m=pick(fieldMats); m.map.repeat.set(1,(z1-z0)/8); const f=new T.Mesh(new T.PlaneGeometry(x1-x0,z1-z0),m); f.rotation.x=-Math.PI/2; f.position.set((x0+x1)/2,.008,(z0+z1)/2); f.receiveShadow=true; scene.add(f); };
+  const round=[],cone=[];
+  const tree=(x,z,c)=>{ if(inRiver(z,3)) return; (c?cone:round).push([x,z,.75+rand()*.6]); };
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    const x0=i*GRID+8,x1=(i+1)*GRID-8,z0=j*GRID+8,z1=(j+1)*GRID-8,t=rand();
+    if(t<.42){
+      for(let z=z0+3;z<=z1-3;z+=11){ house(x0+3.5,z,0); house(x1-3.5,z,0); }
+      for(let x=x0+15;x<=x1-15;x+=11){ house(x,z0+3.5,Math.PI/2); house(x,z1-3.5,Math.PI/2); }
+      for(let n=0;n<10;n++) tree(x0+10+rand()*(x1-x0-20),z0+10+rand()*(z1-z0-20),rand()<.3);
+    } else if(t<.72){
+      if(j===1){ field(x0+2,z0+2,x1-2,R0-4); field(x0+2,R1+4,x1-2,z1-2); } else field(x0+2,z0+2,x1-2,z1-2);
+      for(let x=x0;x<=x1;x+=7){ tree(x,z0-1.5,false); tree(x,z1+1.5,false); }
+    } else if(t<.92){
+      for(let n=0;n<46;n++) tree(x0+rand()*(x1-x0),z0+rand()*(z1-z0),rand()<.55);
+    } else {
+      const bx=(x0+x1)/2-8,bz=j===1?z0+12:(z0+z1)/2;
+      const barn=new T.Mesh(new T.BoxGeometry(14,6,9),std(dark?'#6e3c31':'#8c4b3a')); barn.position.set(bx,3,bz); barn.castShadow=barn.receiveShadow=true; scene.add(barn);
+      const tri=new T.Shape(); tri.moveTo(-7.5,0); tri.lineTo(7.5,0); tri.lineTo(0,3.4); tri.closePath();
+      const rg=new T.ExtrudeGeometry(tri,{depth:9.8,bevelEnabled:false}); rg.translate(0,0,-4.9);
+      const roof=new T.Mesh(rg,std('#4f5254',{roughness:.7})); roof.position.set(bx,6,bz); roof.castShadow=true; scene.add(roof);
+      const silo=new T.Mesh(new T.CylinderGeometry(2.1,2.1,10,18),std('#b8bcbf',{roughness:.45,metalness:.5})); silo.position.set(bx+12,5,bz); silo.castShadow=true; scene.add(silo);
+      const dome=new T.Mesh(new T.SphereGeometry(2.1,18,10,0,Math.PI*2,0,Math.PI/2),std('#9fa4a8',{roughness:.4,metalness:.5})); dome.position.set(bx+12,10,bz); scene.add(dome);
+      if(j!==1) field(x0+2,bz+8,x1-2,z1-2);
+    }
+  }
+  for(let k=0;k<=N;k++) for(let z=6;z<CITY;z+=16){ if(rand()<.35) tree(k*GRID+(rand()<.5?-6.5:6.5),z,false); if(rand()<.35) tree(z,k*GRID+(rand()<.5?-6.5:6.5),false); }
+  const trunkGeo=new T.CylinderGeometry(.18,.25,2.2,6),trunkMat=std('#6a5038');
+  const greens=['#4f6b36','#5a7740','#46602f','#62804a','#3f5a2c'],mtx=new T.Matrix4(),q=new T.Quaternion(),sc=new T.Vector3(),pos=new T.Vector3();
+  const plant=(list,geo,yOff,sy)=>{
+    if(!list.length) return;
+    const crown=new T.InstancedMesh(geo,new T.MeshStandardMaterial({color:col('#ffffff'),roughness:.95}),list.length);
+    const trunk=new T.InstancedMesh(trunkGeo,trunkMat,list.length);
+    list.forEach(([x,z,s],i)=>{ pos.set(x,1.1*s,z); sc.set(s,s,s); mtx.compose(pos,q,sc); trunk.setMatrixAt(i,mtx);
+      pos.set(x,yOff*s,z); sc.set(s,s*sy,s); mtx.compose(pos,q,sc); crown.setMatrixAt(i,mtx); crown.setColorAt(i,col(greens[i%greens.length])); });
+    crown.castShadow=trunk.castShadow=true; crown.instanceColor.needsUpdate=true; scene.add(crown,trunk);
+  };
+  plant(round,new T.IcosahedronGeometry(1.8,1),3,.92);
+  plant(cone,new T.ConeGeometry(1.6,4.6,8),3.9,1);
+}
+function wheel(T,r,mat,rimMat){
+  const pivot=new T.Group(),spin=new T.Group(),tire=new T.Mesh(new T.CylinderGeometry(r,r,.34,20),mat),rim=new T.Mesh(new T.CylinderGeometry(r*.6,r*.6,.36,14),rimMat);
+  tire.rotation.z=rim.rotation.z=Math.PI/2; tire.castShadow=true; spin.add(tire,rim); pivot.add(spin); pivot.userData.spin=spin; return pivot;
+}
+function makeVehicle(T,v,col,dark){
+  const p=PNT[state.paintOf[v.id]||'std']||PNT.std,c1=p.c1||v.c1,c2=p.c2||v.c2;
+  const g=new T.Group(),body=new T.Group(); g.add(body); g.userData={body,wheels:[],front:[],rotors:[]};
+  const paint=new T.MeshStandardMaterial({color:col(c1),roughness:.36,metalness:.22});
+  const paint2=new T.MeshStandardMaterial({color:col(c2),roughness:.5,metalness:.1});
+  const trim=new T.MeshStandardMaterial({color:col('#1c1e21'),roughness:.7});
+  const glass=new T.MeshStandardMaterial({color:col('#1e2a34'),roughness:.08,metalness:.5});
+  const rimMat=new T.MeshStandardMaterial({color:col('#a9afb5'),roughness:.35,metalness:.7});
+  const lamp=new T.MeshStandardMaterial({color:col('#fff6dc'),emissive:col('#fff1c9'),emissiveIntensity:dark?1.6:.4});
+  const tail=new T.MeshStandardMaterial({color:col('#8d1b1b'),emissive:col('#c22a2a'),emissiveIntensity:dark?1.2:.25});
+  const add=(geo,mat,x,y,z,parent)=>{ const m=new T.Mesh(geo,mat); m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; (parent||body).add(m); return m; };
+  if(v.cat==='luft'){
+    const jet=v.id==='jet'||v.id==='stealth';
+    g.userData.air=true;
+    if(jet){
+      const f=add(new T.CylinderGeometry(.55,.75,6.2,14),paint,0,0,0); f.rotation.x=Math.PI/2;
+      const n=add(new T.ConeGeometry(.55,1.8,14),paint,0,0,4); n.rotation.x=Math.PI/2;
+      add(new T.BoxGeometry(7.2,.14,1.9),paint2,0,0,-.4);
+      add(new T.BoxGeometry(2.8,.12,.9),paint2,0,0,-2.8);
+      add(new T.BoxGeometry(.12,1.3,1.1),paint2,0,.7,-2.7);
+      add(new T.SphereGeometry(.45,12,10),glass,0,.45,1.6).scale.set(1,.7,2);
+    } else {
+      add(new T.SphereGeometry(1,18,14),paint,0,0,.4).scale.set(1.25,1.1,2);
+      add(new T.SphereGeometry(.9,16,12),glass,0,.25,1.5).scale.set(1.05,.85,1.1);
+      const boom=add(new T.CylinderGeometry(.18,.32,4.2,10),paint,0,.2,-2.6); boom.rotation.x=Math.PI/2;
+      add(new T.BoxGeometry(.12,1.1,.8),paint2,0,.7,-4.5);
+      add(new T.BoxGeometry(.1,.1,3.6),trim,.85,-1.15,.4); add(new T.BoxGeometry(.1,.1,3.6),trim,-.85,-1.15,.4);
+      const mk=(z,y)=>{ const r=new T.Group(); r.position.set(0,y,z); const a=new T.Mesh(new T.BoxGeometry(9,.06,.32),trim); const b=a.clone(); b.rotation.y=Math.PI/2; r.add(a,b); body.add(r); g.userData.rotors.push(r); };
+      if(v.id==='chinook'){ mk(1.6,1.35); mk(-2.4,1.6); } else mk(.4,1.25);
+    }
+    return g;
+  }
+  const big=v.id==='truck'||v.id==='armored',monster=v.id==='monster',quad=v.id==='quad';
+  const L=big?2.7:quad?1.35:2.15,W=quad?1.25:1.95,R=monster?.72:big?.5:quad?.42:.42,lift=monster?.5:0;
+  const shape=new T.Shape();
+  if(quad){ shape.moveTo(-L,.45); shape.lineTo(L,.45); shape.lineTo(L,.8); shape.lineTo(-L,.85); shape.closePath(); }
+  else { shape.moveTo(-L,.38); shape.lineTo(L,.38); shape.lineTo(L+.05,.78); shape.quadraticCurveTo(L-.05,1,L-.55,1.02); shape.lineTo(-L+.35,1.05); shape.quadraticCurveTo(-L-.02,1.02,-L,.7); shape.closePath(); }
+  const ext=(sh,depth,bev)=>{ const geo=new T.ExtrudeGeometry(sh,{depth,bevelEnabled:true,bevelThickness:bev,bevelSize:bev,bevelSegments:3,steps:1}); geo.translate(0,0,-depth/2); geo.rotateY(-Math.PI/2); return geo; };
+  add(ext(shape,W-.16,.08),paint,0,lift,0);
+  if(quad){ add(new T.BoxGeometry(.7,.25,1.1),trim,0,1.0+lift,-.2); add(new T.BoxGeometry(1.1,.08,.08),trim,0,1.3,.9); }
+  else if(big){
+    const cs=new T.Shape(); cs.moveTo(.6,1.0); cs.lineTo(L-.35,1.0); cs.lineTo(L-.55,1.9); cs.lineTo(.6,1.95); cs.closePath();
+    add(ext(cs,W-.3,.05),glass,0,lift,0); add(new T.BoxGeometry(W-.36,.07,L-1.3),paint,0,1.98+lift,(L+.25)/2);
+    add(new T.BoxGeometry(W,1.6,L*1.05),v.id==='armored'?paint:paint2,0,1.85+lift,-L*.42);
+  } else {
+    const cs=new T.Shape(); cs.moveTo(-L*.62,1.0); cs.lineTo(L*.3,1.0); cs.lineTo(L*.02,1.56); cs.lineTo(-L*.5,1.58); cs.closePath();
+    add(ext(cs,W-.42,.05),glass,0,lift,0); add(new T.BoxGeometry(W-.5,.07,L*.5),v.id==='jeep'?paint2:paint,0,1.62+lift,-L*.24);
+  }
+  [[.62,L+.07],[-.62,L+.07]].forEach(([x,z])=>add(new T.BoxGeometry(.42,.18,.06),lamp,x*(W/1.95),.8+lift,z));
+  [[.66,-L-.07],[-.66,-L-.07]].forEach(([x,z])=>add(new T.BoxGeometry(.4,.16,.06),tail,x*(W/1.95),.82+lift,z));
+  const axles=big?[L-.8,-L+.9,-L+2.1]:[L-.75,-L+.72];
+  axles.forEach((z,ai)=>[1,-1].forEach(sx=>{ const w=wheel(T,R,trim,rimMat); w.position.set(sx*(W/2-.04),R,z); g.add(w); g.userData.wheels.push(w); if(ai===0) g.userData.front.push(w); }));
+  g.userData.R=R;
+  return g;
+}
+function signTexture(T,v,ok){
+  return canvasTex(T,256,256,(g,w,h)=>{
+    g.beginPath(); g.arc(128,128,118,0,Math.PI*2); g.fillStyle=ok?'#2f8a58':'#33465f'; g.fill();
+    g.beginPath(); g.arc(128,128,98,0,Math.PI*2); g.fillStyle='#f7f6f2'; g.fill();
+    g.fillStyle='#1d2430'; const s=String(v); g.font=`700 ${s.length>2?84:s.length>1?110:132}px Lexend, "Avenir Next", system-ui, sans-serif`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(s,128,138);
+  });
+}
+function distractors(ans,n){
+  const pool=[ans+1,ans-1,ans+2,ans-2,ans+10,ans-10,ans+3].filter(x=>x>=0&&x<=100&&x!==ans);
+  for(let i=pool.length-1;i>0;i--){ const j=rnd(i+1); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool.slice(0,n);
+}
+function onRoad(x,z){
+  if(x<-3.4||z<-3.4||x>CITY+3.4||z>CITY+3.4) return false;
+  const mx=((x%GRID)+GRID)%GRID,mz=((z%GRID)+GRID)%GRID;
+  return Math.min(mx,GRID-mx)<=3.1||Math.min(mz,GRID-mz)<=3.1;
+}
+function safeRect(){
+  const D=Drive.ctx,host=$('#drive-canvas'); if(!D||!host) return {l:0,r:1,t:0,b:1};
+  const h=host.getBoundingClientRect(),tp=$('.dtop'),bt=$('.dbottom'),tb=tp?tp.getBoundingClientRect():null,bb=bt?bt.getBoundingClientRect():null;
+  const t=(tb?tb.bottom-h.top:0)+30,b=(bb?bb.top-h.top:h.height)-30;
+  return {l:30,r:h.width-30,t:Math.min(t,h.height/2-30),b:Math.max(b,h.height/2+30)};
+}
+function toScreen(x,y,z){ const D=Drive.ctx; D.proj.set(x,y,z).project(D.cam); return {x:(D.proj.x+1)/2*D.w,y:(1-D.proj.y)/2*D.h,behind:D.proj.z>1}; }
+function placeCamera(snap,dt){
+  const D=Drive.ctx,c=D.car,ahead=D.air?.5:.6,tx=c.x+Math.sin(c.h)*c.v*ahead,tz=c.z+Math.cos(c.h)*c.v*ahead,f=snap?1:1-Math.exp(-dt*2.6);
+  D.camTarget.x+=(tx-D.camTarget.x)*f; D.camTarget.z+=(tz-D.camTarget.z)*f;
+  const tall=D.h>D.w?1.3:1,height=(D.air?40:31)*tall;
+  D.cam.position.set(D.camTarget.x,height,D.camTarget.z+height*.72); D.cam.lookAt(D.camTarget.x,0,D.camTarget.z); D.cam.updateMatrixWorld();
+}
+function spawnPickups(){
+  const D=Drive.ctx,b=curBlank(); if(!D||!b) return;
+  const vals=[b.ans,...distractors(b.ans,2)];
+  for(let i=vals.length-1;i>0;i--){ const j=rnd(i+1); [vals[i],vals[j]]=[vals[j],vals[i]]; }
+  const spots=[]; let tries=0;
+  while(spots.length<vals.length&&tries++<600){
+    const ang=Math.random()*Math.PI*2,dist=10+Math.random()*(tries>450?30:20);
+    let x=D.car.x+Math.sin(ang)*dist,z=D.car.z+Math.cos(ang)*dist;
+    const sx=Math.round(x/GRID)*GRID,sz=Math.round(z/GRID)*GRID;
+    if(Math.abs(x-sx)<Math.abs(z-sz)) x=sx; else z=sz;
+    if(x<0||z<0||x>CITY||z>CITY) continue;
+    if(Math.hypot(x-D.car.x,z-D.car.z)<9) continue;
+    if(spots.some(s=>Math.hypot(s.x-x,s.z-z)<9)) continue;
+    if(tries<450){ const sr=D.safeR||safeRect(),pt=toScreen(x,3.7,z); if(pt.behind||pt.x<sr.l+20||pt.x>sr.r-20||pt.y<sr.t+20||pt.y>sr.b-20) continue; }
+    spots.push({x,z});
+  }
+  const T=D.T;
+  vals.forEach((v,i)=>{ const s=spots[i]||{x:Math.min(CITY,D.car.x+12*(i+1)),z:D.car.z};
+    const grp=new T.Group(); grp.position.set(s.x,0,s.z);
+    const ring=new T.Mesh(new T.RingGeometry(1.7,2.15,40),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.55,depthWrite:false}));
+    ring.rotation.x=-Math.PI/2; ring.position.y=.07; grp.add(ring);
+    const pole=new T.Mesh(new T.CylinderGeometry(.09,.09,2.6,8),new T.MeshStandardMaterial({color:D.col('#9aa0a6'),roughness:.4,metalness:.6})); pole.position.y=1.3; pole.castShadow=true; grp.add(pole);
+    const sp=new T.Sprite(new T.SpriteMaterial({map:signTexture(T,v,false),depthTest:false})); sp.renderOrder=10; sp.scale.set(3.6,3.6,1); sp.position.y=3.7; grp.add(sp);
+    D.scene.add(grp);
+    D.pickups.push({id:'p'+(++D.pid),value:v,x:s.x,z:s.z,grp,sp,ring,born:performance.now()});
+  });
+}
+function disposePickup(p){ const D=Drive.ctx; if(D) D.scene.remove(p.grp); p.grp.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); } }); const a=D&&D.arrows[p.id]; if(a){ a.remove(); delete D.arrows[p.id]; } }
+function clearPickups(){ const D=Drive.ctx; if(!D) return; D.pickups.forEach(disposePickup); D.pickups=[]; }
+function onPickup(p){
+  if(!M||M.taskDone||M.busy) return;
+  const b=curBlank(); if(!b) return;
+  if(p.value===b.ans) clearPickups();
+  else { p.dying=performance.now(); }
+  M.entry=String(p.value); pressOk();
+}
+function initDrive(){
+  const T=window.THREE,host=$('#drive-canvas'); if(!host||Drive.ctx) return;
+  let renderer;
+  try{ renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'}); }
+  catch(e){ toast('Fahren klappt auf diesem Gerät nicht. Du spielst mit Tasten weiter.'); M.mode='keys'; show('mission'); return; }
+  const dark=isDarkTheme(),col=c=>new T.Color(c).convertSRGBToLinear();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.outputEncoding=T.sRGBEncoding; renderer.toneMapping=T.ACESFilmicToneMapping; renderer.toneMappingExposure=dark?.95:1.05;
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=T.PCFSoftShadowMap;
+  host.appendChild(renderer.domElement);
+  const scene=new T.Scene(),sky=col(dark?'#56607d':'#c6dce8');
+  scene.background=sky; scene.fog=new T.Fog(sky,120,330);
+  const cam=new T.PerspectiveCamera(46,1,.5,700);
+  scene.add(new T.HemisphereLight(col(dark?'#8794c4':'#dcebff'),col(dark?'#2d2a25':'#5b6a4a'),dark?.55:.75));
+  const sun=new T.DirectionalLight(col(dark?'#ffb27d':'#fff1dc'),dark?1.25:1.7);
+  sun.castShadow=true; sun.shadow.mapSize.set(2048,2048); sun.shadow.bias=-.0004; sun.shadow.normalBias=.02;
+  Object.assign(sun.shadow.camera,{left:-75,right:75,top:75,bottom:-75,near:1,far:320});
+  scene.add(sun,sun.target);
+  buildWorld(T,scene,dark,col);
+  const v=VEH[state.active],car=makeVehicle(T,v,col,dark); scene.add(car);
+  const D=Drive.ctx={T,col,renderer,scene,cam,sun,car,air:!!car.userData.air,
+    car:{x:CITY/2,z:CITY/2,h:Math.PI,v:0,w:0},camTarget:new T.Vector3(CITY/2,0,CITY/2),
+    pointer:{active:false,nx:0,ny:0},keys:{},ray:new T.Raycaster(),plane:new T.Plane(new T.Vector3(0,1,0),0),hit:new T.Vector3(),proj:new T.Vector3(),
+    pickups:[],pickKey:null,pid:0,arrows:{},last:0,stopped:false,raf:0};
+  D.carObj=car;
+  const resize=()=>{ const r=host.getBoundingClientRect(); if(!r.width||!r.height) return; renderer.setSize(r.width,r.height,false); cam.aspect=r.width/r.height; cam.updateProjectionMatrix(); D.w=r.width; D.h=r.height; };
+  resize(); try{ D.ro=new ResizeObserver(resize); D.ro.observe(host); }catch(e){ window.addEventListener('resize',resize); }
+  const el=renderer.domElement;
+  const setP=e=>{ const r=el.getBoundingClientRect(); D.pointer.nx=((e.clientX-r.left)/r.width)*2-1; D.pointer.ny=-((e.clientY-r.top)/r.height)*2+1; };
+  el.addEventListener('pointerdown',e=>{ try{ el.setPointerCapture(e.pointerId); }catch(_){} D.pointer.active=true; setP(e); lastInput=Date.now(); const h=$('#d-help'); if(h) h.hidden=true; Sound.ensure(); e.preventDefault(); });
+  el.addEventListener('pointermove',e=>{ if(D.pointer.active){ setP(e); lastInput=Date.now(); } });
+  const up=()=>{ D.pointer.active=false; };
+  el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up); el.addEventListener('lostpointercapture',up);
+  el.addEventListener('contextmenu',e=>e.preventDefault());
+  const ld=$('#d-loading'); if(ld) ld.hidden=true;
+  D.safeR=safeRect(); placeCamera(true,0);
+  driveSync();
+  D.raf=requestAnimationFrame(driveLoop);
+}
+function driveLoop(now){
+  const D=Drive.ctx; if(!D||D.stopped) return;
+  D.raf=requestAnimationFrame(driveLoop);
+  const dt=Math.min(.05,D.last?(now-D.last)/1000:.016); D.last=now;
+  const c=D.car,T=D.T,k=D.keys;
+  let dx=0,dz=0,thr=0;
+  if(D.pointer.active){
+    D.ray.setFromCamera({x:D.pointer.nx,y:D.pointer.ny},D.cam);
+    if(D.ray.ray.intersectPlane(D.plane,D.hit)){ const ox=D.hit.x-c.x,oz=D.hit.z-c.z,dist=Math.hypot(ox,oz); if(dist>1.2){ dx=ox/dist; dz=oz/dist; thr=Math.min(1,(dist-1.2)/9); } }
+  }
+  const kx=(k.right?1:0)-(k.left?1:0),kz=(k.down?1:0)-(k.up?1:0);
+  if(kx||kz){ const m=Math.hypot(kx,kz); dx=kx/m; dz=kz/m; thr=1; }
+  const maxV=D.air?17:13;
+  let targetV=0,targetW=0;
+  if(thr>0){
+    const want=Math.atan2(dx,dz),diff=Math.atan2(Math.sin(want-c.h),Math.cos(want-c.h));
+    targetW=Math.max(-2.4,Math.min(2.4,diff*3));
+    targetV=maxV*thr*(1-Math.min(.7,Math.abs(diff)/Math.PI));
+  }
+  c.w+=(targetW-c.w)*(1-Math.exp(-dt*7));
+  c.v+=(targetV-c.v)*(1-Math.exp(-dt*(targetV>c.v?1.6:2.8)));
+  c.h+=c.w*dt*Math.min(1,c.v/2.2+.18);
+  const step=c.v*dt; let nx=c.x+Math.sin(c.h)*step,nz=c.z+Math.cos(c.h)*step;
+  if(D.air){ nx=Math.max(-8,Math.min(CITY+8,nx)); nz=Math.max(-8,Math.min(CITY+8,nz)); }
+  else if(!onRoad(nx,nz)){ if(onRoad(nx,c.z)) nz=c.z; else if(onRoad(c.x,nz)) nx=c.x; else { nx=c.x; nz=c.z; } c.v*=Math.pow(.25,dt); }
+  c.x=nx; c.z=nz;
+  const o=D.carObj,ud=o.userData;
+  o.position.set(c.x,D.air?8+Math.sin(now/650)*.25:0,c.z); o.rotation.y=c.h;
+  ud.body.rotation.z=-c.w*.035*Math.min(1,c.v/6);
+  if(D.air){ ud.body.rotation.x=Math.min(.12,c.v*.008); ud.rotors.forEach((r,i)=>{ r.rotation.y+=dt*(i?-22:22); }); }
+  else{ ud.wheels.forEach(w=>{ w.userData.spin.rotation.x+=step/ud.R; }); ud.front.forEach(w=>{ w.rotation.y=Math.max(-.45,Math.min(.45,c.w*.22)); }); }
+  placeCamera(false,dt);
+  if(!D.frame||++D.frame%20===0){ D.frame=D.frame||1; D.safeR=safeRect(); }
+  D.sun.position.set(c.x-70,80,c.z+45); D.sun.target.position.set(c.x,0,c.z); D.sun.target.updateMatrixWorld();
+  const arrowsBox=$('#d-arrows');
+  for(let i=D.pickups.length-1;i>=0;i--){
+    const p=D.pickups[i];
+    if(p.dying){ const a=(now-p.dying)/380; const s=Math.max(0,1-a); p.grp.scale.set(s,s,s); p.grp.rotation.z=a*.6; if(a>=1){ disposePickup(p); D.pickups.splice(i,1); } continue; }
+    p.sp.position.y=3.7+Math.sin(now/520+p.x)*.18;
+    p.ring.material.opacity=.35+.25*Math.sin(now/300+p.z);
+    if(!M||M.taskDone||M.busy) continue;
+    if(Math.hypot(p.x-c.x,p.z-c.z)<(D.air?3.2:2.5)){ onPickup(p); break; }
+    const sr=D.safeR,pt=toScreen(p.x,3.7,p.z);
+    let sx=pt.x,sy=pt.y; const cx=(sr.l+sr.r)/2,cy=(sr.t+sr.b)/2;
+    if(pt.behind){ sx=2*cx-sx; sy=2*cy-sy; }
+    const off=pt.behind||sx<sr.l||sx>sr.r||sy<sr.t||sy>sr.b;
+    let el=D.arrows[p.id];
+    if(off&&arrowsBox){
+      if(!el){ el=document.createElement('div'); el.className='darrow'; el.innerHTML=`<span>${p.value}</span>`; arrowsBox.appendChild(el); D.arrows[p.id]=el; }
+      const vx=sx-cx,vy=sy-cy,k=Math.min(vx>0?(sr.r-cx)/vx:vx<0?(sr.l-cx)/vx:1e9,vy>0?(sr.b-cy)/vy:vy<0?(sr.t-cy)/vy:1e9);
+      const px=cx+vx*k,py=cy+vy*k,ang=Math.atan2(vy,vx);
+      el.style.transform=`translate(${px.toFixed(1)}px,${py.toFixed(1)}px) rotate(${ang.toFixed(3)}rad)`; el.firstChild.style.transform=`rotate(${(-ang).toFixed(3)}rad)`; el.hidden=false;
+    } else if(el) el.hidden=true;
+  }
+  D.renderer.render(D.scene,D.cam);
+}
+function stopDrive(){
+  const D=Drive.ctx; if(!D) return;
+  D.stopped=true; cancelAnimationFrame(D.raf);
+  try{ D.ro&&D.ro.disconnect(); }catch(e){}
+  try{
+    clearPickups();
+    D.scene.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{ ['map','emissiveMap'].forEach(k=>{ if(m[k]) m[k].dispose(); }); m.dispose(); }); } });
+    D.renderer.dispose(); if(D.renderer.forceContextLoss) D.renderer.forceContextLoss(); D.renderer.domElement.remove();
+  }catch(e){}
+  Drive.ctx=null;
+}
+
+/* ---------- hands-on crate loading ----------
+   The concrete step before the written method. The child moves the crates;
+   the rule "truck 1 first" (or "empty truck 2 first" for minus) makes the split at 10 happen. */
+function initLoad(t){
+  const L=t.load,ld={mode:L.mode,t1:[],t2:[],dock:0,out:0,target:0,acted:false,done:false,anim:null,pulse:0,msg:'',msgCls:''};
+  if(L.mode==='add'){ for(let i=0;i<10;i++){ ld.t1.push(i<L.a?'a':'e'); ld.t2.push('e'); } ld.dock=L.b; ld.msg=`Lade die ${L.b} Kisten auf. Erst Laster 1!`; }
+  else if(L.mode==='fill'){ for(let i=0;i<10;i++) ld.t1.push(i<L.n?'a':'e'); ld.dock=10-L.n+3; ld.msg='Mach Laster 1 voll!'; }
+  else { for(let i=0;i<10;i++){ ld.t1.push(i<Math.min(L.a,10)?'n':'e'); ld.t2.push(i<L.a-10?'n':'e'); } ld.target=L.b; ld.msg=`Lade ${L.b} Kisten ab. Erst Laster 2!`; }
+  return ld;
+}
+function loadSceneHTML(){
+  const L=M.ld,cell=(k,t,i)=>k==='e'||k==='x'?{k:'e'}:{k,anim:!!(L.anim&&L.anim.t===t&&L.anim.i===i)};
+  const c1=L.t1.map((k,i)=>cell(k,1,i)),c2=L.t2.map((k,i)=>cell(k,2,i)),full1=L.mode!=='sub'&&L.t1.indexOf('e')<0;
+  let trucks=`<button class="truckbtn${L.pulse===1?' pulse':''}" data-act="load-truck" data-t="1" aria-label="Laster 1">${truckSVG(c1,1,full1)}</button>`;
+  if(L.mode!=='fill') trucks+=`<button class="truckbtn${L.pulse===2?' pulse':''}" data-act="load-truck" data-t="2" aria-label="Laster 2">${truckSVG(c2,2,false)}</button>`;
+  let pal='';
+  if(L.mode==='sub'){ for(let i=0;i<L.target;i++) pal+=i<L.out?'<span class="dcrate"></span>':'<span class="dspot"></span>'; }
+  else for(let i=0;i<L.dock;i++) pal+='<span class="dcrate" data-drag="1"></span>';
+  L.anim=null; L.pulse=0;
+  return `<div class="loadscene${L.mode==='sub'?' sub':''}"><div class="trucks">${trucks}</div><div class="dock"${L.mode==='sub'?' data-dock="1"':''}><span class="dock-label">${L.mode==='sub'?'Abladeplatz':'Ladeplatz'}</span><div class="pallet">${pal}</div></div></div>`;
+}
+function drawLoadBubble(el){
+  const L=M.ld,mood=L.msgCls==='good'?'happy':L.msgCls==='hint'?'think':'';
+  const tip=!L.acted&&M.ti===0?(L.mode==='sub'?'Tippe auf einen Laster oder zieh Kisten zum Abladeplatz.':'Tippe auf einen Laster oder zieh die Kisten hinauf.'):'';
+  el.className='bubble'+(L.msgCls?' '+L.msgCls:'');
+  el.innerHTML=`<span class="ava ${mood}">${fox(mood)}</span><div class="msg"><span class="main">${fmt(L.msg)}</span>${tip?`<span class="sub">${fmt(tip)}</span>`:''}</div>${Speech.ok?`<button class="iconbtn soft" data-act="speak" aria-label="Vorlesen">${icon('speaker')}</button>`:''}`;
+  M.lastSpeech=L.msg;
+}
+function loadMsg(text,cls){ M.ld.msg=text; M.ld.msgCls=cls||''; drawBubble(); }
+const lastIdx=(arr,k)=>arr.lastIndexOf(k);
+function loadAct(t){
+  if(!M||M.phase!=='load'||M.busy) return;
+  const L=M.ld; if(L.done) return;
+  L.acted=true;
+  if(L.mode==='add'||L.mode==='fill'){
+    if(L.dock<=0) return;
+    const free1=L.t1.indexOf('e'),free2=L.t2.indexOf('e');
+    if(t===1){
+      if(free1<0){ loadMsg(L.mode==='fill'?'Laster 1 ist schon voll.':'Laster 1 ist voll. Lade auf Laster 2!','hint'); L.pulse=L.mode==='fill'?0:2; drawVisual(); return; }
+      L.t1[free1]='b'; L.anim={t:1,i:free1};
+    } else {
+      if(free1>=0){ loadMsg('Erst Laster 1 voll machen!','hint'); L.pulse=1; Sound.play('wrong'); drawVisual(); return; }
+      if(free2<0) return;
+      L.t2[free2]='b'; L.anim={t:2,i:free2};
+    }
+    L.dock--; Sound.play('tap');
+    const justFull=t===1&&L.t1.indexOf('e')<0;
+    if(justFull){ setTimeout(()=>Sound.play('honk'),120); if(L.mode==='fill'){ drawVisual(); finishLoad(); return; } loadMsg('Laster 1 ist voll: 10! Der Rest kommt auf Laster 2.','good'); }
+    else if(L.msgCls==='hint') loadMsg(L.t1.indexOf('e')<0?'Weiter auf Laster 2.':'Weiter so!','');
+    drawVisual();
+    if(L.mode==='add'&&L.dock===0) finishLoad();
+  } else {
+    if(L.out>=L.target) return;
+    const last2=lastIdx(L.t2,'n'),last1=lastIdx(L.t1,'n');
+    if(t===2){
+      if(last2<0){ loadMsg('Laster 2 ist schon leer. Jetzt Laster 1!','hint'); L.pulse=1; drawVisual(); return; }
+      L.t2[last2]='x'; L.anim={t:2,i:last2};
+    } else {
+      if(last2>=0){ loadMsg('Erst Laster 2 leer machen!','hint'); L.pulse=2; Sound.play('wrong'); drawVisual(); return; }
+      if(last1<0) return;
+      L.t1[last1]='x'; L.anim={t:1,i:last1};
+    }
+    L.out++; Sound.play('tap');
+    if(t===2&&lastIdx(L.t2,'n')<0){ setTimeout(()=>Sound.play('honk'),120); loadMsg('Laster 2 ist leer! Auf Laster 1 sind 10. Weiter mit Laster 1.','good'); }
+    else if(L.msgCls==='hint') loadMsg('Weiter so!','');
+    drawVisual();
+    if(L.out===L.target) finishLoad();
+  }
+}
+function loadHint(){
+  const L=M.ld; if(!L||L.done) return;
+  if(L.mode==='sub'){ const two=lastIdx(L.t2,'n')>=0; L.pulse=two?2:1; loadMsg(two?'Tippe auf Laster 2, bis er leer ist.':'Jetzt von Laster 1 abladen.','hint'); }
+  else { const one=L.t1.indexOf('e')>=0; L.pulse=one?1:2; loadMsg(one?'Tippe auf Laster 1, bis er voll ist.':'Jetzt kommt der Rest auf Laster 2.','hint'); }
+  Sound.play('tap'); drawVisual();
+}
+function finishLoad(){
+  const L=M.ld; L.done=true; M.busy=true;
+  loadMsg(L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten drauf.':'Alles geladen!','good');
+  Sound.play('step'); burst($('#m-visual'),14);
+  setTimeout(()=>{ if(!M||current!=='mission') return; M.busy=false; curTask().loadDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; drawAll(); },1500);
+}
+let drag=null;
+document.addEventListener('pointerdown',e=>{
+  if(!M||M.phase!=='load'||current!=='mission'||!M.ld||M.ld.done) return;
+  const sub=M.ld.mode==='sub'; let src=null,from=0;
+  if(sub){ const tb=e.target.closest('.truckbtn'); if(tb){ src=tb; from=+tb.dataset.t; } }
+  else src=e.target.closest('.dcrate[data-drag]');
+  if(!src) return;
+  const g=document.createElement('span'); g.className='dcrate ghost';
+  drag={g,from,x0:e.clientX,y0:e.clientY,moved:false,id:e.pointerId,src};
+  if(!sub) e.preventDefault();
+});
+document.addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.id) return;
+  if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)>8){ drag.moved=true; fxLayer().appendChild(drag.g); if(!drag.from) drag.src.style.visibility='hidden'; }
+  if(drag.moved){ drag.g.style.transform=`translate(${e.clientX-20}px,${e.clientY-20}px)`; e.preventDefault(); }
+},{passive:false});
+document.addEventListener('pointerup',e=>{
+  if(!drag||e.pointerId!==drag.id) return;
+  const d=drag; drag=null; d.g.remove(); if(d.src&&d.src.isConnected) d.src.style.visibility='';
+  if(!M||M.phase!=='load') return;
+  if(!d.moved){ if(!d.from) loadMsg('Zieh die Kiste auf einen Laster. Oder tippe auf den Laster.','hint'); return; }
+  const el=document.elementFromPoint(e.clientX,e.clientY); if(!el) return;
+  if(M.ld.mode==='sub'){ if(el.closest('[data-dock]')) loadAct(d.from); }
+  else { const tb=el.closest('.truckbtn'); if(tb) loadAct(+tb.dataset.t); }
+});
+document.addEventListener('pointercancel',()=>{ if(drag){ drag.g.remove(); if(drag.src&&drag.src.isConnected) drag.src.style.visibility=''; drag=null; } });
+
 /* ================= events ================= */
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]'); if(!el||el.disabled) return;
@@ -1413,8 +2194,11 @@ document.addEventListener('click',e=>{
     case 'hq': if(!hqUnlocked()){ toast('Die Zentrale öffnet nach Mission 1 auf der Zehnerbrücke.'); return; } startMission('hq'); break;
     case 'garage': pendingBuy=null; show('garage'); break;
     case 'play': startMission(id,+el.dataset.mi||0); break;
+    case 'drive': if(!missionUnlocked(id,+el.dataset.mi||0)){ toast('Diese Mission ist noch gesperrt.'); return; } startMission(id,+el.dataset.mi||0,'drive'); break;
+    case 'intro-close': { const i=$('#m-intro'); if(i) i.remove(); break; }
+    case 'load-truck': loadAct(+el.dataset.t); break;
     case 'play-rec':{ const r=recommended(); startMission(r.did,r.mi); break; }
-    case 'replay': if(M) startMission(M.did,M.mi); break;
+    case 'replay': if(M) startMission(M.did,M.mi,M.mode); break;
     case 'digit': pressDigit(el.dataset.d); break;
     case 'del': pressDel(); break;
     case 'ok': pressOk(); break;
@@ -1422,7 +2206,7 @@ document.addEventListener('click',e=>{
     case 'speak': if(M) Speech.say(M.lastSpeech); break;
     case 'quit':{
       const btn=$('#quit-btn');
-      if(quitArmed){ quitArmed=false; const did=M.did; clearTimeout(M.advanceTimer); M=null; if(did==='hq') show('city'); else show('district',did); return; }
+      if(quitArmed){ quitArmed=false; const did=M.did; clearTimeout(M.advanceTimer); if(current==='drive') stopDrive(); M=null; if(did==='hq') show('city'); else show('district',did); return; }
       quitArmed=true; btn.classList.add('armed'); btn.textContent='Beenden?'; toast('Nochmal tippen zum Beenden. Deine Münzen bleiben.');
       setTimeout(()=>{ quitArmed=false; if(btn.isConnected){ btn.classList.remove('armed'); btn.innerHTML=icon('close'); } },3000); break; }
     case 'sound': state.settings.sound=!state.settings.sound; save(true); drawHud(); if(state.settings.sound) Sound.play('step'); break;
@@ -1448,17 +2232,19 @@ document.addEventListener('keydown',e=>{
   lastInput=Date.now();
   const tg=e.target&&e.target.tagName;
   if(tg==='INPUT'||tg==='TEXTAREA'){ if(e.key==='Enter'&&e.target.id==='gate-input') checkGate(); if(e.key==='Enter'&&e.target.id==='welcome-name'){ e.preventDefault(); submitWelcome(false); } return; }
+  if(current==='drive'&&Drive.ctx){ const k=DRIVE_KEYS[e.key]; if(k){ Drive.ctx.keys[k]=true; e.preventDefault(); } return; }
   if(current!=='mission'||!M) return;
   if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pressDigit(e.key); }
   else if(e.key==='Backspace'){ e.preventDefault(); pressDel(); }
   else if(e.key==='Enter'){ e.preventDefault(); pressOk(); }
 });
 document.addEventListener('pointerdown',()=>{ lastInput=Date.now(); },{passive:true});
+document.addEventListener('keyup',e=>{ if(Drive.ctx){ const k=DRIVE_KEYS[e.key]; if(k) Drive.ctx.keys[k]=false; } });
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'&&Cloud.ref&&Cloud.timer){ clearTimeout(Cloud.timer); Cloud.flush(); } });
 
 /* Practice time: counts only while a mission is open, visible and touched within the last 90 s. */
 setInterval(()=>{
-  if(current!=='mission'||document.visibilityState!=='visible'||Date.now()-lastInput>90000) return;
+  if((current!=='mission'&&current!=='drive')||document.visibilityState!=='visible'||Date.now()-lastInput>90000) return;
   const d=day(); d.sec+=5;
   if(!d.goal&&d.sec>=state.settings.goalMin*60){ d.goal=1; state.coins+=20; save(true); toast(`Tagesziel geschafft! +20 Münzen`); Sound.play('coin'); bumpCoins(); }
   else persistLocal();
@@ -1470,7 +2256,7 @@ let booted=false;
 function boot(data){
   if(booted) return; booted=true;
   try{
-    if(data&&data.M&&!data.M.finished&&data.M.tasks){ M=data.M; M.advanceTimer=null; show('mission'); if(M.taskDone) M.advanceTimer=setTimeout(nextTask,800); }
+    if(data&&data.M&&!data.M.finished&&data.M.tasks){ M=data.M; M.advanceTimer=null; M.busy=false; M.intro=false; show(M.mode==='drive'?'drive':'mission'); if(M.taskDone) M.advanceTimer=setTimeout(nextTask,800); }
     else if(data&&data.screen==='district'&&DIST[data.district]) show('district',data.district);
     else if(!state.name&&!state.nameAsked) show('welcome');
     else show('city');
