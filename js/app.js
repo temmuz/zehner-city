@@ -152,9 +152,9 @@ const DISTRICTS=[
     {title:'Minus mit {vollem} {N}',desc:'9 − 5 = 4, also ist 19 − 5 = 14.',gen:'anaMinus'},
     {title:'Viele volle {NP}',desc:'4 + 5 = 9, also ist 64 + 5 = 69. Die vollen {NP} bleiben stehen.',gen:'ana100'}]},
   {id:'flug',name:'Güterbahnhof 100',skill:'Zahlenraum bis 100',missions:[
-    {title:'Nur volle {NP}',desc:'3 + 4 = 7, also ist 30 + 40 = 70.',gen:'tens'},
-    {title:'Plus über den Zehner',desc:'38 + 5 = 38 + 2 + 3 = 43.',gen:'add100'},
-    {title:'Minus über den Zehner',desc:'43 − 5 = 43 − 3 − 2 = 38.',gen:'sub100'}]}
+    {title:'Volle {NP} ankuppeln',desc:'Hänge volle {NP} an die Lok: 3 + 4 = 7 {NP}, also 70 Kisten.',gen:'tens'},
+    {title:'Plus über den Zehner',desc:'Erst {N} 1 bis 10 voll machen: 38 + 2 + 3 = 43.',gen:'add100'},
+    {title:'Minus über den Zehner',desc:'Erst {N} 2 leer machen: 43 − 3 − 2 = 38.',gen:'sub100'}]}
 ];
 const DIST=Object.fromEntries(DISTRICTS.map(d=>[d.id,d]));
 const SEQ=[['herz',0],['bruecke',0],['tunnel',0],['bruecke',1],['herz',1],['tunnel',1],['familie',0],['bruecke',2],['tower',0],['tunnel',2],['herz',2],['familie',1],['tower',1],['flug',0],['familie',2],['tower',2],['flug',1],['flug',2]];
@@ -271,11 +271,12 @@ function buildBridge(p,op,mode){
   const r=add?T-a:a-T, s=b-r, res=add?a+b:a-b;
   const small=T===10&&Math.max(a,res)<=20;
   const visual=small?{type:'frame20',a,b,op}:{type:'line',a,b,op,T};
-  const look=small?'Schau auf die {NP}.':'Schau auf den Zahlenstrahl.';
-  const h0=add?[T===10?`Wer ist in die ${a} verliebt?`:`Einer: ${a%10} + □ = 10`,small?'Zähle die freien Plätze.':look]
-              :[`${a} = ${T} + ${r}`,small?'Zähle die Kisten {auf} {N} 2.':look];
-  const h1=[`${b} ${MI} ${r} = □`,small?(add?'Zähle die Kisten {auf} {N} 2.':'Zähle die wackelnden Kisten.'):look];
-  const h2=add?[`${T} und noch ${s}.`,small?'{N} 1 hat 10. Dazu {N} 2.':look]
+  const conc=small||mode==='load'; // the child sees vehicles and crates
+  const look=small?'Schau auf die {NP}.':conc?'Die vollen {NP} bleiben stehen.':'Schau auf den Zahlenstrahl.';
+  const h0=add?[T===10?`Wer ist in die ${a} verliebt?`:`Einer: ${a%10} + □ = 10`,conc?'Zähle die freien Plätze {auf} {N} 1.':look]
+              :[`${a} = ${T} + ${r}`,conc?'Zähle die Kisten {auf} {N} 2.':look];
+  const h1=[`${b} ${MI} ${r} = □`,conc?(add?'Zähle die Kisten {auf} {N} 2.':'Zähle die wackelnden Kisten.'):look];
+  const h2=add?[`${T} und noch ${s}.`,small?'{N} 1 hat 10. Dazu {N} 2.':conc?`Mit {N} 1 sind es ${T}. Dazu {N} 2.`:look]
               :[T===10?`Wer ist in die ${s} verliebt?`:`10 ${MI} ${s} = ${10-s}`,small?'Zähle die Kisten, die bleiben.':look];
   if(mode==='pro'){
     visual.show='hint'; visual.byHint=true;
@@ -383,12 +384,12 @@ function buildAna(p){
 function buildTens(p){
   const a=p.a,b=p.b,op=p.op,base=op==='+'?a+b:a-b;
   return task([
-    {label:'Einer',tokens:[{n:a},op,{n:b},'=',{b:0}]},
-    {label:'Zehner',tokens:[{n:a*10},op,{n:b*10},'=',{b:1}]}
+    {label:'{NP}',loadRow:1,tokens:[{n:a},op,{n:b},'=',{b:0}]},
+    {label:'Kisten',tokens:[{n:a*10},op,{n:b*10},'=',{b:1}]}
   ],[
-    {ans:base,prompt:'Erst mit Einern.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf {den} {N}.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}},
-    {ans:base*10,prompt:'Jetzt volle {NP}: {Jeder} ist 10.',hints:[`${a} ${op} ${b} = ${base}`,`${base} Zehner = □`],visual:{type:'ze',x:a*10,b:b*10,op,show:'hint',tens:1}}
-  ],null,{kind:'tens',side:true,sc:{type:'tens',a,b,op}});
+    {ans:base,prompt:op==='+'?'Wie viele {NP} hat der Zug jetzt?':'Wie viele {NP} sind noch am Zug?',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Zähle die {NP} hinter der Lok.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}},
+    {ans:base*10,prompt:'{Jeder} volle {N} hat 10 Kisten. Wie viele Kisten sind es?',hints:[`${a} ${op} ${b} = ${base}`,`${base} Zehner = □`],visual:{type:'ze',x:a*10,b:b*10,op,show:'hint',tens:1}}
+  ],null,{kind:'tens',side:true,load:{mode:'couple',a,b,op},sc:{type:'tens',a,b,op}});
 }
 
 /* ================= task pools ================= */
@@ -424,8 +425,8 @@ const GEN={
   anaMinus:{n:5,pool:POOLS.anaMinus,key:p=>`ana:${p.a}-${p.b}`,build:buildAna},
   ana100:{n:4,pool:POOLS.ana100,key:p=>`ana:${p.a}${opKey(p.op)}${p.b}`,build:buildAna},
   tens:{n:5,pool:POOLS.tens,key:p=>`tens:${p.a}${opKey(p.op)}${p.b}`,build:buildTens},
-  add100:{n:4,pool:POOLS.add100,key:p=>`add100:${p.a}+${p.b}`,build:p=>buildBridge(p,'+','path')},
-  sub100:{n:4,pool:POOLS.sub100,key:p=>`sub100:${p.a}-${p.b}`,build:p=>buildBridge(p,MI,'path')}
+  add100:{n:4,pool:POOLS.add100,key:p=>`add100:${p.a}+${p.b}`,build:p=>buildBridge(p,'+','load')},
+  sub100:{n:4,pool:POOLS.sub100,key:p=>`sub100:${p.a}-${p.b}`,build:p=>buildBridge(p,MI,'load')}
 };
 /* Tasks that went wrong before come back more often (gentle spaced repetition). */
 function sampleTasks(G,n,did,used){
@@ -750,11 +751,11 @@ function renderDistrict(id){
 const World={mod:null,state:'idle',
   get(){
     if(this.state==='idle'){ this.state='loading';
-      import('./world3d.js').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
+      import('./world3d.js?v=20261119e').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
         .catch(err=>{ console.warn('3D unavailable',err); this.fail(); }); }
     return this.state==='ready'?this.mod:null;
   },
-  fail(){ this.state='failed'; if(this.mod) this.mod.dispose(); if(M){ M.tasks.forEach(t=>localize(t,t.skill)); if(M.ld) M.ld.msg=tx(M.ld.msg,curDid()); } if(M&&current==='mission'){ M.lastVis=null; const el=$('#m-visual'); if(el) el.innerHTML=''; drawVisual(); drawRows(); } },
+  fail(){ this.state='failed'; if(this.mod) this.mod.dispose(); if(M&&M.phase==='load'&&M.ld&&M.ld.mode==='couple'){ curTask().loadDone=true; M.phase='calc'; M.ld=null; } if(M){ M.tasks.forEach(t=>localize(t,t.skill)); if(M.ld) M.ld.msg=tx(M.ld.msg,curDid()); } if(M&&current==='mission'){ M.lastVis=null; const el=$('#m-visual'); if(el) el.innerHTML=''; drawVisual(); drawRows(); } },
   dispose(){ if(this.mod) this.mod.dispose(); }
 };
 const WORLD_OF={herz:'harbor',bruecke:'bridge',tunnel:'tunnel',familie:'suburb',tower:'tower',flug:'station'};
@@ -789,7 +790,7 @@ function startMission(did,mi){
 }
 const curTask=()=>M.tasks[M.ti];
 const curBlank=()=>curTask().blanks[M.bi];
-function prepTask(){ const t=curTask(); M.bi=t.blanks.findIndex(b=>!b.auto&&b.val==null); M.entry=''; if(t.load&&!t.loadDone){ M.phase='load'; M.ld=initLoad(t); } else { M.phase='calc'; M.ld=null; } }
+function prepTask(){ const t=curTask(); M.bi=t.blanks.findIndex(b=>!b.auto&&b.val==null); M.entry=''; if(t.load&&!t.loadDone&&!(t.load.mode==='couple'&&World.state==='failed')){ M.phase='load'; M.ld=initLoad(t); } else { M.phase='calc'; M.ld=null; } }
 const sceneOf=()=>M.did==='hq'?'hq':M.did;
 function renderMissionShell(){
   if(!M){ show('city'); return; }
@@ -839,7 +840,7 @@ function tokHTML(tok,t){
 }
 function visibleRows(t,compact){
   const h=curH();
-  if(M.phase==='load'){ const g=t.rows.filter(r=>r.goal); return g.length?g:t.rows.filter(r=>r.big); }
+  if(M.phase==='load'){ const g=t.rows.filter(r=>r.goal); return g.length?g:t.rows.filter(r=>r.big||r.loadRow); }
   let rows=t.rows.filter(r=>{ if(r.minHint&&h<r.minHint) return false; if(r.step!=null) return !M.taskDone&&M.bi===r.step; if(r.final) return M.taskDone; return true; });
   if(compact&&!M.taskDone&&rows.length>2) rows=rows.filter(r=>r.goal||r.known||r.tokens.some(tk=>tk&&tk.b===M.bi));
   return rows;
@@ -1139,11 +1140,13 @@ function renderParents(){
 /* ---------- hands-on crate loading ----------
    The concrete step before the written method. The child moves the crates;
    the rule "truck 1 first" (or "empty truck 2 first" for minus) makes the split at 10 happen. */
+const col=(n,c)=>c+(n===1?'en':'e'); // "1 roten", "3 rote"
 function initLoad(t){
   const L=t.load,ld={mode:L.mode,t1:[],t2:[],dock:0,out:0,target:0,acted:false,done:false,anim:null,pulse:0,msg:'',msgCls:''};
-  if(L.mode==='add'){ for(let i=0;i<10;i++){ ld.t1.push(i<L.a?'a':'e'); ld.t2.push('e'); } ld.dock=L.b; ld.msg=`Lade die ${L.b} Kisten auf. Erst {N} 1!`; }
+  if(L.mode==='add'){ for(let i=0;i<10;i++){ ld.t1.push(i<L.a%10?'a':'e'); ld.t2.push('e'); } ld.dock=L.b; ld.msg=`Lade die ${L.b} Kisten auf. Erst {N} 1!`; }
   else if(L.mode==='fill'){ for(let i=0;i<10;i++) ld.t1.push(i<L.n?'a':'e'); ld.dock=10-L.n+3; ld.msg='Mach {N} 1 voll!'; }
-  else { for(let i=0;i<10;i++){ ld.t1.push(i<Math.min(L.a,10)?'n':'e'); ld.t2.push(i<L.a-10?'n':'e'); } ld.target=L.b; ld.msg=`Lade ${L.b} Kisten ab. Erst {N} 2!`; }
+  else if(L.mode==='couple'){ ld.n=0; ld.total=L.op==='+'?L.a+L.b:L.b; ld.msg=L.op==='+'?`Hänge ${L.a} ${col(L.a,'rot')} {NP} an die Lok!`:`Der Zug hat ${L.a} {NP}. Hänge ${L.b} ab!`; }
+  else { for(let i=0;i<10;i++){ ld.t1.push(i<Math.min(L.a,10)?'n':'e'); ld.t2.push(i<(L.a>=10?L.a%10:0)?'n':'e'); } ld.target=L.b; ld.msg=`Lade ${L.b} Kisten ab. Erst {N} 2!`; }
   ld.msg=tx(ld.msg,t.skill);
   return ld;
 }
@@ -1160,7 +1163,7 @@ function loadSceneHTML(){
 }
 function drawLoadBubble(el){
   const L=M.ld,mood=L.msgCls==='good'?'happy':L.msgCls==='hint'?'think':'';
-  const tip=!L.acted&&M.ti===0?tx(L.mode==='sub'?'Tippe auf {einen} {N} oder zieh Kisten zum Abladeplatz.':'Tippe auf {einen} {N} oder zieh die Kisten {hinauf}.',curDid()):'';
+  const tip=!L.acted&&M.ti===0?tx(L.mode==='couple'?'Tippe auf einen {N} oder auf die Lok.':L.mode==='sub'?'Tippe auf {einen} {N} oder zieh Kisten zum Abladeplatz.':'Tippe auf {einen} {N} oder zieh die Kisten {hinauf}.',curDid()):'';
   el.className='bubble'+(L.msgCls?' '+L.msgCls:'');
   el.innerHTML=`<span class="ava ${mood}">${fox(mood)}</span><div class="msg"><span class="main">${fmt(L.msg)}</span>${tip?`<span class="sub">${fmt(tip)}</span>`:''}</div>${Speech.ok?`<button class="iconbtn soft" data-act="speak" aria-label="Vorlesen">${icon('speaker')}</button>`:''}`;
   M.lastSpeech=L.msg;
@@ -1171,6 +1174,15 @@ function loadAct(t){
   if(!M||M.phase!=='load'||M.busy) return;
   const L=M.ld; if(L.done) return;
   L.acted=true;
+  if(L.mode==='couple'){
+    const T=curTask().load; if(L.n>=L.total) return;
+    L.n++; Sound.play('thud');
+    if(T.op==='+'&&L.n===T.a&&L.n<L.total){ setTimeout(()=>Sound.play('honk'),120); loadMsg(`Jetzt ${T.b} ${col(T.b,'blau')} {NP} dazu!`,'good'); }
+    else if(L.msgCls==='hint') loadMsg('Weiter so!','');
+    drawVisual();
+    if(L.n===L.total) finishLoad();
+    return;
+  }
   if(L.mode==='add'||L.mode==='fill'){
     if(L.dock<=0) return;
     const free1=L.t1.indexOf('e'),free2=L.t2.indexOf('e');
@@ -1208,13 +1220,15 @@ function loadAct(t){
 }
 function loadHint(){
   const L=M.ld; if(!L||L.done) return;
+  if(L.mode==='couple'){ const T=curTask().load; loadMsg(T.op==='+'?(L.n<T.a?`Tippe auf einen roten {N}. Noch ${T.a-L.n}.`:`Tippe auf einen blauen {N}. Noch ${L.total-L.n}.`):`Tippe auf den Zug. Noch ${L.total-L.n} {NP} abhängen.`,'hint'); Sound.play('tap'); drawVisual(); return; }
   if(L.mode==='sub'){ const two=lastIdx(L.t2,'n')>=0; L.pulse=two?2:1; loadMsg(two?'Tippe auf {N} 2, bis {er} leer ist.':'Jetzt von {N} 1 abladen.','hint'); }
   else { const one=L.t1.indexOf('e')>=0; L.pulse=one?1:2; loadMsg(one?'Tippe auf {N} 1, bis {er} voll ist.':'Jetzt kommt der Rest {auf} {N} 2.','hint'); }
   Sound.play('tap'); drawVisual();
 }
 function finishLoad(){
   const L=M.ld; L.done=true; M.busy=true;
-  loadMsg(L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten {drin}.':'Alles geladen!','good');
+  const T=curTask().load;
+  loadMsg(L.mode==='couple'?(T.op==='+'?`Der Zug hat ${T.a+T.b} {NP}!`:`${T.a-T.b} {NP} bleiben am Zug.`):L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten {drin}.':'Alles geladen!','good');
   Sound.play('step'); burst($('#m-visual'),14);
   setTimeout(()=>{ if(!M||current!=='mission') return; M.busy=false; curTask().loadDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; drawAll(); },1500);
 }

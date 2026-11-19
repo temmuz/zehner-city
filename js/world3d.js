@@ -40,7 +40,7 @@ const UP = new THREE.Vector3(0,1,0);
 // slot(j,row): j = 0..4 from left to right, row 0 = back row (filled first), in model units * s.
 const CARRIER = {
   truck:    { model:'car/delivery-flat', s:2.4, deck:.5, rotY:Math.PI/2, length:7.8, width:3.6, slot:(j,row)=>({x:row?-.29:.29, z:-1.4+j*.4}), hit:[8.2,3.4,3.8], plate:[2.55,1.75,1.83] },
-  wagon:    { model:'train/train-carriage-flatbed', s:2.2, deck:.459, rotY:Math.PI/2, length:5.9, width:2.4, slot:(j,row)=>({x:row?-.24:.24, z:-.96+j*.48}), hit:[6.2,3,2.8], rails:.62, tenGap:.3, plate:[-2.55,.62,1.23] },
+  wagon:    { build:()=>buildWagon(), s:1, deck:1.17, rotY:0, length:6.4, width:2.5, slot:(j,row)=>({x:-1.96+j*.98, z:row?.5:-.5}), hit:[6.6,3.2,2.9], rails:.72, tenGap:.2, tenCols:5, plate:[-2.35,.93,1.18,.36] },
   boat:     { build:()=>buildBoat(), s:1, deck:.47, rotY:0, length:8.6, width:3.2, slot:(j,row)=>({x:.2-1.96+j*.98, z:row?.5:-.5}), hit:[8.8,3.2,3.6], plate:[-1.0,.62,1.58,.5], tenGap:1.1 },
   lore:     { build:()=>buildLore(), s:1, deck:.97, rotY:0, length:6.0, width:2.5, slot:(j,row)=>({x:-1.96+j*.98, z:row?.5:-.5}), hit:[6.4,3,2.9], rails:.72, tenGap:.4, plate:[-2.25,1.22,1.25,.46] },
   trailer:  { build:()=>buildTrailer(), models:['car/tractor'], s:1, deck:1.02, rotY:0, length:9.7, width:3.0, slot:(j,row)=>({x:-2.25-1.96+j*.98, z:row?.5:-.5}), hit:[9.9,3.4,3.2], plate:[-4.5,1.17,1.26,.3] },
@@ -251,8 +251,18 @@ function buildForklift(){
   for(const z of [-1.0, 1.0]){ wheel(.42, .32, 2.2, .42, z, g); wheel(.34, .28, 3.45, .34, z*.96, g); }
   return g;
 }
-function addRails(g, def){
-  const L=def.length+1.4, gz=def.rails;
+function buildWagon(){
+  const g=new THREE.Group(), red='#8e3a2c', dk='#3a3d44', wood='#b98a55';
+  for(const x of [-2.05, 2.05]){ box(1.8, .26, 1.3, dk, x, .62, 0, g); for(const dx of [-.5, .5]) for(const z of [-.72, .72]) wheel(.3, .14, x+dx, .48, z, g, '#30323a'); }
+  box(6.0, .3, 2.3, red, 0, .92, 0, g, .04);                                                   // frame
+  box(5.9, .1, 2.5, wood, 0, 1.12, 0, g, .02);                                                 // deck
+  for(let i=-2;i<=2;i++) box(.03, .01, 2.46, '#8d6236', i*1.18, 1.175, 0, g, 0);
+  for(const x of [-2.9, 2.9]) for(const z of [-1.17, 1.17]) box(.12, .5, .12, red, x, 1.4, z, g, .03); // corner stakes
+  for(const x of [-3.1, 3.1]) for(const z of [-.62, .62]){ const b=part(new THREE.CylinderGeometry(.13, .13, .24, 10), dk, x, .92, z, g); b.rotation.z=Math.PI/2; } // buffers
+  return g;
+}
+function addRails(g, def, len){
+  const L=len||def.length+1.4, gz=def.rails;
   for(let x=-L/2+.3; x<L/2; x+=.72) box(.32, .08, gz*2+.6, '#6e5640', x, .04, 0, g, .02);
   for(const z of [-gz, gz]) box(L, .1, .1, '#8b8f97', 0, .13, z, g, .02);
 }
@@ -260,11 +270,11 @@ function plateTex(n){ return textureCanvas(128,128,(c,w,h)=>{ c.fillStyle='#fffa
 
 /* ---------- carriers and crates ---------- */
 function carrierDef(){ return CARRIER[WORLD[C.world].carrier]; }
-function makeCarrier(num, full, kind, scaleK){
+function makeCarrier(num, full, kind, scaleK, noRails){
   const def = carrierDef(), g = new THREE.Group(), body = def.build ? def.build() : inst(def.model);
   if(!def.build){ body.scale.setScalar(def.s); body.rotation.y = def.rotY; }
   g.add(body); g.userData.num = num; g.userData.def = def;
-  if(def.rails) addRails(g, def);
+  if(def.rails && !noRails) addRails(g, def, scaleK ? def.length + (def.tenGap||.2)/scaleK : 0);
   if(num && def.plate){ const ps = def.plate[3]||.62, pl = new THREE.Mesh(new THREE.PlaneGeometry(ps,ps), new THREE.MeshStandardMaterial({map:plateTex(num), roughness:.6})); pl.position.set(def.plate[0], def.plate[1], def.plate[2]); g.add(pl); }
   const hit = new THREE.Mesh(new THREE.BoxGeometry(def.hit[0], def.hit[1], def.hit[2]), new THREE.MeshBasicMaterial({visible:false}));
   hit.position.y = 1.4; hit.userData.carrier = num; g.add(hit); g.userData.hit = hit;
@@ -306,9 +316,9 @@ function makePier(b){
   C.scene.add(g); return g;
 }
 function tenWorld(j){
-  const def = carrierDef(), w = def.width, len = def.length, k = .62, gx = def.tenGap!=null ? def.tenGap : 1.4;
+  const def = carrierDef(), w = def.width, len = def.length, k = .62, gx = def.tenGap!=null ? def.tenGap : 1.4, cols = def.tenCols || 3;
   const z0 = C.nCar===0 ? 0 : C.nCar===2 ? -(w + 2.6 + w*k/2) : -(w/2 + 2.6 + w*k/2);
-  return new THREE.Vector3(OFFX - (len*k + gx) + (j%3)*(len*k + gx), 0, z0 - Math.floor(j/3)*(w*k + 1.4));
+  return new THREE.Vector3(OFFX - (len*k + gx) + (j%cols)*(len*k + gx), 0, z0 - Math.floor(j/cols)*(w*k + 1.4));
 }
 function setCarriers(n){
   if(C.nCar === n) return;
@@ -353,7 +363,16 @@ function L_ana(sc,step){ const lay=newLay(1);
   const T=step>=1&&sc.Ts.length?sc.Ts[Math.min(step,sc.Ts.length)-1]:0; lay.tens=ids('T',T/10).map(id=>({id,kind:'a'})); return lay; }
 function L_tens(sc,step){ if(step<1) return L_ana({a:sc.a,b:sc.b,op:sc.op,Ts:[]},0); const lay=newLay(0);
   lay.tens=sc.op==='+'?[...ids('T',sc.a).map(id=>({id,kind:'a'})),...ids('U',sc.b).map(id=>({id,kind:'b'}))]:ids('T',sc.a-sc.b).map(id=>({id,kind:'a'})); return lay; }
-function loadInit(t){ const sc=t.sc; return sc.type==='add'?L_add(sc,0):sc.type==='sub'?L_sub(sc,0):L_pair(sc,0,true); }
+const SIDING = -4.4, LOCO_K = .62;
+function L_couple(sc, n){
+  const lay=newLay(0), plus=sc.op==='+', def=carrierDef(), sp=def.length*.62+.2, locoLen=2.6*2.3*LOCO_K;
+  const all = plus ? [...ids('W',sc.a).map(id=>({id,kind:'a'})), ...ids('V',sc.b).map(id=>({id,kind:'b'}))] : ids('W',sc.a).map(id=>({id,kind:'a'}));
+  const inTrain = plus ? n : sc.a-n, xr = (locoLen + .3 + all.length*sp)/2;
+  all.forEach((w,i)=>{ w.pos = new THREE.Vector3(xr - locoLen - .3 - sp/2 - i*sp, 0, i<inTrain ? 0 : SIDING); w.inTrain = i<inTrain; });
+  lay.tens = all; lay.noRails = true; lay.loco = {x: xr - locoLen/2, z: 0}; lay.tracks = {x0: xr - locoLen - .3 - all.length*sp - 2.5, x1: xr + 3};
+  return lay;
+}
+function loadInit(t){ const sc=t.sc; if(t.load&&t.load.mode==='couple') return L_couple(sc,0); return sc.type==='add'?L_add(sc,0):sc.type==='sub'?L_sub(sc,0):L_pair(sc,0,true); }
 function layoutFor(V){
   const t=V.t, sc=t.sc, done=V.done, b=done?null:t.blanks[V.bi], step=done?99:V.bi, h=b?b.h:0, load=!!t.load; let lay;
   if(sc.type==='add'||sc.type==='sub'){
@@ -371,6 +390,7 @@ function layoutFor(V){
     const ph=sc.mode==='basic'?['base','swap','minusB','minusA']:['swap','minusB','minusB'], st=done?ph.length-1:Math.min(step,ph.length-1);
     lay=L_fam(sc,ph[st]); if(!done){ if(sc.mode!=='basic'&&st===2) lay.hl=lay.pallet.filter(Boolean); else if(ph[st]==='minusA'||ph[st]==='minusB') lay.hl=[...onC(lay,1),...onC(lay,2)]; }
   } else if(sc.type==='ana'){ const st=done?sc.Ts.length:step; lay=L_ana(sc,st); if(!done&&st>0) lay.hl=lay.tens.map(x=>x.id); }
+  else if(t.load&&t.load.mode==='couple'){ lay=L_couple(sc, sc.op==='+'?sc.a+sc.b:sc.b); if(!done&&step>=1) lay.hl=lay.tens.filter(x=>x.inTrain).map(x=>x.id); }
   else { const st=done?1:step; lay=L_tens(sc,st); }
   return lay;
 }
@@ -383,10 +403,11 @@ function vanish(m){ m.material.transparent=true; tween(m, m.position.clone().add
 function returnHome(m){ const k=C.pallet.indexOf(m); if(k>=0){ fly(m, palletWorld(k), .6); return; } for(const t of [1,2]){ const i=C.slots[t].indexOf(m); if(i>=0){ fly(m, slotWorld(t,i), .4); return; } } }
 function apply(lay, instant){
   setCarriers(lay.carriers);
-  const wantT = new Map(lay.tens.map((t,j)=>[t.id,{kind:t.kind,j}]));
+  const wantT = new Map(lay.tens.map((t,j)=>[t.id,{kind:t.kind,j,pos:t.pos}]));
+  setYard(lay);
   for(const [id,g] of [...C.tens]){ if(!wantT.has(id)||g.userData.kind!==wantT.get(id).kind){ C.tens.delete(id); tween(g, g.position.clone().add(new THREE.Vector3(40,0,0)), {dur:900, done:()=>C.scene.remove(g)}); } }
-  for(const [id,t] of wantT){ const pos=tenWorld(t.j); let g=C.tens.get(id);
-    if(!g){ g=makeCarrier(0,true,t.kind,.62); g.userData.kind=t.kind; C.tens.set(id,g); if(instant) g.position.copy(pos); else { g.position.copy(pos).add(new THREE.Vector3(-42,0,0)); tween(g,pos,{dur:1000,delay:t.j*.12}); } }
+  for(const [id,t] of wantT){ const pos=t.pos||tenWorld(t.j); let g=C.tens.get(id);
+    if(!g){ g=makeCarrier(0,true,t.kind,.62,lay.noRails); g.userData.kind=t.kind; C.tens.set(id,g); if(instant) g.position.copy(pos); else { g.position.copy(pos).add(new THREE.Vector3(-42,0,0)); tween(g,pos,{dur:1000,delay:t.j*.12}); } }
     else if(g.position.distanceTo(pos)>.01) tween(g,pos,{dur:650}); }
   const want = new Map();
   for(const t of [1,2]) lay.slots[t].forEach((id,i)=>{ if(id&&lay.carriers>=t) want.set(id,{t,i}); });
@@ -411,6 +432,19 @@ function apply(lay, instant){
   C.tens.forEach(g=>{ if(g.userData.crateMat&&!C.hl.includes(g.userData.crateMat)) g.userData.crateMat.emissiveIntensity=0; });
   C.lastLay=lay; frame(lay);
 }
+function setYard(lay){
+  const key = lay.tracks ? [lay.tracks.x0, lay.tracks.x1, lay.loco.x].map(v=>v.toFixed(2)).join() : '';
+  if(C.yardKey === key) return; C.yardKey = key;
+  if(C.yard){ C.scene.remove(C.yard); C.yard = null; }
+  if(!lay.tracks) return;
+  const g = new THREE.Group(), L = lay.tracks.x1 - lay.tracks.x0, cx = (lay.tracks.x0 + lay.tracks.x1)/2;
+  for(const z of [0, SIDING]){
+    for(let x=lay.tracks.x0+.3; x<lay.tracks.x1; x+=.72*.62*1.6) box(.32*.62*1.6, .06, 1.5, '#6e5640', x, .03, z, g, .02);
+    for(const dz of [-.45, .45]) box(L, .08, .08, '#8b8f97', cx, .09, z+dz, g, .02);
+  }
+  if(models['train/train-locomotive-a']){ const l = inst('train/train-locomotive-a'); l.scale.setScalar(2.3*LOCO_K); l.rotation.y = Math.PI/2; l.position.set(lay.loco.x, .06, lay.loco.z); g.add(l); g.userData.loco = l; }
+  C.scene.add(g); C.yard = g;
+}
 function badge(instant){
   if(!C.carriers[1]) return;
   const tex = textureCanvas(256,96,g=>{ g.fillStyle='#2f8a58'; g.beginPath(); g.roundRect(6,8,244,80,40); g.fill(); g.fillStyle='#fff'; g.font='700 52px Lexend, system-ui, sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('10 voll',128,52); });
@@ -423,7 +457,8 @@ function frame(lay){
   let xmin=1e9,xmax=-1e9,zmin=1e9,zmax=-1e9; const add=(x0,x1,z0,z1)=>{ xmin=Math.min(xmin,x0); xmax=Math.max(xmax,x1); zmin=Math.min(zmin,z0); zmax=Math.max(zmax,z1); };
   Object.values(C.carriers).forEach(g=>add(g.position.x-L,g.position.x+L,g.position.z-Wd,g.position.z+Wd));
   if(lay.carriers>0){ const b=padBase(); add(b.x-2.8,b.x+2.8,b.z-1.8,b.z+1.8); }
-  lay.tens.forEach((t,j)=>{ const p=tenWorld(j); add(p.x-L*.66,p.x+L*.66,p.z-Wd*.66,p.z+Wd*.66); });
+  lay.tens.forEach((t,j)=>{ const p=t.pos||tenWorld(j); add(p.x-L*.66,p.x+L*.66,p.z-Wd*.66,p.z+Wd*.66); });
+  if(lay.loco){ const h=2.6*2.3*LOCO_K/2; add(lay.loco.x-h,lay.loco.x+h,lay.loco.z-1.2,lay.loco.z+1.2); }
   if(xmin>xmax) add(-6,6,-3,3);
   const cx=(xmin+xmax)/2, cz=(zmin+zmax)/2, hw=(xmax-xmin)/2+.6, hd=(zmax-zmin)/2+.4;
   // fit into the part of the view that the floating panels leave free (equation panel on the left or on top,
@@ -470,7 +505,7 @@ export function sync(host, V, api){
     const world = V.world, cd = CARRIER[WORLD[world].carrier], list = [...BASE_MODELS, ...(cd.model?[cd.model]:[]), ...(cd.models||[]), ...(WORLD[world].pad==='pier'?[]:[WORLD[world].pad]), ...DECOR[world]];
     building = {world};
     need(list, [...(cd.model?[cd.model]:[]), ...(cd.models||[])]).then(()=>{ if(!C||C.view.world!==world) return; building=null;
-      C.byId=new Map(); C.tens=new Map(); C.carriers={}; C.nCar=-1; C.badge=null; C.padObj=null; C.key=null; C.tweens=[]; C.ghosts=[]; C.spots=[];
+      C.byId=new Map(); C.tens=new Map(); C.carriers={}; C.nCar=-1; C.badge=null; C.padObj=null; C.yard=null; C.yardKey=''; C.key=null; C.tweens=[]; C.ghosts=[]; C.spots=[];
       buildWorld(world); const w=C.host.querySelector('.w3-wait'); if(w) w.remove(); sync(C.host, C.view, C.api); })
       .catch(err=>{ building=null; console.warn('3D models failed', err); api.failed&&api.failed(); });
     return;
@@ -481,6 +516,7 @@ export function sync(host, V, api){
     if(!first){ C.byId.forEach(m=>vanish(m)); C.byId=new Map(); C.user={zoom:1,px:0,pz:0}; updateCtl(); }
     C.phase=V.phase; apply(V.phase==='load'?loadInit(V.t):layoutFor(V), first); kick(); return;
   }
+  if(V.phase==='load' && V.ld && V.ld.mode==='couple'){ C.phase='load'; apply(L_couple(V.t.sc, V.ld.n), false); kick(); return; }
   if(V.phase==='load' && V.ld){
     C.phase='load'; const L=V.ld;
     if(L.anim){ const a=L.anim; L.anim=null;
@@ -500,6 +536,7 @@ export function sync(host, V, api){
 
 /* ---------- touch and mouse for hands-on loading ---------- */
 function pick(e, objs){ const r=C.renderer.domElement.getBoundingClientRect(); C.ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); C.ray.setFromCamera(C.ndc, C.cam); return C.ray.intersectObjects(objs, false)[0] || null; }
+function pickDeep(e, objs){ const r=C.renderer.domElement.getBoundingClientRect(); C.ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); C.ray.setFromCamera(C.ndc, C.cam); return C.ray.intersectObjects(objs, true)[0] || null; }
 function carrierHits(){ return Object.values(C.carriers).map(g=>g.userData.hit); }
 const canLoad = () => C.view && C.view.phase==='load' && C.view.ld && !C.view.ld.done && !C.view.busy;
 function onDown(e){
@@ -512,7 +549,11 @@ function onDown(e){
     const [a,b]=[...C.ptrs.values()]; C.pan=null; C.pinch={d:Math.hypot(a.x-b.x,a.y-b.y), mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; return;
   }
   if(C.ptrs.size>2) return;
-  if(canLoad()){
+  if(canLoad() && C.view.ld.mode==='couple'){
+    const objs=[...C.tens.values()]; if(C.yard&&C.yard.userData.loco) objs.push(C.yard.userData.loco);
+    if(pickDeep(e,objs)){ C.drag={carrier:1,kind:'tap',id:e.pointerId,x0:e.clientX,y0:e.clientY,moved:false}; return; }
+  }
+  else if(canLoad()){
     const L=C.view.ld, crates=[...C.pallet,...C.slots[1],...C.slots[2]].filter(Boolean);
     const h=pick(e,[...crates,...carrierHits()]);
     if(h){ const o=h.object; let t=o.userData.carrier||0; if(!t) for(const k of [1,2]) if(C.slots[k].includes(o)) t=k;

@@ -13,7 +13,7 @@ Kurze Missionen in einer Spielstadt üben das Rechnen über die 10, so wie es in
 - **Minus über die 10 (Zehnertunnel):** erst zurück bis zur 10, dann weiter: 13 − 8 = 13 − 3 − 5 = 5
 - **Aufgabenfamilien (Lieferviertel):** Tausch- und Umkehraufgaben (5 + 2 = 7, 2 + 5 = 7, 7 − 2 = 5, 7 − 5 = 2)
 - **Analogieaufgaben (Hochhausviertel):** 4 + 5 = 9, also 14 + 5 = 19: eine volle Palette mehr
-- **Zahlenraum bis 100 (Güterbahnhof 100):** volle Güterwagen als Zehner, 30 + 40 = 70, 38 + 5 = 38 + 2 + 3 = 43
+- **Zahlenraum bis 100 (Güterbahnhof 100):** volle Güterwagen als Zehner. Das Kind hängt volle Wagen an die Lok (3 + 4 = 7 Wagen, also 70 Kisten) und belädt Wagen über den Zehner: 38 + 5 = 38 + 2 + 3 = 43
 
 ## So wird gespielt
 
