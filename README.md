@@ -4,7 +4,7 @@ Ein Rechenspiel für Kinder in der 1. und 2. Klasse, gemacht für das iPad (läu
 
 **Spielen:** https://temmuz.github.io/zehner-city/
 
-Kurze Missionen in einer Spielstadt üben das Rechnen über die 10, so wie es in der Schule gelernt wird. Mit den verdienten Münzen kauft man Fahrzeuge für die eigene Garage.
+Kurze Missionen in einer Spielstadt üben das Rechnen über die 10, so wie es in der Schule gelernt wird. Jede Aufgabe spielt in einer kleinen 3D-Welt: Eine Kiste ist 1, ein voller Laster ist 10 (zwei Reihen mit je fünf Kisten, wie im Zehnerfeld). Mit den verdienten Münzen kauft man Fahrzeuge für die eigene Garage.
 
 ## Was geübt wird
 
@@ -13,15 +13,13 @@ Kurze Missionen in einer Spielstadt üben das Rechnen über die 10, so wie es in
 - **Minus über die 10:** erst zurück bis zur 10, dann weiter: 13 − 8 = 13 − 3 − 5 = 5
 - **Aufgabenfamilien:** Tausch- und Umkehraufgaben (5 + 2 = 7, 2 + 5 = 7, 7 − 2 = 5, 7 − 5 = 2)
 - **Analogieaufgaben:** 4 + 5 = 9, also 14 + 5 = 19
-- **Zahlenraum bis 100:** 30 + 40 = 70, 38 + 5 = 38 + 2 + 3 = 43
+- **Zahlenraum bis 100 (Bahnhof 100):** volle Laster als Zehner, 30 + 40 = 70, 38 + 5 = 38 + 2 + 3 = 43
 
 ## So wird gespielt
 
 1. **Kisten laden (Mission 1):** Das Kind lädt die Kisten selbst auf zwei Laster mit je 10 Plätzen (Zwanzigerfeld). Laster 1 muss erst voll sein, dann kommt der Rest auf Laster 2. So entdeckt es die Zerlegung selbst. Danach wird der Rechenweg aufgeschrieben: 8 + 5 = 8 + 2 + 3 = 13. Bei Minus wird abgeladen: erst Laster 2 leer machen.
 2. **Rechenweg selbst (Mission 2):** Der Rechenweg wird wie in der Schule eingetragen.
 3. **Profi (Mission 3):** Im Kopf rechnen, der Tipp zeigt den Rechenweg.
-
-Zusätzlich gibt es einen **Fahr-Modus** in 3D: Mit dem Auto fährt man durch eine Landschaft zu den richtigen Zahlen.
 
 Hinweise führen Schritt für Schritt durch den Rechenweg. Es gibt keine Zeitlimits.
 
@@ -34,3 +32,11 @@ Hinweise führen Schritt für Schritt durch den Rechenweg. Es gibt keine Zeitlim
 ## Datenschutz
 
 Alles bleibt auf dem Gerät: Name, Münzen und Fortschritt werden nur im Browser des Geräts gespeichert. Es gibt kein Konto, keine Werbung und kein Tracking. Nur die Schriftarten (Oswald, Lexend) werden von Google Fonts geladen.
+
+## Technik
+
+- `index.html`, `css/app.css`, `js/app.js`: das Spiel
+- `js/world3d.js`: die 3D-Welten (Three.js r160, wird nur bei Bedarf geladen)
+- `assets/models/`: 3D-Modelle von [Kenney](https://kenney.nl) (CC0, gemeinfrei), siehe `assets/models/LICENSE-Kenney.txt`
+
+Ohne 3D (z. B. offline oder ohne WebGL) zeigt das Spiel die Laster als 2D-Bilder.
