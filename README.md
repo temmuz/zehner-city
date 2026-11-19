@@ -27,6 +27,12 @@ Hinweise führen Schritt für Schritt durch den Rechenweg. Es gibt keine Zeitlim
 
 Die 3D-Ansicht lässt sich mit zwei Fingern zoomen und mit einem Finger auf freier Fläche verschieben (am Computer: Mausrad und Ziehen). Die Knöpfe + und − zoomen ebenfalls, der dritte Knopf holt die Ansicht zurück. Bei jeder neuen Aufgabe stellt sich die Ansicht wieder von selbst ein.
 
+## Garage und Probefahrt
+
+Mit den verdienten Münzen kauft das Kind Fahrzeuge (Jeep, Quad, Monstertruck, Laster, Panzerwagen ohne Waffen, Hubschrauber, Jets), Gebäude und Lackierungen. Alle Fahrzeuge sind kleine 3D-Modelle; in der Garage dreht sich das gewählte Fahrzeug auf einer Drehscheibe.
+
+Mit **Probefahrt** bzw. **Probeflug** fährt oder fliegt das Kind sein Fahrzeug auf einem Testgelände: Rampen zum Springen, Pylonen zum Umfahren, zehn Sterne zum Sammeln, ein Landeplatz für Hubschrauber und eine Startbahn für Jets. Gesteuert wird mit dem Daumen-Joystick (am Computer mit den Pfeiltasten bzw. WASD, Hubschrauber mit Leertaste/Shift). Die Probefahrt zählt nicht zur Übungszeit und bringt keine Münzen.
+
 ## Für Eltern
 
 - Beim ersten Start fragt das Spiel nach dem Vornamen des Kindes. Der Name lässt sich im Eltern-Bereich (Schloss-Symbol oben rechts) ändern.
@@ -41,6 +47,7 @@ Alles bleibt auf dem Gerät: Name, Münzen und Fortschritt werden nur im Browser
 
 - `index.html`, `css/app.css`, `js/app.js`: das Spiel
 - `js/world3d.js`: die 3D-Welten (Three.js r160, wird nur bei Bedarf geladen)
+- `js/garage3d.js`: 3D-Fahrzeuge und -Gebäude (Bilder, Drehscheibe in der Garage, Probefahrt)
 - `assets/models/`: 3D-Modelle von [Kenney](https://kenney.nl) (CC0, gemeinfrei), siehe `assets/models/LICENSE-Kenney.txt`
 
 Ohne 3D (z. B. offline oder ohne WebGL) zeigt das Spiel Laster als 2D-Bilder.

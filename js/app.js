@@ -100,6 +100,9 @@ const BSVG={
   hangar:'<path class="b-hangar v-o" d="M12 80V48Q80 0 148 48v32z"/><path class="v-dark" d="M44 80V50h72v30z"/><path class="v-rib" style="opacity:.55" d="M44 60h72M44 70h72"/><path class="v-line" style="stroke-width:2" d="M30 37Q80 7 130 37"/>'
 };
 const vehSVG=id=>`<svg viewBox="0 0 160 90" class="veh" aria-hidden="true">${VSVG[id]}</svg>`;
+const vehColors=v=>{ const p=PNT[state.paintOf[v.id]||'std']||PNT.std; return [p.c1||v.c1,p.c2||v.c2]; };
+const vehPic=v=>{ const [c1,c2]=vehColors(v); return `<span class="v3d" data-id="${v.id}" data-c1="${c1}" data-c2="${c2}" style="${vehStyle(v)}">${vehSVG(v.id)}</span>`; };
+const bldPic=id=>`<span class="v3d" data-id="${id}" data-c1="#999" data-c2="#666">${bldSVG(id)}</span>`;
 const bldSVG=id=>`<svg viewBox="0 0 160 90" class="veh" aria-hidden="true">${BSVG[id]}</svg>`;
 
 const VEHICLES=[
@@ -680,7 +683,7 @@ function renderCity(){
     return `<button class="tile${un?'':' locked'}" style="--tc:var(--d-${D.id})" data-act="district" data-id="${D.id}">${lmSVG(D.id,'tile-art')}
       <span class="tile-top">${dIcon(D.id)}${un?'':`<span class="tile-lock">${icon('lock')}</span>`}</span>
       <span class="tile-name">${D.name}</span><span class="tile-skill">${D.skill}</span>
-      <span class="tile-foot">${un?`<span class="tile-bar"><i style="width:${Math.round(st/9*100)}%"></i></span>${STAR}${st}/9`:`<span class="tile-hint">Erst eine Mission in ${DISTRICTS[i-1].name}</span>`}</span></button>`;
+      <span class="tile-foot">${un?`<span class="tile-bar" aria-hidden="true"><i style="width:${Math.round(st/9*100)}%"></i></span><span class="tile-stars" aria-label="${st} von 9 Sternen">${STAR}${st}/9</span>`:`<span class="tile-hint">Erst eine Mission in ${DISTRICTS[i-1].name}</span>`}</span></button>`;
   }).join('');
   const hqDone=day().hq,hqUn=hqUnlocked();
   const hq=`<button class="tile hq${hqUn?'':' locked'}" data-act="hq">${lmSVG('hq','tile-art')}<span class="tile-top">${dIcon('hq')}${hqUn?'':`<span class="tile-lock">${icon('lock')}</span>`}</span>
@@ -688,7 +691,7 @@ function renderCity(){
     <span class="tile-foot">${hqUn?(hqDone?'<span class="badge done">Heute erledigt</span>':`<span class="badge">${COIN.replace('class="coin"','class="coin" style="width:18px;height:18px"')} +30 Bonus</span>`):'<span class="tile-hint">Öffnet nach Mission 1 auf der Zehnerbrücke</span>'}</span></button>`;
   const v=VEH[state.active];
   const gar=`<button class="tile garage" data-act="garage"><span class="tile-top">${dIcon('garage')}<span class="badge">${COIN.replace('class="coin"','class="coin" style="width:18px;height:18px"')} ${state.coins}</span></span>
-    <span class="tile-name">Garage</span><span class="tile-veh" style="${vehStyle(v)}">${vehSVG(v.id)}</span></button>`;
+    <span class="tile-name">Garage</span><span class="tile-veh">${vehPic(v)}</span></button>`;
   $('#screen-city').innerHTML=`<div class="wrap city">
     <section class="radio"><div class="radio-ava">${fox('happy')}</div>
       <div><div class="eyebrow">Funk von der Zentrale</div><h1>${greet}${state.name?', '+esc(state.name):''}!</h1><p>Nächste Mission: <b>${esc(missionLabel(rec))}</b></p></div>
@@ -705,9 +708,9 @@ function nextGoal(){
 }
 function goalHTML(){
   const g=nextGoal();
-  if(!g) return `<section class="card goal"><div class="goal-pic">${vehSVG('stealth')}</div><div><div class="eyebrow">Sparziel</div><h3>Alles gekauft!</h3><p>Deine Garage ist voll. Neue Farben gibt es in der Lackiererei.</p></div><button class="btn" data-act="garage">Zur Garage</button></section>`;
+  if(!g) return `<section class="card goal"><div class="goal-pic">${vehPic(VEH.stealth)}</div><div><div class="eyebrow">Sparziel</div><h3>Alles gekauft!</h3><p>Deine Garage ist voll. Neue Farben gibt es in der Lackiererei.</p></div><button class="btn" data-act="garage">Zur Garage</button></section>`;
   const have=state.coins,price=g.item.price,pct=Math.min(100,Math.round(have/price*100)),can=have>=price;
-  return `<section class="card goal"><div class="goal-pic" style="${g.kind==='veh'?vehStyle(g.item):''}">${g.kind==='veh'?vehSVG(g.item.id):bldSVG(g.item.id)}</div>
+  return `<section class="card goal"><div class="goal-pic">${g.kind==='veh'?vehPic(g.item):bldPic(g.item.id)}</div>
     <div><div class="eyebrow">Sparziel</div><h3>${g.item.name}</h3><div class="goal-bar"><i style="width:${pct}%"></i></div>
     <p>${can?'<b>Du hast genug Münzen!</b>':`Noch <b>${price-have}</b> Münzen`} · ${have} von ${price}</p></div>
     <button class="btn${can?' btn-gold':''}" data-act="garage">Zur Garage</button></section>`;
@@ -753,7 +756,7 @@ function renderDistrict(id){
 const World={mod:null,state:'idle',
   get(){
     if(this.state==='idle'){ this.state='loading';
-      import('./world3d.js?v=20261119h').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
+      import('./world3d.js?v=20261119k').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
         .catch(err=>{ console.warn('3D unavailable',err); this.fail(); }); }
     return this.state==='ready'?this.mod:null;
   },
@@ -774,6 +777,23 @@ function worldInset(){
   // two candidates: scene right of the equation panel, or below it; the 3D view uses whichever shows it bigger
   return {l:Math.round(right),t:0,r:0,b:Math.round(bot),alt:{l:0,t:Math.round(Math.max(0,r.bottom-h.top+6)),r:0,b:Math.round(bot)}};
 }
+/* 3D pictures of vehicles and buildings (garage3d.js, loaded on demand); the old drawings stay as fallback */
+const Pics={mod:null,state:'idle',room:null,t:0,
+  get(){ if(this.state==='idle'){ this.state='loading'; import('./garage3d.js?v=20261119k').then(m=>{ this.mod=m; this.state='ready'; this.fill(); })
+      .catch(e=>{ console.warn('3D pictures unavailable',e); this.state='failed'; this.schedule(); }); }
+    return this.state==='ready'?this.mod:null; },
+  fill(){
+    if(this.state==='failed'){ document.querySelectorAll('.v3d:not(.fallback)').forEach(el=>el.classList.add('fallback')); return; }
+    const m=this.get(); if(!m) return;
+    document.querySelectorAll('.v3d:not(.ready):not(.fallback)').forEach(el=>{
+      let url=null; try{ url=m.thumb(el.dataset.id,el.dataset.c1,el.dataset.c2); }catch(e){ console.warn(e); }
+      if(!url){ el.classList.add('fallback'); return; }
+      const img=new Image(); img.alt=''; img.src=url; el.appendChild(img); el.classList.add('ready'); });
+    const sh=document.getElementById('show3d'); if(sh&&this.room&&!sh.querySelector('canvas')||sh&&this.room&&sh.dataset.k!==this.room.join()){ try{ m.showroom(sh,...this.room); sh.dataset.k=this.room.join(); }catch(e){ console.warn(e); } }
+  },
+  schedule(){ if(this.t) return; this.t=requestAnimationFrame(()=>{ this.t=0; this.fill(); }); }
+};
+new MutationObserver(()=>Pics.schedule()).observe(document.getElementById('app'),{childList:true,subtree:true});
 const worldApi={loadAct:t=>loadAct(t),loadMsg:(m,c)=>loadMsg(m,c),sound:n=>Sound.play(n),touch:()=>{ lastInput=Date.now(); Sound.ensure(); },failed:()=>World.fail()};
 
 /* ---------- mission ---------- */
@@ -800,8 +820,8 @@ function renderMissionShell(){
   $('#screen-mission').innerHTML=`<div class="mwrap" style="--tc:var(--d-${sid})">
     <div class="mtop"><button class="iconbtn" id="quit-btn" data-act="quit" aria-label="Mission beenden">${icon('close')}</button>
       <div class="mtitle"><div class="eyebrow">${esc(M.sub)}</div><h2>${esc(M.title)}</h2></div><span class="streak" id="m-streak" hidden></span><div class="mcount" id="m-count"></div></div>
-    <div class="scene${air?' air':''}" id="m-road"><div class="street"></div><div id="m-cps"></div><span class="road-flag">${FLAG}</span>
-      <span class="road-veh${air?' air':''}" id="m-veh" style="${vehStyle(v)};left:9%">${vehSVG(v.id)}</span></div>
+    <div class="prog" id="m-road"><div class="prog-track"><div class="prog-fill" id="m-fill"></div><div id="m-cps"></div></div><span class="prog-goal">${FLAG}</span>
+      <span class="prog-veh${air?' air':''}" id="m-veh" style="left:24px">${vehPic(v)}</span></div>
     <section class="taskcard" id="m-card"><div class="rows" id="m-rows"></div><div class="bubble" id="m-bubble" aria-live="polite"></div><div class="visual" id="m-visual"></div><div class="stamp" id="m-stamp" aria-hidden="true"></div></section>
     <section class="padcol"><div class="pad" id="m-pad">${[1,2,3,4,5,6,7,8,9].map(d=>`<button class="key" data-act="digit" data-d="${d}">${d}</button>`).join('')}
       <button class="key del" data-act="del" aria-label="Löschen">${icon('del')}</button><button class="key" data-act="digit" data-d="0">0</button><button class="key ok" data-act="ok" aria-label="Prüfen">${icon('check')}</button></div>
@@ -819,10 +839,10 @@ function drawAll(){ lockPad(); drawCount(); drawRoad(); drawRows(); drawBubble()
 function drawCount(){ const el=$('#m-count'); if(el) el.textContent=`${Math.min(M.ti+1,M.tasks.length)} von ${M.tasks.length}`; }
 function drawRoad(){
   const box=$('#m-cps'); if(!box) return;
-  const n=M.tasks.length,done=M.ti+(M.taskDone?1:0),pos=p=>9+p*82;
-  let cps=''; for(let i=1;i<n;i++) cps+=`<span class="road-cp${i<done?' done':i===done?(M.taskDone?' got':' done'):''}" style="left:${pos(i/n)}%">${COIN}</span>`;
-  box.innerHTML=cps;
-  const veh=$('#m-veh'); const left=pos(done/n)+'%';
+  const n=M.tasks.length,done=M.ti+(M.taskDone?1:0),pos=p=>`calc(${(p*100).toFixed(3)}% - ${(p*22).toFixed(2)}px + 11px)`;
+  let cps=''; for(let i=1;i<n;i++) cps+=`<span class="prog-cp${i<done?' done':i===done?(M.taskDone?' done got':' done'):''}" style="left:${pos(i/n)}">${COIN}</span>`;
+  box.innerHTML=cps; const fill=$('#m-fill'); if(fill) fill.style.width=(done/n*100)+'%';
+  const veh=$('#m-veh'); const left=`calc(24px + ${(done/n).toFixed(4)} * (100% - 88px))`;
   if(veh.style.left!==left){ veh.style.left=left; veh.classList.remove('go'); void veh.offsetWidth; veh.classList.add('go'); }
 }
 const curH=()=>{ if(M.taskDone) return 99; const b=curBlank(); return b?b.h:0; };
@@ -1029,7 +1049,7 @@ function renderResult(){
     <div class="rcoins">${COIN}<span>+${M.coins}</span></div>
     <ul class="rbreak"><li>Aufgaben <b>+${M.coins-R.bonus-R.daily}</b></li><li>Missions-Bonus <b>+${R.bonus}</b></li>${R.daily?`<li>Tagesauftrag <b>+${R.daily}</b></li>`:''}</ul>
     ${M.newUnlocks&&M.newUnlocks.length?`<div><span class="unlock">${STAR} Neu freigeschaltet: <b>${esc(M.newUnlocks.join(', '))}</b></span></div>`:''}
-    <div class="rveh" style="${vehStyle(v)}">${vehSVG(v.id)}</div>
+    <div class="rveh">${vehPic(v)}</div>
     <div class="ractions">${next?`<button class="btn btn-go big" data-act="play" data-id="${next.did}" data-mi="${next.mi}">${icon('play','fill')} ${next.did===M.did?'Nächste Mission':esc(missionLabel(next).split(' · ')[0])}</button>`:''}
       <button class="btn big" data-act="replay">Nochmal</button><button class="btn big" data-act="home">Zur Stadt</button></div>
     ${goalHTML()}
@@ -1044,26 +1064,38 @@ function priceBtn(kind,item){
   return `<button class="btn" disabled>Noch ${item.price-have} Münzen</button>`;
 }
 function renderGarage(){
-  const v=VEH[state.active],cur=state.paintOf[v.id]||'std';
+  const v=VEH[state.active],cur=state.paintOf[v.id]||'std'; Pics.room=[v.id,...vehColors(v)];
   const paints=PAINTS.map(p=>{ const own=!!state.paints[p.id],c1=p.c1||v.c1,c2=p.c2||v.c2,pend=pendingBuy==='paint:'+p.id;
     return `<button class="paint${cur===p.id?' on':''}${pend?' pending':''}" data-act="paint" data-id="${p.id}" aria-label="${p.name}${own?'':', '+p.price+' Münzen'}"><span class="swatch" style="background:linear-gradient(135deg,${c1} 50%,${c2} 50%)"></span>${p.name}<span class="price">${own?(cur===p.id?'aktiv':'gekauft'):pend?'Nochmal tippen':COIN+p.price}</span></button>`; }).join('');
   const cards=VEHICLES.map(x=>{
     const own=!!state.owned[x.id],act=state.active===x.id,blocked=x.needs&&!state.buildings[x.needs];
     let btn;
     if(act) btn='<button class="btn" disabled>Im Einsatz</button>';
-    else if(own) btn=`<button class="btn btn-go" data-act="select" data-id="${x.id}">Fahren</button>`;
+    else if(own) btn=`<button class="btn btn-go" data-act="select" data-id="${x.id}">Auswählen</button>`;
     else if(blocked) btn=`<button class="btn" disabled>${icon('lock')} Braucht ${BLD[x.needs].short}</button>`;
     else btn=priceBtn('veh',x);
-    return `<article class="vcard${act?' active':''}"><div class="vpic" style="${vehStyle(x)}">${vehSVG(x.id)}</div><span class="vtag">${x.cat==='luft'?'Luft':'Boden'}</span><h3>${x.name}</h3><p>${x.desc}</p>${btn}</article>`;
+    return `<article class="vcard${act?' active':''}"><div class="vpic">${vehPic(x)}</div><span class="vtag">${x.cat==='luft'?'Luft':'Boden'}</span><h3>${x.name}</h3><p>${x.desc}</p>${btn}</article>`;
   }).join('');
   const blds=BUILDINGS.map(b=>{ const own=!!state.buildings[b.id];
-    return `<article class="vcard"><div class="vpic">${bldSVG(b.id)}</div><span class="vtag">Gebäude</span><h3>${b.name}</h3><p>${b.desc}</p>${own?'<button class="btn" disabled>Gebaut</button>':priceBtn('bld',b)}</article>`; }).join('');
+    return `<article class="vcard"><div class="vpic">${bldPic(b.id)}</div><span class="vtag">Gebäude</span><h3>${b.name}</h3><p>${b.desc}</p>${own?'<button class="btn" disabled>Gebaut</button>':priceBtn('bld',b)}</article>`; }).join('');
   $('#screen-garage').innerHTML=`<div class="wrap"><div class="ghead"><button class="btn" data-act="home">${icon('back')} Stadt</button><h1>Garage</h1></div>
-    <section class="showroom"><div class="show-veh" style="${vehStyle(v)}">${vehSVG(v.id)}</div>
+    <section class="showroom"><div class="show3d" id="show3d">${vehPic(v)}</div>
       <div><div class="eyebrow" style="color:var(--on-asphalt-soft)">Im Einsatz</div><h2>${v.name}</h2><p>${v.desc}</p>
+      <button class="btn btn-go big drive-btn" data-act="drive">${icon('play','fill')} ${v.cat==='luft'?'Probeflug':'Probefahrt'}</button>
       <div class="eyebrow" style="color:var(--on-asphalt-soft);margin-top:16px">Lackiererei</div><div class="paints">${paints}</div></div></section>
     <h2 class="section-h">Fahrzeuge</h2><div class="vgrid">${cards}</div>
     <h2 class="section-h">Gebäude</h2><div class="vgrid">${blds}</div></div>`;
+}
+/* Probefahrt: drive or fly the vehicle in use on the test track (garage3d.js) */
+function openDrive(){
+  const v=VEH[state.active],[c1,c2]=vehColors(v),m=Pics.get();
+  if(!m||!m.drive){ toast(Pics.state==='failed'?'Die Probefahrt braucht 3D.':'Einen Moment, die Probefahrt lädt …'); return; }
+  if(document.querySelector('.drive')) return; // already driving
+  Sound.ensure(); Sound.play('start');
+  const ov=document.createElement('div'); ov.className='drive'; ov.setAttribute('role','dialog'); ov.setAttribute('aria-label',(v.cat==='luft'?'Probeflug':'Probefahrt')+' mit '+v.name);
+  document.body.appendChild(ov); document.body.classList.add('driving');
+  try{ m.drive(ov,{id:v.id,c1,c2,name:v.name,air:v.cat==='luft'},{sound:n=>Sound.play(n),close:()=>{ ov.remove(); document.body.classList.remove('driving'); }}); }
+  catch(e){ console.warn(e); ov.remove(); document.body.classList.remove('driving'); toast('Die Probefahrt geht hier leider nicht.'); }
 }
 function armBuy(id){ pendingBuy=id; clearTimeout(pbTimer); pbTimer=setTimeout(()=>{ pendingBuy=null; if(current==='garage') renderGarage(); },4000); renderGarage(); }
 function buy(kind,id){
@@ -1331,6 +1363,7 @@ document.addEventListener('click',e=>{
     case 'welcome-go': submitWelcome(false); break;
     case 'welcome-skip': submitWelcome(true); break;
     case 'buy': buy(el.dataset.kind,id); break;
+    case 'drive': openDrive(); break;
     case 'select': if(state.owned[id]){ state.active=id; save(true); Sound.play('step'); renderGarage(); } break;
     case 'paint': paint(id); break;
     case 'goal-min': state.settings.goalMin=+el.dataset.v; save(true); renderParents(); drawHud(); break;

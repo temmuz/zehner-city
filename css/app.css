@@ -121,8 +121,10 @@ p{margin:0}
 .tile-skill{font-size:14px;font-weight:600;opacity:.92}
 .tile-foot{margin-top:auto;width:100%;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
 .tile-foot .star{width:18px;height:18px;fill:var(--marking)}
-.tile-bar{flex:1;height:8px;border-radius:99px;background:rgba(0,0,0,.25);overflow:hidden}
-.tile-bar i{display:block;height:100%;background:var(--marking);border-radius:inherit}
+.tile-bar{flex:1;position:relative;height:12px;border-radius:99px;background:rgba(0,0,0,.28);box-shadow:inset 0 1px 3px rgba(0,0,0,.35);overflow:hidden}
+.tile-bar::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent calc(33.33% - 1px),rgba(255,255,255,.4) calc(33.33% - 1px) calc(33.33% + 1px),transparent calc(33.33% + 1px) calc(66.66% - 1px),rgba(255,255,255,.4) calc(66.66% - 1px) calc(66.66% + 1px),transparent calc(66.66% + 1px))}
+.tile-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(180deg,#ffe58c,var(--marking) 55%,#dba31a);box-shadow:inset 0 -2px 0 rgba(0,0,0,.14),0 0 8px rgba(255,200,61,.55);transition:width .6s}
+.tile-stars{display:inline-flex;align-items:center;gap:4px;padding:3px 10px 3px 6px;border-radius:99px;background:rgba(0,0,0,.28);white-space:nowrap}
 .tile.locked{filter:saturate(.12) brightness(.9);opacity:.75}
 .tile-lock{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:rgba(0,0,0,.28)}
 .tile-lock .ic{width:20px;height:20px}
@@ -569,3 +571,56 @@ mark{background:var(--mark-bg);color:var(--ink);border-radius:6px;padding:0 .15e
 .taskcard.immersive .row.step .eq{--eqs:clamp(34px,4.6vw,56px)}
 @media (max-width:900px),(orientation:portrait) and (max-width:1100px){.taskcard.immersive{height:clamp(340px,calc(100dvh - 640px),620px)}}
 @media (max-width:640px){.taskcard.immersive{height:400px}.taskcard.immersive .rlabel{display:none}}
+
+/* ---------- 3D pictures of vehicles and buildings (garage3d.js) ---------- */
+.v3d{display:block;position:relative;width:100%;aspect-ratio:36/22}
+.v3d>svg{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .2s}
+.v3d.fallback>svg{opacity:1}
+.v3d.ready>svg{display:none}
+.v3d>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;animation:v3dIn .35s ease-out both}
+@keyframes v3dIn{from{opacity:0;transform:scale(.92) translateY(4px)}to{opacity:1;transform:none}}
+.vpic{padding:4px 6px;background:radial-gradient(ellipse at 50% 80%,var(--surface) 0,var(--surface-2) 70%)}
+.vcard:hover .v3d>img{transform:scale(1.04);transition:transform .25s}
+.show3d{width:100%;height:clamp(230px,30vw,340px);justify-self:center;border-radius:18px;overflow:hidden}
+.show3d .v3d{height:100%;aspect-ratio:auto}
+.drive-btn{margin-top:14px}
+.tile-veh .v3d{filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))}
+
+/* ---------- progress bar on top of a mission ---------- */
+.prog{grid-area:road;position:relative;height:68px;border-radius:18px;background:var(--surface);box-shadow:var(--shadow)}
+.prog-track{position:absolute;left:24px;right:64px;top:50%;height:12px;margin-top:-6px;border-radius:99px;background:var(--surface-2);box-shadow:inset 0 1px 3px rgba(0,0,0,.14)}
+.prog-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:99px;background:linear-gradient(90deg,var(--tc),var(--tc));opacity:.9;transition:width .9s cubic-bezier(.3,.8,.3,1)}
+.prog-cp{position:absolute;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:var(--surface);box-shadow:0 0 0 3px var(--surface-2);display:grid;place-items:center;transition:box-shadow .3s}
+.prog-cp svg{width:17px;height:17px;opacity:.3;filter:grayscale(1);transition:opacity .3s,filter .3s}
+.prog-cp.done{box-shadow:0 0 0 3px var(--tc)}
+.prog-cp.done svg{opacity:1;filter:none}
+.prog-cp.got{animation:cpPop .6s ease-out}
+@keyframes cpPop{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}
+.prog-goal{position:absolute;right:16px;top:50%;width:30px;height:38px;transform:translateY(-50%)}
+.prog-goal svg{width:100%;height:100%}
+.prog-veh{position:absolute;top:50%;width:104px;transform:translate(-50%,-74%);transition:left 1s cubic-bezier(.3,.8,.3,1);pointer-events:none;z-index:2}
+.prog-veh.air{top:44%;animation:hover 1.8s ease-in-out infinite}
+.prog-veh.go .v3d{animation:progHop .5s ease-in-out 2}
+@keyframes progHop{50%{transform:translateY(-4px) rotate(-3deg)}}
+@media (max-width:640px){.prog{height:58px}.prog-veh{width:80px}}
+
+/* ---------- Probefahrt (test drive) ---------- */
+body.driving{overflow:hidden}
+.drive{position:fixed;inset:0;z-index:60;background:#bfe3f2;touch-action:none;user-select:none;-webkit-user-select:none;font-family:var(--font-body,inherit)}
+.drive-view{position:absolute;inset:0}
+.drive-top{position:absolute;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:12px;pointer-events:none}
+.drive-top>*{pointer-events:auto}
+.drive-x{width:48px;height:48px;border-radius:14px;border:0;background:rgba(255,255,255,.92);color:#26324a;font-size:22px;font-weight:800;box-shadow:0 3px 10px rgba(0,0,0,.2);cursor:pointer}
+.drive-title{flex:1;min-width:0;font-family:var(--font-display);font-size:clamp(20px,3vw,30px);text-transform:uppercase;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drive-stars{background:rgba(255,255,255,.92);color:#26324a;border-radius:99px;padding:8px 16px;font-weight:800;font-size:18px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.drive-stars{color:#b9870b}.drive-stars b{color:#26324a}
+.drive-hint{position:absolute;left:50%;top:calc(76px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:min(560px,86vw);background:rgba(38,50,74,.86);color:#fff;border-radius:16px;padding:10px 16px;font-weight:600;text-align:center;transition:opacity .6s}
+.drive-hint.off{opacity:0}
+.drive-msg{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-family:var(--font-display);font-size:clamp(28px,5vw,48px);text-transform:uppercase;color:#fff;text-shadow:0 3px 10px rgba(0,0,0,.4);opacity:0;pointer-events:none;white-space:nowrap}
+.drive-msg.on{animation:driveMsg 1.8s ease-out}
+@keyframes driveMsg{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%)}}
+.joy{position:absolute;left:calc(24px + env(safe-area-inset-left,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));width:min(170px,34vw);aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.28);border:3px solid rgba(255,255,255,.7);box-shadow:0 4px 16px rgba(0,0,0,.18);touch-action:none}
+.joy-knob{position:absolute;left:50%;top:50%;width:44%;aspect-ratio:1;margin:-22% 0 0 -22%;border-radius:50%;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.28)}
+.lift{position:absolute;right:calc(24px + env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.lift button{width:min(84px,20vw);aspect-ratio:1;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#26324a;font-size:30px;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,.22);touch-action:none;cursor:pointer}
+.lift button:active{transform:scale(.94);background:#ffc83d}
