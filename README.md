@@ -8,12 +8,12 @@ Kurze Missionen in einer Spielstadt üben das Rechnen über die 10, so wie es in
 
 ## Was geübt wird
 
-- **Verliebte Zahlen:** Zahlenpaare, die zusammen 10 ergeben (3 + 7, 4 + 6 …)
-- **Plus über die 10:** erst bis zur 10, dann weiter: 8 + 9 = 8 + 2 + 7 = 17
-- **Minus über die 10:** erst zurück bis zur 10, dann weiter: 13 − 8 = 13 − 3 − 5 = 5
-- **Aufgabenfamilien:** Tausch- und Umkehraufgaben (5 + 2 = 7, 2 + 5 = 7, 7 − 2 = 5, 7 − 5 = 2)
-- **Analogieaufgaben:** 4 + 5 = 9, also 14 + 5 = 19
-- **Zahlenraum bis 100 (Bahnhof 100):** volle Laster als Zehner, 30 + 40 = 70, 38 + 5 = 38 + 2 + 3 = 43
+- **Verliebte Zahlen (Herzhafen):** Zahlenpaare, die zusammen 10 ergeben (3 + 7, 4 + 6 …)
+- **Plus über die 10 (Zehnerbrücke):** erst bis zur 10, dann weiter: 8 + 9 = 8 + 2 + 7 = 17
+- **Minus über die 10 (Zehnertunnel):** erst zurück bis zur 10, dann weiter: 13 − 8 = 13 − 3 − 5 = 5
+- **Aufgabenfamilien (Lieferviertel):** Tausch- und Umkehraufgaben (5 + 2 = 7, 2 + 5 = 7, 7 − 2 = 5, 7 − 5 = 2)
+- **Analogieaufgaben (Hochhausviertel):** 4 + 5 = 9, also 14 + 5 = 19: ein voller Laster mehr
+- **Zahlenraum bis 100 (Güterbahnhof 100):** volle Laster als Zehner, 30 + 40 = 70, 38 + 5 = 38 + 2 + 3 = 43
 
 ## So wird gespielt
 

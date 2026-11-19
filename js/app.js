@@ -33,7 +33,7 @@ const DICON={
   bruecke:'<path d="M4 30h40M8 30v11M40 30v11M8 30c6-15 26-15 32 0M16 23v7M24 20v10M32 23v7"/>',
   tunnel:'<path d="M4 41h40M6 41c0-19 8-29 18-29s18 10 18 29"/><path d="M15 41v-8a9 9 0 0 1 18 0v8"/>',
   familie:'<path d="M7 22L24 8l17 14"/><path d="M11 19v22h26V19M20 41V31h8v10"/>',
-  tower:'<path d="M13 44V6h22v38M8 44h32M19 12h10M19 18h10M19 24h10M19 30h10"/><path d="M41 22v-8m-3 3l3-3 3 3"/>',
+  tower:'<path d="M17 44V6h22v38M8 44h36M23 12h10M23 18h10M23 24h10M23 30h10"/><path d="M8 44V24h9"/>',
   flug:'<rect x="10" y="8" width="28" height="26" rx="5"/><path d="M10 22h28M16 34l-5 8M32 34l5 8M18 15h12"/><circle cx="17" cy="28" r="1.6"/><circle cx="31" cy="28" r="1.6"/>',
   hq:'<path d="M24 14v30M16 44l8-26 8 26M18 35h12"/><path d="M15 12a12 12 0 0 1 18 0M10 7a19 19 0 0 1 28 0"/>',
   garage:'<path d="M6 21L24 9l18 12v21H6z"/><path d="M12 42V27h24v15M12 32h24M12 37h24"/>'
@@ -138,21 +138,21 @@ const DISTRICTS=[
   {id:'bruecke',name:'Zehnerbrücke',skill:'Plus über die 10',missions:[
     {title:'Kisten laden',desc:'Erst Laster 1 bis 10 voll machen, der Rest kommt auf Laster 2.',gen:'addGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 8 + 2 + 7 = 17.',gen:'addPath'},
-    {title:'Profi-Fahrt',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'addPro'}]},
+    {title:'Profi-Lader',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'addPro'}]},
   {id:'tunnel',name:'Zehnertunnel',skill:'Minus über die 10',missions:[
     {title:'Kisten abladen',desc:'Erst Laster 2 leer machen, dann von Laster 1 abladen.',gen:'subGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 13 − 3 − 5 = 5.',gen:'subPath'},
-    {title:'Profi-Fahrt',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'subPro'}]},
-  {id:'familie',name:'Familienplatz',skill:'Aufgabenfamilien',missions:[
-    {title:'Familien bis 10',desc:'Aufgabe, Tauschaufgabe und zwei Umkehraufgaben.',gen:'famTo10'},
+    {title:'Profi-Ablader',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'subPro'}]},
+  {id:'familie',name:'Lieferviertel',skill:'Aufgabenfamilien',missions:[
+    {title:'Familien bis 10',desc:'Eine Ladung, vier Aufgaben: Aufgabe, Tauschaufgabe, zwei Umkehraufgaben.',gen:'famTo10'},
     {title:'Familien bis 20',desc:'Große Familien über die 10.',gen:'famTo20'},
     {title:'Familien-Detektiv',desc:'Eine Aufgabe ist bekannt. Finde den Rest der Familie!',gen:'famDetective'}]},
-  {id:'tower',name:'Fahrstuhl-Tower',skill:'Analogieaufgaben',missions:[
-    {title:'Plus-Fahrstuhl',desc:'4 + 5 = 9, also ist 14 + 5 = 19.',gen:'anaPlus'},
-    {title:'Minus-Fahrstuhl',desc:'9 − 5 = 4, also ist 19 − 5 = 14.',gen:'anaMinus'},
-    {title:'Hoch hinaus',desc:'Mit dem Fahrstuhl bis in die oberen Stockwerke.',gen:'ana100'}]},
-  {id:'flug',name:'Bahnhof 100',skill:'Zahlenraum bis 100',missions:[
-    {title:'Volle Wagen',desc:'3 + 4 = 7, also ist 30 + 40 = 70.',gen:'tens'},
+  {id:'tower',name:'Hochhausviertel',skill:'Analogieaufgaben',missions:[
+    {title:'Plus mit vollem Laster',desc:'4 + 5 = 9, also ist 14 + 5 = 19.',gen:'anaPlus'},
+    {title:'Minus mit vollem Laster',desc:'9 − 5 = 4, also ist 19 − 5 = 14.',gen:'anaMinus'},
+    {title:'Viele volle Laster',desc:'4 + 5 = 9, also ist 64 + 5 = 69. Die vollen Laster bleiben stehen.',gen:'ana100'}]},
+  {id:'flug',name:'Güterbahnhof 100',skill:'Zahlenraum bis 100',missions:[
+    {title:'Nur volle Laster',desc:'3 + 4 = 7, also ist 30 + 40 = 70.',gen:'tens'},
     {title:'Plus über den Zehner',desc:'38 + 5 = 38 + 2 + 3 = 43.',gen:'add100'},
     {title:'Minus über den Zehner',desc:'43 − 5 = 43 − 3 − 2 = 38.',gen:'sub100'}]}
 ];
@@ -345,14 +345,14 @@ function buildFam(p,mode){
   ],Object.assign({},H,{show:'hint',fixed:1}),{kind:'fam',side:true,sc:{type:'fam',a,b,mode:'detective'}});
 }
 
-/* Analogy tasks: 4 + 5 = 9 -> 14 + 5 = 19 (the lift goes up whole tens, the ones stay the same) */
+/* Analogy tasks: 4 + 5 = 9 -> 14 + 5 = 19 (full trucks are whole tens and just stay parked; only the loose crates change) */
 function buildAna(p){
   const a=p.a,b=p.b,op=p.op,Ts=p.Ts,base=op==='+'?a+b:a-b;
-  const rows=[{label:'Erdgeschoss',tokens:[{n:a},op,{n:b},'=',{b:0}]}];
-  const blanks=[{ans:base,prompt:'Erst unten rechnen.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf den Laster.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}}];
+  const rows=[{label:'Nur Kisten',tokens:[{n:a},op,{n:b},'=',{b:0}]}];
+  const blanks=[{ans:base,prompt:'Erst nur die Kisten rechnen.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf den Laster.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}}];
   Ts.forEach((T,i)=>{
     const x=T+a,res=op==='+'?x+b:x-b,fl=T/10;
-    rows.push({label:`${fl}. Stock`,tokens:[{n:x,ones:1},op,{n:b,ones:1},'=',{b:i+1}]});
+    rows.push({label:`+ ${fl} Laster`,tokens:[{n:x,ones:1},op,{n:b,ones:1},'=',{b:i+1}]});
     blanks.push({ans:res,prompt:fl===1?'Ein voller Laster mehr: + 10.':`${fl} volle Laster mehr: + ${T}.`,
       hints:[`Die Einer: ${a} ${op} ${b} = ${base}`,`${T} + ${base} = □`],visual:{type:'ze',x,b,op,show:'hint'}});
   });
@@ -560,7 +560,7 @@ const LANDMARK={
   tunnel:'<path class="lm-b" d="M0 80Q12 30 56 24q46-2 64 56z"/><path class="lm-d" d="M38 80V62a18 18 0 0 1 36 0v18z"/><path class="lm-s" style="stroke-width:3" d="M34 80V62a22 22 0 0 1 44 0v18"/><rect class="lm-a" x="45" y="27" width="22" height="13" rx="2"/><text x="56" y="37" text-anchor="middle" class="lm-t" style="font-size:10px">10</text>',
   familie:'<path class="lm-a" d="M4 80V52l18-16 18 16v28z"/><path class="lm-b" d="M38 80V44l22-20 22 20v36z"/><path class="lm-a" d="M80 80V56l18-15 18 15v24z"/><rect class="lm-w" x="54" y="50" width="12" height="12" rx="1"/><rect class="lm-w" x="17" y="60" width="10" height="9" rx="1"/><rect class="lm-w" x="93" y="62" width="10" height="9" rx="1"/>',
   tower:'<rect class="lm-b" x="12" y="40" width="24" height="40"/><rect class="lm-b" x="84" y="28" width="26" height="52"/><rect class="lm-a" x="40" y="8" width="40" height="72" rx="3"/><path class="lm-s" d="M60 1v7"/><rect class="lm-w" x="56" y="14" width="8" height="62" rx="2" style="opacity:.45"/><rect class="lm-w" x="55" y="38" width="10" height="10" rx="2"/><g class="lm-w"><rect x="45" y="16" width="6" height="5"/><rect x="69" y="16" width="6" height="5"/><rect x="45" y="28" width="6" height="5"/><rect x="69" y="28" width="6" height="5"/><rect x="45" y="40" width="6" height="5"/><rect x="69" y="40" width="6" height="5"/><rect x="45" y="52" width="6" height="5"/><rect x="69" y="52" width="6" height="5"/><rect x="45" y="64" width="6" height="5"/><rect x="69" y="64" width="6" height="5"/></g>',
-  flug:'<rect class="lm-b" x="0" y="75" width="120" height="5"/><path class="lm-a" d="M24 80V36h12v44z"/><path class="lm-a" d="M15 22h30l-4 14H19z"/><rect class="lm-w" x="20" y="26" width="20" height="5" rx="1"/><path class="lm-a" d="M86 6c1.6 0 2.4 1.6 2.4 4v7l13 7.6v3.4L88.4 24.6V32l4.6 3.6V38L86 36.4 79 38v-2.4l4.6-3.6v-7.4L70.6 28v-3.4l13-7.6v-7c0-2.4.8-4 2.4-4z" transform="rotate(70 86 22)"/>',
+  flug:'<rect class="lm-b" x="0" y="76" width="120" height="4"/><path class="lm-b" d="M8 46l22-16 22 16z"/><rect class="lm-a" x="12" y="46" width="36" height="26"/><rect class="lm-w" x="18" y="52" width="9" height="8" rx="1"/><rect class="lm-w" x="33" y="52" width="9" height="8" rx="1"/><rect class="lm-a" x="54" y="54" width="28" height="16" rx="2"/><rect class="lm-b" x="57" y="47" width="10" height="7" rx="1"/><rect class="lm-b" x="69" y="47" width="10" height="7" rx="1"/><rect class="lm-a" x="86" y="50" width="30" height="20" rx="2"/><rect class="lm-w" x="91" y="54" width="9" height="7" rx="1"/><path class="lm-s" style="stroke-width:2" d="M108 50V40"/><circle class="lm-d" cx="61" cy="72" r="3.4"/><circle class="lm-d" cx="75" cy="72" r="3.4"/><circle class="lm-d" cx="93" cy="72" r="3.4"/><circle class="lm-d" cx="109" cy="72" r="3.4"/>',
   hq:'<path class="lm-s" d="M46 80L57 24h6l11 56M50 62h20M53 44h14"/><path class="lm-s" d="M60 24V12"/><circle class="lm-a" cx="60" cy="10" r="4"/><path class="lm-s" style="stroke-width:3" d="M50 18q-5-6 0-12M70 18q5-6 0-12M43 22q-9-10 0-20M77 22q9-10 0-20"/>'
 };
 const lmSVG=(id,cls='')=>LANDMARK[id]?`<svg viewBox="0 0 120 80" class="lm ${cls}" aria-hidden="true">${LANDMARK[id]}</svg>`:'';
@@ -613,7 +613,7 @@ function renderWelcome(){
     <div class="welcome-fox">${fox('happy')}</div>
     <div class="eyebrow">Funk von der Zentrale</div>
     <h1 class="welcome-h">Willkommen in Zehner-City!</h1>
-    <p class="muted">Hier fährst du Missionen, rechnest geschickt über die 10 und verdienst Münzen für deine Garage.</p>
+    <p class="muted">Hier belädst du Laster mit Kisten, rechnest geschickt über die 10 und verdienst Münzen für deine Garage.</p>
     <label for="welcome-name" class="welcome-q">Wie heißt du?</label>
     <input class="field" id="welcome-name" maxlength="20" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Dein Vorname">
     <div class="ractions"><button class="btn btn-go big" data-act="welcome-go">${icon('play','fill')} Los geht's</button></div>
@@ -681,13 +681,13 @@ const HOWTO={
     <div class="exsteps"><div>13 ${MI} 8 = ?</div><div><mark>13 ${MI} 3</mark> = 10</div><div>10 ${MI} 5 = 5</div></div>
     <div class="visual">${frame20({a:13,b:8,op:MI},2,true)}</div>
     <div class="exsteps"><div class="note">So schreibt ihr es in der Schule:</div><div>13 ${MI} 8 = 5</div><div>13 ${MI} 3 ${MI} 5 = 5</div></div>`,
-  familie:()=>`<p class="lead">Drei Zahlen, vier Aufgaben: die Aufgabe, die <b>Tauschaufgabe</b> und zwei <b>Umkehraufgaben</b>.</p>
+  familie:()=>`<p class="lead">Eine Ladung, drei Zahlen, vier Aufgaben: die Aufgabe, die <b>Tauschaufgabe</b> und zwei <b>Umkehraufgaben</b>.</p>
     <div class="visual">${house({a:5,b:2,c:7},1)}</div>
     <div class="exsteps"><div>5 + 2 = 7</div><div>2 + 5 = 7</div><div>7 ${MI} 2 = 5</div><div>7 ${MI} 5 = 2</div></div>`,
-  tower:()=>`<p class="lead">Analogieaufgaben: Die Einer rechnen gleich, der Zehner fährt im Fahrstuhl mit.</p>
+  tower:()=>`<p class="lead">Analogieaufgaben: Die Kisten rechnen gleich, der volle Laster (10) bleibt einfach stehen.</p>
     <div class="exsteps"><div>4 + 5 = 9</div><div>1<span class="ones">4</span> + <span class="ones">5</span> = 1<span class="ones">9</span></div><div>2<span class="ones">4</span> + <span class="ones">5</span> = 2<span class="ones">9</span></div></div>
     <div class="visual">${zeTable({x:14,b:5,op:'+'})}</div>`,
-  flug:()=>`<p class="lead">Bis 100 klappen dieselben Tricks.</p>
+  flug:()=>`<p class="lead">Bis 100 klappen dieselben Tricks. Jeder volle Laster ist ein Zehner.</p>
     <div class="exsteps"><div>3 + 4 = 7 → 30 + 40 = 70</div><div>38 + 5 = <mark>38 + 2</mark> + 3 = 43</div><div>43 ${MI} 5 = <mark>43 ${MI} 3</mark> ${MI} 2 = 38</div></div>
     <div class="visual">${numline({a:38,b:5,op:'+',T:40},3,true)}</div>`
 };
