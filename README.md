@@ -19,9 +19,9 @@ Kurze Missionen in einer Spielstadt üben das Rechnen über die 10, so wie es in
 
 1. **Kisten laden (Mission 1):** Das Kind lädt die Kisten selbst auf zwei Fahrzeuge mit je 10 Plätzen (Zwanzigerfeld). Fahrzeug 1 muss erst voll sein, dann kommt der Rest auf Fahrzeug 2. So entdeckt es die Zerlegung selbst. Danach wird der Rechenweg aufgeschrieben: 8 + 5 = 8 + 2 + 3 = 13. Bei Minus wird abgeladen: erst Fahrzeug 2 leer machen.
 2. **Rechenweg selbst (Mission 2):** Der Rechenweg wird wie in der Schule eingetragen.
-3. **Profi (Mission 3):** Erst im Kopf rechnen, dann mit Kisten prüfen. Der Tipp zeigt den Rechenweg.
+3. **Profi (Mission 3):** Das Kind kann sofort im Kopf rechnen oder zuerst die Kisten laden. Bevor die Aufgabe zählt, sind immer alle Kisten geladen: So wird das Ergebnis geprüft. Der Tipp zeigt den Rechenweg.
 
-In allen Stadtteilen packt das Kind selbst mit an: Im Herzhafen wird das Boot be- und entladen, im Lieferviertel lädt es die Kisten einer Aufgabenfamilie auf und nimmt für die Umkehraufgaben selbst Kisten weg, im Hochhausviertel holt es jede volle Palette selbst dazu, am Güterbahnhof hängt es volle Wagen an die Lok. In den Profi-Missionen (Mission 3) auf der Zehnerbrücke und im Zehnertunnel wird erst im Kopf gerechnet und das Ergebnis danach mit Kisten geprüft.
+In allen Stadtteilen packt das Kind selbst mit an: Im Herzhafen wird das Boot be- und entladen, im Lieferviertel lädt es die Kisten einer Aufgabenfamilie auf und nimmt für die Umkehraufgaben selbst Kisten weg, im Hochhausviertel holt es jede volle Palette selbst dazu, am Güterbahnhof hängt es volle Wagen an die Lok. In den Profi-Missionen (Mission 3) auf der Zehnerbrücke und im Zehnertunnel darf das Kind sofort im Kopf rechnen oder zuerst laden; die Kisten prüfen das Ergebnis.
 
 Hinweise führen Schritt für Schritt durch den Rechenweg. Es gibt keine Zeitlimits.
 

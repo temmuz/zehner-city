@@ -138,11 +138,11 @@ const DISTRICTS=[
   {id:'bruecke',name:'Zehnerbrücke',skill:'Plus über die 10',missions:[
     {title:'Kisten laden',desc:'Erst {N} 1 bis 10 voll machen, der Rest kommt {auf} {N} 2.',gen:'addGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 8 + 2 + 7 = 17.',gen:'addPath'},
-    {title:'Profi-Lader',desc:'Erst im Kopf rechnen, dann mit Kisten prüfen.',gen:'addPro'}]},
+    {title:'Profi-Lader',desc:'Rechne im Kopf. Mit den Kisten prüfst du, ob es stimmt.',gen:'addPro'}]},
   {id:'tunnel',name:'Zehnertunnel',skill:'Minus über die 10',missions:[
     {title:'Kisten abladen',desc:'Erst {N} 2 leer machen, dann von {N} 1 abladen.',gen:'subGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 13 − 3 − 5 = 5.',gen:'subPath'},
-    {title:'Profi-Ablader',desc:'Erst im Kopf rechnen, dann mit Kisten prüfen.',gen:'subPro'}]},
+    {title:'Profi-Ablader',desc:'Rechne im Kopf. Mit den Kisten prüfst du, ob es stimmt.',gen:'subPro'}]},
   {id:'familie',name:'Lieferviertel',skill:'Aufgabenfamilien',missions:[
     {title:'Familien bis 10',desc:'Eine Ladung, vier Aufgaben: Aufgabe, Tauschaufgabe, zwei Umkehraufgaben.',gen:'famTo10'},
     {title:'Familien bis 20',desc:'Große Familien über die 10.',gen:'famTo20'},
@@ -284,7 +284,7 @@ function buildBridge(p,op,mode){
       {big:1,tokens:[{n:a},op,{n:b},'=',{b:0}]},
       {label:'Rechenweg',minHint:1,tokens:[{n:a},op,{n:r,hint:1},op,{n:s,hint:2},'=',{n:res,hint:9}]}
     ],[{ans:res,prompt:add?`Über die ${T}!`:`Zurück über die ${T}!`,
-        hints:[add?`Erst bis ${T}: ${a} + ${r} = ${T}`:`Erst bis ${T}: ${a} ${MI} ${r} = ${T}`,`Dann noch ${s}: ${T} ${op} ${s} = □`]}],visual,{kind:'bridge',check:{mode:add?'add':'sub',a,b,msg:add?`Prüfe es mit Kisten! Lade die ${b} Kisten auf. Erst {N} 1!`:`Prüfe es mit Kisten! Lade ${b} Kisten ab. Erst {N} 2!`},sc:{type:add?'add':'sub',a,b}});
+        hints:[add?`Erst bis ${T}: ${a} + ${r} = ${T}`:`Erst bis ${T}: ${a} ${MI} ${r} = ${T}`,`Dann noch ${s}: ${T} ${op} ${s} = □`]}],visual,{kind:'bridge',load:{mode:add?'add':'sub',a,b,optional:true,msg:add?`Rechne im Kopf oder lade zuerst die ${b} Kisten auf. Erst {N} 1!`:`Rechne im Kopf oder lade zuerst ${b} Kisten ab. Erst {N} 2!`},sc:{type:add?'add':'sub',a,b}});
   }
   if(mode==='path'){
     visual.show='hint';
@@ -753,7 +753,7 @@ function renderDistrict(id){
 const World={mod:null,state:'idle',
   get(){
     if(this.state==='idle'){ this.state='loading';
-      import('./world3d.js?v=20261119g').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
+      import('./world3d.js?v=20261119h').then(m=>{ this.mod=m; this.state='ready'; if(M&&current==='mission') drawVisual(); })
         .catch(err=>{ console.warn('3D unavailable',err); this.fail(); }); }
     return this.state==='ready'?this.mod:null;
   },
@@ -815,7 +815,7 @@ function introHTML(){
   setTimeout(()=>{ const i=$('#m-intro'); if(i) i.remove(); },2400);
   return `<div class="intro" id="m-intro" data-act="intro-close" style="--tc:var(--d-${sceneOf()})"><div class="intro-band"><div class="eyebrow">Mission · ${esc(M.sub)}</div><h1>${esc(M.title)}</h1></div></div>`;
 }
-function drawAll(){ const pc=$('.padcol'); if(pc) pc.classList.toggle('locked',M.phase==='load'); drawCount(); drawRoad(); drawRows(); drawBubble(); drawVisual(); drawStreak(); }
+function drawAll(){ lockPad(); drawCount(); drawRoad(); drawRows(); drawBubble(); drawVisual(); drawStreak(); }
 function drawCount(){ const el=$('#m-count'); if(el) el.textContent=`${Math.min(M.ti+1,M.tasks.length)} von ${M.tasks.length}`; }
 function drawRoad(){
   const box=$('#m-cps'); if(!box) return;
@@ -934,13 +934,15 @@ function flyCoins(el,n){
   }
 }
 const fxTarget=()=>$('#m-rows .blank.pop')||$('#m-rows .row.final .eq');
+const inputLocked=()=>M.phase==='load'&&!(M.ld&&M.ld.spec&&M.ld.spec.optional&&!M.ld.answered&&!M.ld.done);
+function lockPad(){ const pc=$('.padcol'); if(pc&&M) pc.classList.toggle('locked',inputLocked()); }
 function pressDigit(d){
-  if(!M||M.taskDone||M.busy||M.phase==='load') return; const b=curBlank(); if(!b) return;
+  if(!M||M.taskDone||M.busy||inputLocked()) return; const b=curBlank(); if(!b) return;
   const maxLen=Math.max(2,String(b.ans).length);
   if(M.entry.length>=maxLen){ M.nudge='Drücke ✓ oder ⌫.'; drawBubble(); return; }
   M.entry+=d; M.nudge=null; M.stepMsg=null; Sound.play('tap'); drawRows(); if(M.feedback){ M.feedback=null; } drawBubble();
 }
-function pressDel(){ if(!M||M.taskDone||M.busy||M.phase==='load') return; M.entry=M.entry.slice(0,-1); M.nudge=null; drawRows(); drawBubble(); }
+function pressDel(){ if(!M||M.taskDone||M.busy||inputLocked()) return; M.entry=M.entry.slice(0,-1); M.nudge=null; drawRows(); drawBubble(); }
 function pressHint(){
   if(M&&M.phase==='load'){ loadHint(); return; }
   if(!M||M.taskDone||M.busy) return; const b=curBlank(); if(!b) return;
@@ -949,12 +951,20 @@ function pressHint(){
   M.feedback=null; M.nudge=null; M.stepMsg=null; Sound.play('tap'); drawRows(); drawBubble(); drawVisual();
 }
 function pressOk(){
-  if(!M||M.busy||M.phase==='load') return;
+  if(!M||M.busy||inputLocked()) return;
   if(M.taskDone){ nextTask(); return; }
   const b=curBlank(); if(!b) return;
-  if(M.entry===''){ M.nudge='Tippe zuerst eine Zahl ein.'; drawBubble(); return; }
+  if(M.entry===''){ if(M.phase==='load') loadMsg('Tippe eine Zahl ein oder lade die Kisten.','hint'); else { M.nudge='Tippe zuerst eine Zahl ein.'; drawBubble(); } return; }
   const val=parseInt(M.entry,10);
   M.entry=''; M.nudge=null;
+  if(M.phase==='load'){ // Profi: answered in the head while the crates still wait
+    const L=M.ld;
+    if(val===b.ans){ b.val=val; M.popB=M.bi; L.answered=true; Sound.play('step'); lockPad(); drawRows();
+      loadMsg(L.mode==='sub'?'Super! Jetzt prüfe es: Lade die Kisten ab.':'Super! Jetzt prüfe es: Lade die Kisten auf.','good'); return; }
+    b.wrong++; M.taskWrong=true; b.h=Math.min(b.hints.length,b.h+1); if(b.wrong>=3) b.revealed=true;
+    Sound.play('wrong'); drawRows(); loadMsg('Noch nicht. Lade die Kisten, dann siehst du es.','hint');
+    const sh=$('#m-rows .blank.active'); if(sh) sh.classList.add('shake'); return;
+  }
   if(val===b.ans){ b.val=val; M.feedback=null; M.popB=M.bi; onBlankCorrect(); return; }
   b.wrong++; M.taskWrong=true; b.h=Math.min(b.hints.length,b.h+1); if(b.wrong>=3) b.revealed=true;
   M.feedback='wrong'; M.stepMsg=null; Sound.play('wrong'); drawRows(); drawBubble(); drawVisual();
@@ -969,9 +979,6 @@ function onBlankCorrect(){
     if(stepped){ M.busy=true; drawRows(); drawBubble(); burst(fxTarget(),10); setTimeout(go,700); }
     else { go(); burst(fxTarget(),10); }
     return;
-  }
-  if(t.check&&!t.checkDone){ // Profi: answer in the head first, then prove it with crates
-    Sound.play('step'); M.phase='load'; M.ld=initLoad(t.check,t.skill); M.ld.check=true; drawRows(); drawBubble(); drawVisual(); return;
   }
   const ai=t.blanks.findIndex(x=>x.auto); if(ai>=0){ t.blanks.forEach(x=>{ if(x.auto) x.val=x.ans; }); M.popB=ai; }
   completeTask();
@@ -1258,11 +1265,11 @@ function loadHint(){
 function finishLoad(){
   const L=M.ld; L.done=true; M.busy=true;
   const T=L.spec;
-  if(L.check){ const t=curTask(),r=t.blanks[0]; loadMsg(`Stimmt: ${t.sc.a} ${t.sc.type==='add'?'+':MI} ${t.sc.b} = ${r.ans}!`,'good'); }
+  if(L.spec.optional){ const t=curTask(),r=t.blanks[0]; loadMsg(L.answered?`Stimmt: ${t.sc.a} ${t.sc.type==='add'?'+':MI} ${t.sc.b} = ${r.ans}!`:'Alles da! Und das Ergebnis?','good'); }
   else loadMsg(L.mode==='take'?'Weggenommen!':L.mode==='tens'?'Angekommen!':L.mode==='couple'?(T.op==='+'?`Der Zug hat ${T.a+T.b} {NP}!`:`${T.a-T.b} {NP} bleiben am Zug.`):L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten {drin}.':'Alles geladen!','good');
   Sound.play('step'); burst($('#m-visual'),14);
   setTimeout(()=>{ if(!M||current!=='mission') return; M.busy=false; const t=curTask();
-    if(L.check){ t.checkDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; onBlankCorrect(); return; }
+    if(L.spec.optional&&L.answered){ t.loadDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; onBlankCorrect(); return; }
     if(L.blank!=null) t.blanks[L.blank].actDone=true; else t.loadDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; drawAll(); },L.blank!=null?900:1500);
 }
 let drag=null;
