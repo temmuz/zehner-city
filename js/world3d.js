@@ -1,5 +1,6 @@
 // 3D worlds for Zehner-City. Three.js r160 + Kenney CC0 models (assets/models).
-// Numbers are crates: one crate is 1, a full carrier (truck, wagon, dock) holds 10 in two rows of five.
+// Numbers are crates: one crate is 1, a full carrier holds 10 in two rows of five (like the Zehnerfeld).
+// Every district has its own carrier: boat, truck, mine cart, tractor trailer, forklift pallet, freight wagon.
 // For every step of a task a layout is computed; crates and carriers move smoothly between layouts.
 // Three.js from jsDelivr as ES modules (+esm links share one copy of three, no import map needed)
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/+esm';
@@ -10,31 +11,48 @@ const MODELS = new URL('../assets/models/', import.meta.url).href;
 const EXT = window.ZC_MODEL_EXT || '.glb'; // the Claude artifact copy serves the same models as .json (glTF)
 const loader = new GLTFLoader();
 const cache = new Map();
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function fetchModel(name){
+  for(let i=0;;i++){
+    try{ const g = await loader.loadAsync(MODELS + name + EXT); g.scene.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } }); return g.scene; }
+    catch(e){ if(i>=2) throw e; await wait(500*(i+1)); }   // shaky connections: try three times
+  }
+}
 function load(name){
-  if(!cache.has(name)) cache.set(name, loader.loadAsync(MODELS + name + EXT).then(g => {
-    g.scene.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
-    return g.scene;
-  }));
+  if(!cache.has(name)) cache.set(name, fetchModel(name).catch(e => { cache.delete(name); throw e; }));
   return cache.get(name);
 }
 const models = {};
-async function need(list){ await Promise.all(list.map(async n => { models[n] = await load(n); })); }
+// Scenery may be missing (it is skipped); only the models a carrier is made of are required.
+async function need(list, required){
+  const res = await Promise.allSettled(list.map(async n => { models[n] = await load(n); }));
+  const bad = list.filter((n,i) => res[i].status==='rejected');
+  if(bad.length) console.warn('models not loaded', bad);
+  const miss = (required||[]).filter(n => !models[n]);
+  if(miss.length) throw new Error('required models missing: '+miss.join(', '));
+}
 const inst = name => models[name].clone(true);
 
 /* ---------- carriers: 10 slots in two rows of five ---------- */
 const CS = 0.86; // crate size in world units
+const UP = new THREE.Vector3(0,1,0);
+// length = extent along x (the front points to +x, towards the crate pad), width = extent along z.
+// slot(j,row): j = 0..4 from left to right, row 0 = back row (filled first), in model units * s.
 const CARRIER = {
-  truck: { model:'car/delivery-flat', s:2.4, deck:.5, rotY:Math.PI/2, width:3.6, length:7.8, slot:(j,row)=>({x:row?-.29:.29, z:-1.4+j*.4}), hit:[8.2,3.4,3.8] },
-  wagon: { model:'train/train-carriage-flatbed', s:2.2, deck:.459, rotY:Math.PI/2, width:2.4, length:5.9, slot:(j,row)=>({x:row?-.24:.24, z:-.96+j*.48}), hit:[6.2,3,2.8] },
-  dock:  { model:'pirate/structure-platform-dock', s:2.25, deck:.9, rotY:0, width:5.6, length:5.6, slot:(j,row)=>({x:-.96+j*.48, z:row?.34:-.34}), hit:[5.8,3.4,5.8] },
+  truck:    { model:'car/delivery-flat', s:2.4, deck:.5, rotY:Math.PI/2, length:7.8, width:3.6, slot:(j,row)=>({x:row?-.29:.29, z:-1.4+j*.4}), hit:[8.2,3.4,3.8], plate:[2.55,1.75,1.83] },
+  wagon:    { model:'train/train-carriage-flatbed', s:2.2, deck:.459, rotY:Math.PI/2, length:5.9, width:2.4, slot:(j,row)=>({x:row?-.24:.24, z:-.96+j*.48}), hit:[6.2,3,2.8], rails:.62, tenGap:.3, plate:[-2.55,.62,1.23] },
+  boat:     { build:()=>buildBoat(), s:1, deck:.47, rotY:0, length:8.6, width:3.2, slot:(j,row)=>({x:.2-1.96+j*.98, z:row?.5:-.5}), hit:[8.8,3.2,3.6], plate:[-1.0,.62,1.58,.5], tenGap:1.1 },
+  lore:     { build:()=>buildLore(), s:1, deck:.97, rotY:0, length:6.0, width:2.5, slot:(j,row)=>({x:-1.96+j*.98, z:row?.5:-.5}), hit:[6.4,3,2.9], rails:.72, tenGap:.4, plate:[-2.25,1.22,1.25,.46] },
+  trailer:  { build:()=>buildTrailer(), models:['car/tractor'], s:1, deck:1.02, rotY:0, length:9.7, width:3.0, slot:(j,row)=>({x:-2.25-1.96+j*.98, z:row?.5:-.5}), hit:[9.9,3.4,3.2], plate:[-4.5,1.17,1.26,.3] },
+  forklift: { build:()=>buildForklift(), s:1, deck:.55, rotY:0, length:7.8, width:2.6, slot:(j,row)=>({x:-1.2-1.96+j*.98, z:row?.5:-.5}), hit:[8,3.6,3], plate:[2.98,1.1,1.03,.55] },
 };
 const WORLD = {
-  harbor:  { carrier:'truck', ground:'#e2cd98', water:true,  pad:'roads/tile-low', sky:'#bfe3f2' },
-  bridge:  { carrier:'truck', ground:'#86a95d', water:true,  pad:'roads/tile-low', sky:'#cfe6f2' },
-  tunnel:  { carrier:'truck', ground:'#8fa766', water:false, pad:'roads/tile-low', sky:'#d3e4ec' },
-  suburb:  { carrier:'truck', ground:'#8db063', water:false, pad:'roads/tile-low', sky:'#d6ebf3' },
-  tower:   { carrier:'truck', ground:'#b9b7b0', water:false, pad:'roads/tile-low', sky:'#d0dfe8' },
-  station: { carrier:'truck', ground:'#a9a88f', water:false, pad:'roads/tile-low', sky:'#d4e2ea' },
+  harbor:  { carrier:'boat',     ground:'#e2cd98', water:true,  pad:'pier',           sky:'#bfe3f2' },
+  bridge:  { carrier:'truck',    ground:'#86a95d', water:true,  pad:'roads/tile-low', sky:'#cfe6f2' },
+  tunnel:  { carrier:'lore',     ground:'#8fa766', water:false, pad:'roads/tile-low', sky:'#d3e4ec' },
+  suburb:  { carrier:'trailer',  ground:'#8db063', water:false, pad:'roads/tile-low', sky:'#d6ebf3' },
+  tower:   { carrier:'forklift', ground:'#b9b7b0', water:false, pad:'roads/tile-low', sky:'#d0dfe8' },
+  station: { carrier:'wagon',    ground:'#a9a88f', water:false, pad:'roads/tile-low', sky:'#d4e2ea' },
 };
 const DECOR = {
   harbor:['pirate/ship-small','pirate/palm-straight','pirate/palm-bend','pirate/palm-detailed-straight','pirate/rocks-sand-a','pirate/rocks-sand-b','pirate/barrel','pirate/chest','pirate/flag-high-pennant','pirate/tower-watch','pirate/structure-platform-dock','pirate/structure-fence'],
@@ -44,7 +62,7 @@ const DECOR = {
   tower:['commercial/building-skyscraper-a','commercial/building-skyscraper-b','commercial/building-skyscraper-c','commercial/building-skyscraper-d','commercial/building-a','commercial/building-c','commercial/detail-parasol-a','nature/tree_default','roads/light-curved','car/taxi'],
   station:['train/train-locomotive-a','train/railroad-straight','commercial/building-b','commercial/building-d','commercial/building-e','nature/tree_fat','nature/tree_default','train/train-carriage-container-red','train/train-carriage-box','roads/light-square'],
 };
-const BASE_MODELS = ['pirate/crate','roads/tile-low','pirate/structure-platform-dock-small','nature/grass_large','nature/grass','nature/flower_yellowA','nature/flower_redA'];
+const BASE_MODELS = ['roads/tile-low','pirate/structure-platform-dock-small','nature/grass_large','nature/grass','nature/flower_yellowA','nature/flower_redA'];
 
 /* ---------- engine ---------- */
 let C = null;
@@ -100,12 +118,12 @@ function buildWorld(id){
   if(W.water){
     const wt = textureCanvas(256,256,(g,w,h)=>{ g.fillStyle='#ffffff'; g.fillRect(0,0,w,h); g.strokeStyle='rgba(255,255,255,.0)'; for(let i=0;i<70;i++){ const x=Math.random()*w,y=Math.random()*h,l=10+Math.random()*28; g.strokeStyle=`rgba(${190+Math.random()*40},${235},${255},.55)`; g.lineWidth=1.4; g.beginPath(); g.moveTo(x,y); g.quadraticCurveTo(x+l/2,y-3,x+l,y); g.stroke(); } });
     wt.wrapS = wt.wrapT = THREE.RepeatWrapping; wt.repeat.set(10,10);
-    const water = new THREE.Mesh(new THREE.PlaneGeometry(240, id==='harbor'?140:16, 60, 30), new THREE.MeshStandardMaterial({color:D?'#2c6f86':'#3aa7c4', map:wt, roughness:.18, metalness:.05, transparent:true, opacity:.94}));
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(240, id==='harbor'?240:16, 60, 30), new THREE.MeshStandardMaterial({color:D?'#2c6f86':'#3aa7c4', map:wt, roughness:.18, metalness:.05, transparent:true, opacity:.94}));
     water.rotation.x = -Math.PI/2; water.receiveShadow = true;
-    if(id==='harbor'){ water.position.set(0,.05,-80); } else { water.position.set(0,.05,-24); }
+    if(id==='harbor'){ water.position.set(0,.05,-20); } else { water.position.set(0,.05,-24); }
     scene.add(water); C.water = water;
-    if(id==='harbor'){ const wood=textureCanvas(128,128,(g,w,h)=>{ g.fillStyle='#b98a5a'; g.fillRect(0,0,w,h); for(let y=0;y<h;y+=16){ g.fillStyle='rgba(70,45,25,.35)'; g.fillRect(0,y,w,2); for(let i=0;i<6;i++){ g.fillStyle='rgba(255,235,200,.10)'; g.fillRect(Math.random()*w,y+4+Math.random()*8,20+Math.random()*30,1.5); } g.fillStyle='rgba(70,45,25,.3)'; g.fillRect((y*7)%w,y,2,16); } }); wood.wrapS=wood.wrapT=THREE.RepeatWrapping; wood.repeat.set(6,3);
-      const pier=new THREE.Mesh(new THREE.BoxGeometry(44,.6,19),new THREE.MeshStandardMaterial({map:wood,color:D?'#8a7a6a':'#ffffff',roughness:.85})); pier.position.set(1,-.3,-.5); pier.receiveShadow=true; pier.castShadow=true; scene.add(pier); }
+    if(id==='harbor'){ const sandTex=groundTex.clone(); sandTex.needsUpdate=true; sandTex.repeat.set(8,10);
+      for(const [x0,x1] of [[-80,-12.5],[11.6,80]]){ const beach=new THREE.Mesh(new RoundedBoxGeometry(x1-x0, .8, 100, 2, .3), new THREE.MeshStandardMaterial({color:new THREE.Color(D?shade(W.ground,.55):W.ground), map:sandTex, roughness:.95})); beach.position.set((x0+x1)/2, -.08, -20); beach.receiveShadow=true; scene.add(beach); } }
   } else C.water = null;
   // grass tufts and flowers around the yard
   for(let i=0;i<90;i++){ const x=(r()-.5)*80, z=10-r()*50; if(id==='harbor') continue; if(W.water&&z<-15&&z>-33) continue; if(Math.abs(x)<17&&z>-15&&z<9) continue; place(r()<.8?'nature/grass_large':(r()<.5?'nature/flower_yellowA':'nature/flower_redA'), x, z, 2.2+r()*1.6, r()*6); }
@@ -116,13 +134,13 @@ function decorate(id, r){
   // play area: x -7..9, z -6..5 (more to the back when full trucks are parked)
   const trees = (pts, kinds, s) => pts.forEach(([x,z]) => place(kinds[Math.floor(r()*kinds.length)], x, z, s*(.85+r()*.35), r()*6));
   if(id==='harbor'){
-    place('pirate/ship-small', 2, -19, 1.45, .2);
-    place('pirate/structure-platform-dock', -12, -13.5, 2.4); place('pirate/structure-platform-dock', 14, -13.5, 2.4);
-    place('pirate/tower-watch', 15.5, -6.5, 2.3, -.5);
-    place('pirate/flag-high-pennant', -12, -8.3, 2.5);
-    trees([[-13.5,-2.5],[-14.5,3.5],[16,1],[15,6.5]], ['pirate/palm-bend','pirate/palm-straight','pirate/palm-detailed-straight'], 2.6);
-    [[-9,-8.6],[-7.6,-8.9],[-8.3,-7.6],[11,-8.6],[12.2,-8.2]].forEach(([x,z],i)=>place('pirate/barrel',x,z,2.1,i));
-    place('pirate/chest',13,4.8,2.2,.4); place('pirate/structure-fence',3,-8.9,2.4); place('pirate/structure-fence',-3.6,-8.9,2.4);
+    place('pirate/ship-small', 2, -22, 1.45, .2);
+    place('pirate/structure-platform-dock', -15.5, -15, 2.4); place('pirate/structure-platform-dock', 16, -15, 2.4);
+    place('pirate/tower-watch', 16.5, -7, 2.3, -.5, .32);
+    place('pirate/flag-high-pennant', -14.5, -10, 2.5, 0, .32);
+    trees([[-15,-3],[-16.5,3.5],[15.5,2.2],[16.5,7]], ['pirate/palm-bend','pirate/palm-straight','pirate/palm-detailed-straight'], 2.6);
+    [[-14.4,-7.6],[-15.8,-8.1],[-15,-6.4],[13.6,-9.2],[14.8,-8.7]].forEach(([x,z],i)=>place('pirate/barrel',x,z,2.1,i,.32));
+    place('pirate/chest',14.2,5.2,2.2,.4,.32); place('pirate/structure-fence',-14,0,2.4,Math.PI/2,.32);
   } else if(id==='bridge'){
     for(let i=-7;i<=7;i++) place('roads/road-bridge', i*6, -22, 6, Math.PI/2);
     for(let i=-6;i<=6;i+=3) place('roads/bridge-pillar-wide', i*6, -22, 6, Math.PI/2);
@@ -133,7 +151,6 @@ function decorate(id, r){
     place('nature/cliff_large_rock', -12, -14, 8); place('nature/cliff_cave_rock', -1, -14, 8); place('nature/cliff_large_rock', 10, -14, 8);
     place('nature/cliff_block_rock', -21, -13, 8); place('nature/cliff_block_rock', 19, -13, 8);
     place('nature/cliff_top_rock', -6, -22, 8); place('nature/cliff_top_rock', 6, -22, 8);
-    for(let i=0;i<2;i++) place('roads/road-straight', -1, -8.5+i*4.5, 4.5);
     trees([[-12,-9],[-14,-1],[14,-10],[16,-2],[-14,6],[16,6]], ['nature/tree_pineRoundA','nature/tree_pineTallA'], 3.6);
     place('nature/rock_largeB',-11,7,2.6,1); place('roads/construction-cone',-4,-11,3); place('roads/construction-cone',4,-11,3); place('nature/plant_bushLarge',12,7,3,2);
   } else if(id==='suburb'){
@@ -158,18 +175,97 @@ function decorate(id, r){
   }
 }
 
+/* ---------- vehicles built from simple shapes (sized for exactly 2 x 5 crates) ---------- */
+const _mats = new Map();
+function mat(color, rough){ const k=color+(rough||.7); if(!_mats.has(k)) _mats.set(k, new THREE.MeshStandardMaterial({color, roughness:rough||.7})); return _mats.get(k); }
+function part(geo, color, x, y, z, parent, rough){ const m=new THREE.Mesh(geo, mat(color, rough)); m.position.set(x,y,z); m.castShadow=m.receiveShadow=true; parent.add(m); return m; }
+function box(w, h, d, color, x, y, z, parent, r){ const rr=Math.min(r==null?.04:r, w/2-.001, h/2-.001, d/2-.001); return part(rr>.004 ? new RoundedBoxGeometry(w, h, d, 2, rr) : new THREE.BoxGeometry(w, h, d), color, x, y, z, parent); }
+function wheel(r, t, x, y, z, parent, color){ const g=new THREE.Group(); g.position.set(x,y,z); parent.add(g);
+  const tire=part(new THREE.CylinderGeometry(r, r, t, 18), color||'#2b2c31', 0,0,0, g, .9); tire.rotation.x=Math.PI/2;
+  const hub=part(new THREE.CylinderGeometry(r*.48, r*.48, t+.02, 12), '#b9bcc4', 0,0,0, g, .5); hub.rotation.x=Math.PI/2; return g; }
+function hullShape(x0, x1, xb, hw, rs){ const s=new THREE.Shape(); s.moveTo(x0,-hw); s.lineTo(x1,-hw); s.quadraticCurveTo(xb-.35,-hw*.9, xb,0); s.quadraticCurveTo(xb-.35,hw*.9, x1,hw); s.lineTo(x0,hw); s.quadraticCurveTo(x0-rs,0, x0,-hw); return s; }
+function extrudeUp(shape, depth, color, y, parent){ const geo=new THREE.ExtrudeGeometry(shape,{depth, bevelEnabled:true, bevelThickness:.05, bevelSize:.05, bevelSegments:2, curveSegments:14}); geo.rotateX(-Math.PI/2); return part(geo, color, 0, y, 0, parent, .55); }
+function buildBoat(){
+  const g=new THREE.Group();
+  extrudeUp(hullShape(-4.2, 2.5, 4.3, 1.5, .25), .72, '#2f5577', -.32, g);              // hull below the deck
+  const rim=hullShape(-4.2, 2.5, 4.3, 1.5, .25); rim.holes.push(hullShape(-3.98, 2.45, 3.92, 1.3, .2));
+  extrudeUp(rim, .4, '#f3efe4', .4, g);                                                     // white gunwale
+  extrudeUp(hullShape(-4.25, 2.5, 4.36, 1.54, .25), .05, '#c2543f', .38, g);               // red stripe
+  const deck=part(new THREE.ShapeGeometry(hullShape(-3.98, 2.45, 3.92, 1.3, .2)), '#c89b64', 0, .47, 0, g, .8); deck.rotation.x=-Math.PI/2;
+  box(1.35, 1.15, 2.0, '#f3efe4', -3.25, 1.02, 0, g, .06);                                  // wheelhouse
+  box(1.37, .3, 2.02, '#33465c', -3.25, 1.26, 0, g, .03);                                    // windows
+  box(1.6, .12, 2.25, '#2f5577', -3.25, 1.66, 0, g, .04);                                    // roof
+  part(new THREE.CylinderGeometry(.05, .05, 1.2, 8), '#5b4a3a', -3.5, 2.3, 0, g);           // mast
+  const flag=new THREE.Shape(); flag.moveTo(0,0); flag.lineTo(.62,-.18); flag.lineTo(0,-.36);
+  const f=part(new THREE.ShapeGeometry(flag), '#e0533e', -3.48, 2.86, 0, g); f.material.side=THREE.DoubleSide;
+  const ring=part(new THREE.TorusGeometry(.24, .075, 8, 20), '#f08a2c', -2.9, 1.0, 1.03, g, .6);
+  return g;
+}
+function buildLore(){
+  const g=new THREE.Group(), rust='#b7653c', dk='#7a4328', steel='#40434a';
+  box(5.0, .22, 1.1, steel, 0, .62, 0, g);
+  for(const x of [-1.75, 1.75]) for(const z of [-.72, .72]) wheel(.34, .16, x, .52, z, g, '#33353b');
+  box(5.7, .14, 2.45, rust, 0, .9, 0, g, .03);                                               // floor
+  for(const z of [-1.16, 1.16]) box(5.7, .5, .13, rust, 0, 1.22, z, g, .03);                // sides
+  for(const x of [-2.79, 2.79]) box(.13, .5, 2.45, rust, x, 1.22, 0, g, .03);               // ends
+  for(const z of [-1.18, 1.18]) box(5.76, .08, .17, dk, 0, 1.48, z, g, .02);                // rim
+  for(const x of [-2.82, 2.82]) box(.17, .08, 2.5, dk, x, 1.48, 0, g, .02);
+  for(const x of [-1.4, 0, 1.4]) for(const z of [-1.24, 1.24]) box(.14, .5, .04, dk, x, 1.22, z, g, .01);
+  for(const x of [-2.95, 2.95]) box(.3, .14, .3, steel, x, .66, 0, g);                       // couplers
+  return g;
+}
+function buildTrailer(){
+  const g=new THREE.Group(), wood='#b9874f', board='#3f6b4a', steel='#3c3f45';
+  box(5.4, .18, 2.5, wood, -2.25, .92, 0, g, .03);                                           // bed
+  for(let i=-2;i<=2;i++) box(.04, .01, 2.46, '#8d6236', -2.25+i*1.05, 1.015, 0, g, 0);
+  for(const z of [-1.2, 1.2]) box(5.4, .32, .1, board, -2.25, 1.17, z, g, .03);             // low side boards
+  box(.1, .32, 2.5, board, -4.9, 1.17, 0, g, .03); box(.1, .55, 2.5, board, .4, 1.28, 0, g, .03);
+  box(4.6, .22, .9, steel, -2.25, .7, 0, g);
+  for(const x of [-3.35, -1.15]) for(const z of [-1.08, 1.08]) wheel(.45, .3, x, .45, z, g);
+  box(1.0, .12, .14, steel, .95, .6, 0, g, .02);                                             // drawbar
+  if(models['car/tractor']){ const t=inst('car/tractor'); t.scale.setScalar(1.6); t.rotation.y=Math.PI/2; t.position.set(1.35+1.101*1.6, 0, 0); g.add(t); }
+  return g;
+}
+function buildForklift(){
+  const g=new THREE.Group(), yel='#efb233', dyel='#c98d22', dark='#34363b', wood='#caa06b', dwood='#a57b4a';
+  for(const z of [-.55, .55]) box(4.1, .07, .26, '#5a5d63', -.55, .24, z, g, .02);             // forks
+  for(const z of [-.98, 0, .98]) box(5.3, .2, .34, dwood, -1.2, .37, z, g, .03);            // pallet blocks
+  for(let i=0;i<8;i++) box(.56, .07, 2.3, wood, -1.2-2.36+i*.674, .51, 0, g, .02);         // pallet boards
+  for(const z of [-.62, .62]) box(.14, 3.0, .16, dark, 1.68, 1.6, z, g, .03);                // mast
+  for(const y of [1.0, 2.1, 3.05]) box(.12, .1, 1.4, dark, 1.68, y, 0, g, .02);
+  box(.1, .9, 1.5, dark, 1.55, .66, 0, g, .02);                                              // backrest
+  box(1.75, 1.05, 2.0, yel, 2.65, .98, 0, g, .12);                                           // body
+  box(.5, 1.2, 2.0, dyel, 3.6, 1.06, 0, g, .12);                                             // counterweight
+  box(.55, .14, .7, dark, 2.95, 1.58, 0, g, .05); box(.12, .55, .6, dark, 3.2, 1.86, 0, g, .04); // seat
+  part(new THREE.CylinderGeometry(.05, .05, .7, 8), dark, 2.25, 1.75, 0, g).rotation.z=.5;   // steering column
+  for(const x of [2.05, 3.45]) for(const z of [-.88, .88]) box(.09, 1.45, .09, dark, x, 2.2, z, g, .02);
+  box(1.6, .09, 1.95, dark, 2.75, 2.95, 0, g, .03);                                           // roof guard
+  box(.22, .16, .22, '#f2761f', 3.3, 3.07, 0, g, .05);                                       // beacon
+  for(const z of [-1.0, 1.0]){ wheel(.42, .32, 2.2, .42, z, g); wheel(.34, .28, 3.45, .34, z*.96, g); }
+  return g;
+}
+function addRails(g, def){
+  const L=def.length+1.4, gz=def.rails;
+  for(let x=-L/2+.3; x<L/2; x+=.72) box(.32, .08, gz*2+.6, '#6e5640', x, .04, 0, g, .02);
+  for(const z of [-gz, gz]) box(L, .1, .1, '#8b8f97', 0, .13, z, g, .02);
+}
+function plateTex(n){ return textureCanvas(128,128,(c,w,h)=>{ c.fillStyle='#fffaf0'; c.beginPath(); c.roundRect(6,6,w-12,h-12,22); c.fill(); c.lineWidth=8; c.strokeStyle='#26324a'; c.stroke(); c.fillStyle='#26324a'; c.font='800 86px Lexend, system-ui, sans-serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(String(n), w/2, h/2+6); }); }
+
 /* ---------- carriers and crates ---------- */
 function carrierDef(){ return CARRIER[WORLD[C.world].carrier]; }
 function makeCarrier(num, full, kind, scaleK){
-  const def = carrierDef(), g = new THREE.Group(), body = inst(def.model);
-  body.scale.setScalar(def.s); g.add(body); g.rotation.y = def.rotY; g.userData.num = num; g.userData.def = def;
-  const hit = new THREE.Mesh(def.rotY ? new THREE.BoxGeometry(def.hit[2], def.hit[1], def.hit[0]) : new THREE.BoxGeometry(def.hit[0], def.hit[1], def.hit[2]), new THREE.MeshBasicMaterial({visible:false}));
+  const def = carrierDef(), g = new THREE.Group(), body = def.build ? def.build() : inst(def.model);
+  if(!def.build){ body.scale.setScalar(def.s); body.rotation.y = def.rotY; }
+  g.add(body); g.userData.num = num; g.userData.def = def;
+  if(def.rails) addRails(g, def);
+  if(num && def.plate){ const ps = def.plate[3]||.62, pl = new THREE.Mesh(new THREE.PlaneGeometry(ps,ps), new THREE.MeshStandardMaterial({map:plateTex(num), roughness:.6})); pl.position.set(def.plate[0], def.plate[1], def.plate[2]); g.add(pl); }
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(def.hit[0], def.hit[1], def.hit[2]), new THREE.MeshBasicMaterial({visible:false}));
   hit.position.y = 1.4; hit.userData.carrier = num; g.add(hit); g.userData.hit = hit;
   if(full){ const mat = crateMat(kind); for(let i=0;i<10;i++){ const m = new THREE.Mesh(crateGeo(), mat); m.castShadow=true; const p = slotLocal(def,i); m.position.copy(p); m.scale.setScalar(CS); g.add(m); } g.userData.crateMat = mat; }
   g.scale.setScalar(scaleK || 1);
   C.scene.add(g); return g;
 }
-function slotLocal(def,i){ const s = def.slot(i%5, i<5?0:1); return new THREE.Vector3(s.x*def.s, def.deck*def.s + CS/2, s.z*def.s); }
+function slotLocal(def,i){ const s = def.slot(i%5, i<5?0:1); return new THREE.Vector3(s.x*def.s, def.deck*def.s + CS/2, s.z*def.s).applyAxisAngle(UP, def.rotY); }
 let _crateGeo = null, _crateTex = null;
 function crateGeo(){ if(!_crateGeo) _crateGeo = new RoundedBoxGeometry(1, 1, 1, 3, .09); return _crateGeo; }
 function crateTex(){
@@ -193,19 +289,28 @@ const OFFX = -2.4;
 function padBase(){ return {x: C.nCar===0 ? 0 : OFFX + carrierDef().length/2 + 3.8, z: 0}; }
 function palletWorld(k){ const b = padBase(); return new THREE.Vector3(b.x - 1.96 + (k%5)*.98, padTop() + CS/2 + Math.floor(k/15)*CS, b.z - .98 + Math.floor((k%15)/5)*.98); }
 function padTop(){ return C.padY!=null ? C.padY : .5; }
+function makePier(b){
+  const g = new THREE.Group(), wood = '#b98a5a', dk = '#6e5238';
+  box(6.6, .24, 4.6, wood, b.x, .52, b.z, g, .03);
+  for(let i=0;i<9;i++) box(.03, .01, 4.5, dk, b.x-3.1+i*.775, .645, b.z, g, 0);
+  box(12, .24, 1.9, wood, b.x+3.3+6, .5, b.z, g, .03);
+  for(const [dx,dz] of [[-3.1,-2.1],[3.1,-2.1],[-3.1,2.1],[3.1,2.1],[6,-.8],[6,.8],[9.5,-.8],[9.5,.8]]) part(new THREE.CylinderGeometry(.13,.15,1.3,8), dk, b.x+dx, -.15, b.z+dz, g, .9);
+  for(const dz of [-2.2, 2.2]) for(const dx of [-2.2, 2.2]) part(new THREE.CylinderGeometry(.1,.12,.32,10), '#3b3f46', b.x+dx, .8, b.z+dz, g, .6);
+  C.scene.add(g); return g;
+}
 function tenWorld(j){
-  const def = carrierDef(), w = def.rotY ? def.width : def.length, len = def.rotY ? def.length : def.width, k = .62;
+  const def = carrierDef(), w = def.width, len = def.length, k = .62, gx = def.tenGap!=null ? def.tenGap : 1.4;
   const z0 = C.nCar===0 ? 0 : C.nCar===2 ? -(w + 2.6 + w*k/2) : -(w/2 + 2.6 + w*k/2);
-  return new THREE.Vector3(OFFX - len*k*1.05 + (j%3)*(len*k + 1.4), 0, z0 - Math.floor(j/3)*(w*k + 1.4));
+  return new THREE.Vector3(OFFX - (len*k + gx) + (j%3)*(len*k + gx), 0, z0 - Math.floor(j/3)*(w*k + 1.4));
 }
 function setCarriers(n){
   if(C.nCar === n) return;
   Object.values(C.carriers).forEach(g => C.scene.remove(g)); C.carriers = {}; C.nCar = n;
-  const def = carrierDef(), gap = (def.rotY ? def.width : def.length)/2 + .9;
+  const def = carrierDef(), gap = def.width/2 + .9;
   if(n===1){ C.carriers[1] = makeCarrier(1); C.carriers[1].position.x = OFFX; }
   else if(n===2){ C.carriers[1] = makeCarrier(1); C.carriers[1].position.set(OFFX,0,-gap); C.carriers[2] = makeCarrier(2); C.carriers[2].position.set(OFFX,0,gap); }
   if(C.padObj){ C.scene.remove(C.padObj); C.padObj = null; }
-  if(n>0){ const b = padBase(), pad = WORLD[C.world].pad; C.padObj = place(pad, b.x, b.z, pad==='roads/tile-low' ? 5.6 : 2.5); C.padObj.updateMatrixWorld(true);
+  if(n>0){ const b = padBase(), pad = WORLD[C.world].pad; C.padObj = pad==='pier' ? makePier(b) : place(pad, b.x, b.z, pad==='roads/tile-low' ? 5.6 : 2.5); C.padObj.updateMatrixWorld(true);
     let top = 0; const rc = new THREE.Raycaster();
     for(const [dx,dz] of [[0,0],[.7,.4],[-.7,-.4],[1.2,-.6],[-1.2,.6],[.3,-.9],[-.3,.9]]){ rc.set(new THREE.Vector3(b.x+dx, 30, b.z+dz), new THREE.Vector3(0,-1,0)); const h = rc.intersectObject(C.padObj, true)[0]; if(h && h.point.y < 4) top = Math.max(top, h.point.y); }
     C.padY = top || .5; }
@@ -307,7 +412,7 @@ function badge(instant){
   C.scene.add(sp); C.badge=sp;
 }
 function frame(lay){
-  const cam=C.cam, tan=Math.tan(cam.fov*Math.PI/360), def=carrierDef(), L=(def.rotY?def.length:def.width)/2, Wd=(def.rotY?def.width:def.length)/2;
+  const cam=C.cam, tan=Math.tan(cam.fov*Math.PI/360), def=carrierDef(), L=def.length/2, Wd=def.width/2;
   let xmin=1e9,xmax=-1e9,zmin=1e9,zmax=-1e9; const add=(x0,x1,z0,z1)=>{ xmin=Math.min(xmin,x0); xmax=Math.max(xmax,x1); zmin=Math.min(zmin,z0); zmax=Math.max(zmax,z1); };
   Object.values(C.carriers).forEach(g=>add(g.position.x-L,g.position.x+L,g.position.z-Wd,g.position.z+Wd));
   if(lay.carriers>0){ const b=padBase(); add(b.x-2.8,b.x+2.8,b.z-1.8,b.z+1.8); }
@@ -338,9 +443,9 @@ export function sync(host, V, api){
   const ins = V.inset||{l:0,t:0,r:0,b:0}; if(JSON.stringify(ins)!==JSON.stringify(C.inset||{})){ C.inset = ins; if(C.lastLay) frame(C.lastLay); C.camCur=null; }
   if(C.world !== V.world){
     if(building && building.world===V.world) return;
-    const world = V.world, list = [...BASE_MODELS, CARRIER[WORLD[world].carrier].model, WORLD[world].pad, ...DECOR[world]];
+    const world = V.world, cd = CARRIER[WORLD[world].carrier], list = [...BASE_MODELS, ...(cd.model?[cd.model]:[]), ...(cd.models||[]), ...(WORLD[world].pad==='pier'?[]:[WORLD[world].pad]), ...DECOR[world]];
     building = {world};
-    need(list).then(()=>{ if(!C||C.view.world!==world) return; building=null;
+    need(list, [...(cd.model?[cd.model]:[]), ...(cd.models||[])]).then(()=>{ if(!C||C.view.world!==world) return; building=null;
       C.byId=new Map(); C.tens=new Map(); C.carriers={}; C.nCar=-1; C.badge=null; C.padObj=null; C.key=null; C.tweens=[]; C.ghosts=[]; C.spots=[];
       buildWorld(world); const w=C.host.querySelector('.w3-wait'); if(w) w.remove(); sync(C.host, C.view, C.api); })
       .catch(err=>{ building=null; console.warn('3D models failed', err); api.failed&&api.failed(); });
@@ -392,7 +497,7 @@ function onMove(e){
 }
 function onUp(e){
   if(!C||!C.drag||e.pointerId!==C.drag.id) return; const d=C.drag; C.drag=null;
-  if(!d.moved){ if(d.kind==='pallet') C.api.loadMsg('Zieh die Kiste auf einen Laster. Oder tippe auf den Laster.','hint'); else C.api.loadAct(d.carrier); kick(); return; }
+  if(!d.moved){ if(d.kind==='pallet') C.api.loadMsg('Zieh die Kiste {auf} {einen} {N}. Oder tippe auf {den} {N}.','hint'); else C.api.loadAct(d.carrier); kick(); return; }
   C.pending=d.mesh;
   if(d.kind==='unload'){ const r=C.renderer.domElement.getBoundingClientRect(); const b=padBase(); C.ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); C.ray.setFromCamera(C.ndc,C.cam); if(C.ray.ray.intersectPlane(C.dragPlane,C.tmp)&&Math.abs(C.tmp.x-b.x)<4&&Math.abs(C.tmp.z-b.z)<3.4) C.api.loadAct(d.carrier); }
   else { const h=pick(e,carrierHits()); if(h) C.api.loadAct(h.object.userData.carrier); }

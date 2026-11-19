@@ -132,15 +132,15 @@ const PNT=Object.fromEntries(PAINTS.map(p=>[p.id,p]));
 /* ================= districts ================= */
 const DISTRICTS=[
   {id:'herz',name:'Herzhafen',skill:'Verliebte Zahlen',missions:[
-    {title:'Laster voll machen',desc:'Lade Kisten auf, bis 10 auf dem Laster sind.',gen:'pairFrame'},
+    {title:'{N} voll machen',desc:'Lade Kisten auf, bis 10 {aufdem} {N} sind.',gen:'pairFrame'},
     {title:'Verliebte Zahlen',desc:'Finde den Partner. Zusammen sind sie immer 10.',gen:'pairLove'},
     {title:'Herz-Mix',desc:'Plus und Minus mit der 10.',gen:'pairMix'}]},
   {id:'bruecke',name:'Zehnerbrücke',skill:'Plus über die 10',missions:[
-    {title:'Kisten laden',desc:'Erst Laster 1 bis 10 voll machen, der Rest kommt auf Laster 2.',gen:'addGuided'},
+    {title:'Kisten laden',desc:'Erst {N} 1 bis 10 voll machen, der Rest kommt {auf} {N} 2.',gen:'addGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 8 + 2 + 7 = 17.',gen:'addPath'},
     {title:'Profi-Lader',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'addPro'}]},
   {id:'tunnel',name:'Zehnertunnel',skill:'Minus über die 10',missions:[
-    {title:'Kisten abladen',desc:'Erst Laster 2 leer machen, dann von Laster 1 abladen.',gen:'subGuided'},
+    {title:'Kisten abladen',desc:'Erst {N} 2 leer machen, dann von {N} 1 abladen.',gen:'subGuided'},
     {title:'Rechenweg selbst',desc:'Schreib den Rechenweg wie in der Schule: 13 − 3 − 5 = 5.',gen:'subPath'},
     {title:'Profi-Ablader',desc:'Im Kopf rechnen. Der Tipp zeigt dir den Rechenweg.',gen:'subPro'}]},
   {id:'familie',name:'Lieferviertel',skill:'Aufgabenfamilien',missions:[
@@ -148,11 +148,11 @@ const DISTRICTS=[
     {title:'Familien bis 20',desc:'Große Familien über die 10.',gen:'famTo20'},
     {title:'Familien-Detektiv',desc:'Eine Aufgabe ist bekannt. Finde den Rest der Familie!',gen:'famDetective'}]},
   {id:'tower',name:'Hochhausviertel',skill:'Analogieaufgaben',missions:[
-    {title:'Plus mit vollem Laster',desc:'4 + 5 = 9, also ist 14 + 5 = 19.',gen:'anaPlus'},
-    {title:'Minus mit vollem Laster',desc:'9 − 5 = 4, also ist 19 − 5 = 14.',gen:'anaMinus'},
-    {title:'Viele volle Laster',desc:'4 + 5 = 9, also ist 64 + 5 = 69. Die vollen Laster bleiben stehen.',gen:'ana100'}]},
+    {title:'Plus mit {vollem} {N}',desc:'4 + 5 = 9, also ist 14 + 5 = 19.',gen:'anaPlus'},
+    {title:'Minus mit {vollem} {N}',desc:'9 − 5 = 4, also ist 19 − 5 = 14.',gen:'anaMinus'},
+    {title:'Viele volle {NP}',desc:'4 + 5 = 9, also ist 64 + 5 = 69. Die vollen {NP} bleiben stehen.',gen:'ana100'}]},
   {id:'flug',name:'Güterbahnhof 100',skill:'Zahlenraum bis 100',missions:[
-    {title:'Nur volle Laster',desc:'3 + 4 = 7, also ist 30 + 40 = 70.',gen:'tens'},
+    {title:'Nur volle {NP}',desc:'3 + 4 = 7, also ist 30 + 40 = 70.',gen:'tens'},
     {title:'Plus über den Zehner',desc:'38 + 5 = 38 + 2 + 3 = 43.',gen:'add100'},
     {title:'Minus über den Zehner',desc:'43 − 5 = 43 − 3 − 2 = 38.',gen:'sub100'}]}
 ];
@@ -236,6 +236,27 @@ const Speech={ok:('speechSynthesis' in window)&&typeof window.SpeechSynthesisUtt
 };
 function spoken(t){ return String(t).replace(/□/g,' wie viel ').replace(/−/g,' minus ').replace(/\+/g,' plus ').replace(/=/g,' gleich ').replace(/\s+/g,' ').trim(); }
 
+/* ================= vehicle words =================
+   Every district has its own carrier in 3D (boat, truck, mine cart ...). Texts are written with
+   {tokens}; tx() fills in the noun and the matching German articles. */
+const NOUN={herz:{n:'Boot',pl:'Boote',g:'n',p:'in'},bruecke:{n:'Laster',pl:'Laster',g:'m',p:'auf'},tunnel:{n:'Lore',pl:'Loren',g:'f',p:'in'},
+  familie:{n:'Anhänger',pl:'Anhänger',g:'m',p:'auf'},tower:{n:'Palette',pl:'Paletten',g:'f',p:'auf'},flug:{n:'Wagen',pl:'Wagen',g:'m',p:'auf'}};
+function nounOf(did){ return World.state==='failed'?NOUN.bruecke:(NOUN[did]||NOUN.bruecke); } // the 2D fallback always draws trucks
+function tx(s,did){
+  if(typeof s!=='string'||s.indexOf('{')<0) return s;
+  const N=nounOf(did),G=(m,n,f)=>N.g==='m'?m:N.g==='n'?n:f,inn=N.p==='in';
+  const T={N:N.n,NP:N.pl,ein:G('ein','ein','eine'),Ein:G('Ein','Ein','Eine'),einen:G('einen','ein','eine'),den:G('den','das','die'),der:G('der','das','die'),
+    er:G('er','es','sie'),voller:G('voller','volles','volle'),vollem:G('vollem','vollem','voller'),jeder:G('jeder','jedes','jede'),Jeder:G('Jeder','Jedes','Jede'),
+    auf:N.p,Auf:inn?'In':'Auf',aufdem:inn?G('im','im','in der'):G('auf dem','auf dem','auf der'),drauf:inn?'hinein':'drauf',drin:inn?'drin':'drauf',hinauf:inn?'hinein':'hinauf'};
+  return s.replace(/\{(\w+)\}/g,(m,k)=>k in T?T[k]:m);
+}
+function curDid(){ const t=M&&M.tasks&&M.tasks[M.ti]; return (t&&t.skill)||(M&&M.did)||'bruecke'; }
+function localize(t,did){
+  (t.blanks||[]).forEach(b=>{ if(b._p===undefined){ b._p=b.prompt; b._h=b.hints; } b.prompt=tx(b._p,did); if(Array.isArray(b._h)) b.hints=b._h.map(h=>tx(h,did)); });
+  (t.rows||[]).forEach(r=>{ if(r.label!=null){ if(r._l===undefined) r._l=r.label; r.label=tx(r._l,did); } });
+  return t;
+}
+
 /* ================= task model ================= */
 function task(rows,blanks,visual,extra){
   return Object.assign({rows,visual:visual||null,blanks:blanks.map(b=>Object.assign({val:null,wrong:0,h:0,revealed:false,hints:[]},b))},extra||{});
@@ -250,11 +271,11 @@ function buildBridge(p,op,mode){
   const r=add?T-a:a-T, s=b-r, res=add?a+b:a-b;
   const small=T===10&&Math.max(a,res)<=20;
   const visual=small?{type:'frame20',a,b,op}:{type:'line',a,b,op,T};
-  const look=small?'Schau auf die Laster.':'Schau auf den Zahlenstrahl.';
+  const look=small?'Schau auf die {NP}.':'Schau auf den Zahlenstrahl.';
   const h0=add?[T===10?`Wer ist in die ${a} verliebt?`:`Einer: ${a%10} + □ = 10`,small?'Zähle die freien Plätze.':look]
-              :[`${a} = ${T} + ${r}`,small?'Zähle die Kisten auf Laster 2.':look];
-  const h1=[`${b} ${MI} ${r} = □`,small?(add?'Zähle die Kisten auf Laster 2.':'Zähle die wackelnden Kisten.'):look];
-  const h2=add?[`${T} und noch ${s}.`,small?'Laster 1 hat 10. Dazu Laster 2.':look]
+              :[`${a} = ${T} + ${r}`,small?'Zähle die Kisten {auf} {N} 2.':look];
+  const h1=[`${b} ${MI} ${r} = □`,small?(add?'Zähle die Kisten {auf} {N} 2.':'Zähle die wackelnden Kisten.'):look];
+  const h2=add?[`${T} und noch ${s}.`,small?'{N} 1 hat 10. Dazu {N} 2.':look]
               :[T===10?`Wer ist in die ${s} verliebt?`:`10 ${MI} ${s} = ${10-s}`,small?'Zähle die Kisten, die bleiben.':look];
   if(mode==='pro'){
     visual.show='hint'; visual.byHint=true;
@@ -281,8 +302,8 @@ function buildBridge(p,op,mode){
     {step:2,tokens:[{n:T},op,{n:s},'=',{b:2}]},
     {final:1,tokens:[{n:a},op,{n:r},op,{n:s},'=',{n:res}]}
   ],[
-    {ans:r,vis:0,prompt:ld?(add?'Wie viele passten noch auf Laster 1?':'Wie viele hast du von Laster 2 abgeladen?'):(add?`Bis zur ${T}!`:`Zurück bis zur ${T}!`),hints:h0},
-    {ans:s,vis:1,prompt:ld?(add?'Wie viele kamen auf Laster 2?':'Wie viele dann von Laster 1?'):`Zerlege die ${b}.`,hints:h1},
+    {ans:r,vis:0,prompt:ld?(add?'Wie viele passten noch {auf} {N} 1?':'Wie viele hast du von {N} 2 abgeladen?'):(add?`Bis zur ${T}!`:`Zurück bis zur ${T}!`),hints:h0},
+    {ans:s,vis:1,prompt:ld?(add?'Wie viele kamen {auf} {N} 2?':'Wie viele dann von {N} 1?'):`Zerlege die ${b}.`,hints:h1},
     {ans:res,vis:2,prompt:ld?(add?'Wie viele Kisten sind es zusammen?':'Wie viele Kisten sind noch da?'):'Jetzt weiter!',hints:h2},
     {ans:res,auto:true}
   ],visual,ld?{kind:'bridge',load:{mode:add?'add':'sub',a,b},sc:{type:add?'add':'sub',a,b}}:{kind:'bridge',sc:{type:add?'add':'sub',a,b}});
@@ -298,7 +319,7 @@ function buildPair(p,style){
   }
   if(style==='frame'){
     rows=[{big:1,tokens:[{n},'+',{b:0},'=',{n:10}]}];
-    blank={ans:k,prompt:'Wie viele Kisten passen noch drauf?',hints:['Zähle die freien Plätze.',`${n} + □ = 10`]};
+    blank={ans:k,prompt:'Wie viele Kisten passen noch {drauf}?',hints:['Zähle die freien Plätze.',`${n} + □ = 10`]};
     visual=Object.assign({},v10,{show:'always'});
   } else if(style==='love'){
     rows=[{big:1,tokens:[{n,heart:1},'+',{b:0},'=',{n:10}]}];
@@ -310,7 +331,7 @@ function buildPair(p,style){
     else if(f===1){ rows=[{big:1,tokens:[{b:0},'+',{n},'=',{n:10}]}]; blank={ans:k,prompt:'Welche Zahl fehlt?'}; visual=Object.assign({},v10,{show:'hint'}); }
     else if(f===2){ rows=[{big:1,tokens:[{n:10},MI,{n},'=',{b:0}]}]; blank={ans:k,prompt:`Lade ${n} Kisten ab.`}; visual={type:'frame10',n,op:MI,show:'hint'}; }
     else { rows=[{big:1,tokens:[{n:10},MI,{b:0},'=',{n}]}]; blank={ans:k,prompt:`Wie viele abladen, damit ${n} bleiben?`}; visual={type:'frame10',n:k,op:MI,show:'hint'}; }
-    blank.hints=[`Wer ist in die ${n} verliebt?`,'Schau auf den Laster.'];
+    blank.hints=[`Wer ist in die ${n} verliebt?`,'Schau auf {den} {N}.'];
   }
   const sc=style==='mix'&&p.f===2?{type:'pair',op:'−',take:n,f:2}:style==='mix'&&p.f===3?{type:'pair',op:'−',take:k,f:3}:{type:'pair',op:'+',n};
   return task(rows,[blank],visual,{kind:'pair',sc});
@@ -319,7 +340,7 @@ function buildPair(p,style){
 function buildFam(p,mode){
   const a=p.a,b=p.b,c=a+b,H={type:'house',a,b,c};
   if(mode==='basic'){
-    const sumHints=c>10?[`Erst bis 10: ${a} + ${10-a} = 10`,`Dann noch ${b-(10-a)}: 10 + ${b-(10-a)} = □`]:[`Zähle von ${a} aus ${b} weiter.`,'Schau auf den Laster.'];
+    const sumHints=c>10?[`Erst bis 10: ${a} + ${10-a} = 10`,`Dann noch ${b-(10-a)}: 10 + ${b-(10-a)} = □`]:[`Zähle von ${a} aus ${b} weiter.`,'Schau auf {den} {N}.'];
     const fv=c>10?{type:'frame20',a,b,op:'+',show:'hint',byHint:true}:{type:'frame20',a,b,op:'+',show:'hint',fixed:2};
     return task([
       {label:'Aufgabe',tokens:[{n:a},'+',{n:b},'=',{b:0}]},
@@ -329,8 +350,8 @@ function buildFam(p,mode){
     ],[
       {ans:c,vis:0,prompt:`Rechne: ${a} + ${b}`,hints:sumHints,visual:fv},
       {ans:c,vis:1,prompt:'Tauschaufgabe!',hints:['Tauschen ändert das Ergebnis nicht.',`Schau oben: ${a} + ${b} = ${c}`]},
-      {ans:a,vis:1,prompt:'Umkehraufgabe!',hints:[`Nimm von ${c} die ${b} weg.`,'Welche Zahl im Haus bleibt übrig?']},
-      {ans:b,vis:1,prompt:'Noch eine Umkehraufgabe!',hints:[`Nimm von ${c} die ${a} weg.`,'Welche Zahl im Haus bleibt übrig?']}
+      {ans:a,vis:1,prompt:'Umkehraufgabe!',hints:[`Nimm von ${c} die ${b} weg.`,'Welche Zahl bleibt übrig?']},
+      {ans:b,vis:1,prompt:'Noch eine Umkehraufgabe!',hints:[`Nimm von ${c} die ${a} weg.`,'Welche Zahl bleibt übrig?']}
     ],Object.assign({},H,{show:'always'}),{kind:'fam',side:true,sc:{type:'fam',a,b,mode:'basic'}});
   }
   return task([
@@ -340,7 +361,7 @@ function buildFam(p,mode){
     {label:'Umkehraufgabe',tokens:[{n:c},MI,{b:2},'=',{n:a}]}
   ],[
     {ans:c,prompt:'Tauschaufgabe!',hints:['Tauschen ändert das Ergebnis nicht.',`Schau oben: ${a} + ${b} = ${c}`]},
-    {ans:a,prompt:'Umkehraufgabe!',hints:[`Die Familie: ${a}, ${b} und ${c}.`,'Welche Zahl im Haus bleibt übrig?']},
+    {ans:a,prompt:'Umkehraufgabe!',hints:[`Die Familie: ${a}, ${b} und ${c}.`,'Welche Zahl bleibt übrig?']},
     {ans:b,prompt:'Welche Zahl fehlt?',hints:[`Was nimmst du von ${c} weg, damit ${a} bleibt?`,'Schau ins Zahlenhaus.']}
   ],Object.assign({},H,{show:'hint',fixed:1}),{kind:'fam',side:true,sc:{type:'fam',a,b,mode:'detective'}});
 }
@@ -349,11 +370,11 @@ function buildFam(p,mode){
 function buildAna(p){
   const a=p.a,b=p.b,op=p.op,Ts=p.Ts,base=op==='+'?a+b:a-b;
   const rows=[{label:'Nur Kisten',tokens:[{n:a},op,{n:b},'=',{b:0}]}];
-  const blanks=[{ans:base,prompt:'Erst nur die Kisten rechnen.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf den Laster.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}}];
+  const blanks=[{ans:base,prompt:'Erst nur die Kisten rechnen.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf {den} {N}.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}}];
   Ts.forEach((T,i)=>{
     const x=T+a,res=op==='+'?x+b:x-b,fl=T/10;
-    rows.push({label:`+ ${fl} Laster`,tokens:[{n:x,ones:1},op,{n:b,ones:1},'=',{b:i+1}]});
-    blanks.push({ans:res,prompt:fl===1?'Ein voller Laster mehr: + 10.':`${fl} volle Laster mehr: + ${T}.`,
+    rows.push({label:fl===1?'+ 1 {N}':`+ ${fl} {NP}`,tokens:[{n:x,ones:1},op,{n:b,ones:1},'=',{b:i+1}]});
+    blanks.push({ans:res,prompt:fl===1?'{Ein} {voller} {N} mehr: + 10.':`${fl} volle {NP} mehr: + ${T}.`,
       hints:[`Die Einer: ${a} ${op} ${b} = ${base}`,`${T} + ${base} = □`],visual:{type:'ze',x,b,op,show:'hint'}});
   });
   return task(rows,blanks,null,{kind:'ana',side:true,sc:{type:'ana',a,b,op,Ts}});
@@ -365,8 +386,8 @@ function buildTens(p){
     {label:'Einer',tokens:[{n:a},op,{n:b},'=',{b:0}]},
     {label:'Zehner',tokens:[{n:a*10},op,{n:b*10},'=',{b:1}]}
   ],[
-    {ans:base,prompt:'Erst mit Einern.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf den Laster.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}},
-    {ans:base*10,prompt:'Jetzt volle Laster: Jeder ist 10.',hints:[`${a} ${op} ${b} = ${base}`,`${base} Zehner = □`],visual:{type:'ze',x:a*10,b:b*10,op,show:'hint',tens:1}}
+    {ans:base,prompt:'Erst mit Einern.',hints:[op==='+'?`Zähle von ${a} aus ${b} weiter.`:`Zähle von ${a} aus ${b} zurück.`,'Schau auf {den} {N}.'],visual:{type:'frame20',a,b,op,show:'hint',fixed:2}},
+    {ans:base*10,prompt:'Jetzt volle {NP}: {Jeder} ist 10.',hints:[`${a} ${op} ${b} = ${base}`,`${base} Zehner = □`],visual:{type:'ze',x:a*10,b:b*10,op,show:'hint',tens:1}}
   ],null,{kind:'tens',side:true,sc:{type:'tens',a,b,op}});
 }
 
@@ -419,7 +440,7 @@ function sampleTasks(G,n,did,used){
     for(;i<ws.length;i++){ r-=ws[i]; if(r<=0&&ws[i]>0) break; }
     if(i>=ws.length) i=ws.findIndex(w=>w>0);
     const o=items[i]; used.add(o.key);
-    const t=G.build(o.p); t.key=o.key; t.skill=did; out.push(t);
+    const t=G.build(o.p); t.key=o.key; t.skill=did; localize(t,did); out.push(t);
   }
   return out;
 }
@@ -453,7 +474,7 @@ function recommended(){
   }
   return best||{did:'herz',mi:0};
 }
-function missionLabel(r){ if(!r) return ''; if(r.did==='hq') return 'Tagesauftrag der Zentrale'; const D=DIST[r.did]; return `${D.name} · Mission ${r.mi+1}: ${D.missions[r.mi].title}`; }
+function missionLabel(r){ if(!r) return ''; if(r.did==='hq') return 'Tagesauftrag der Zentrale'; const D=DIST[r.did]; return `${D.name} · Mission ${r.mi+1}: ${tx(D.missions[r.mi].title,r.did)}`; }
 
 /* ================= visuals ================= */
 /* The school's 20-dot field drawn as two flatbed trucks with 10 crate slots each (5 + 5).
@@ -462,7 +483,28 @@ const SLOT_X=i=>14+i*42+(i>=5?14:0);
 function crateSVG(x,c){
   return `<g class="crate ${c.k==='a'?'ca':'cb'}${c.hl?' hl':''}${c.k==='x'?' gone':''}${c.keep?' keep':''}${c.anim?' anim':''}" style="animation-delay:${(c.d||0).toFixed(2)}s"><rect x="${x}" y="22" width="38" height="40" rx="5"/><path d="M${x+5} 35h28M${x+5} 49h28" class="plank"/>${c.k==='x'?`<path d="M${x+9} 32l20 20M${x+29} 32l-20 20" class="xmark"/>`:''}</g>`;
 }
+let VEH2D='truck'; // which vehicle the 2D side view draws (district intros); the 2D fallback game always uses trucks
+function withVeh(k,fn){ const o=VEH2D; VEH2D=World.state==='failed'?'truck':k; try{ return fn(); } finally{ VEH2D=o; } }
+function cargoSVG(cells){ let s=''; cells.forEach((c,i)=>{ const x=SLOT_X(i); s+=(c.k==='e'||c.k==='gap')?`<rect x="${x}" y="22" width="38" height="40" rx="5" class="tk-slot${c.k==='gap'?' gap':''}"/>`:crateSVG(x,c); }); return s; }
+const numSVG=(x,y,num)=>`<circle cx="${x}" cy="${y}" r="9" class="tk-num"/><text x="${x}" y="${y+4}" text-anchor="middle" class="tk-numt">${num}</text>`;
+const badgeSVG='<g class="tk-badge"><rect x="190" y="0" width="72" height="22" rx="11"/><text x="226" y="16" text-anchor="middle">10 voll</text></g>';
+function boatSVG(cells,num,badge){
+  return '<svg viewBox="0 0 540 106" class="truck" aria-hidden="true"><rect x="223" y="18" width="6" height="40" rx="2" class="tk-bed"/>'+cargoSVG(cells)+
+    '<path d="M2 52H452Q500 52 536 34L514 88Q508 98 494 98H24Q8 98 4 84Z" fill="#2f5577"/><path d="M2 52H452Q500 52 536 34L531 48Q498 64 452 64H3Z" fill="#f3efe4"/><path d="M3 64H452Q498 64 531 48L530 52Q498 68 452 68H3Z" fill="#c2543f"/>'+
+    numSVG(474,80,num)+'<path d="M0 98q22.5-7 45 0t45 0t45 0t45 0t45 0t45 0t45 0t45 0t45 0t45 0t45 0t45 0V106H0Z" fill="#3aa7c4" opacity=".6"/>'+(badge?badgeSVG:'')+'</svg>';
+}
+function loreSVG(cells,num,badge){
+  let s='<svg viewBox="0 0 540 106" class="truck" aria-hidden="true"><rect x="223" y="18" width="6" height="40" rx="2" class="tk-bed"/>'+cargoSVG(cells)+
+    '<rect x="0" y="50" width="472" height="34" rx="3" fill="#b7653c"/><rect x="-2" y="47" width="476" height="7" rx="2" fill="#7a4328"/>';
+  [118,236,354].forEach(x=>{ s+=`<rect x="${x}" y="52" width="8" height="32" fill="#7a4328"/>`; });
+  s+='<rect x="472" y="66" width="34" height="9" rx="3" fill="#40434a"/>'+numSVG(42,68,num);
+  for(let x=10;x<540;x+=36) s+=`<rect x="${x}" y="99" width="22" height="6" rx="1" fill="#8a6a4c"/>`;
+  s+='<rect x="0" y="96" width="540" height="4" rx="2" fill="#8b8f97"/>';
+  [70,160,316,406].forEach(x=>{ s+=`<circle cx="${x}" cy="88" r="10" class="tk-tire"/><circle cx="${x}" cy="88" r="4" class="tk-rim"/>`; });
+  return s+(badge?badgeSVG:'')+'</svg>';
+}
 function truckSVG(cells,num,badge){
+  if(VEH2D==='boat') return boatSVG(cells,num,badge); if(VEH2D==='lore') return loreSVG(cells,num,badge);
   let s='<svg viewBox="0 0 540 106" class="truck" aria-hidden="true"><rect x="4" y="64" width="452" height="12" rx="3" class="tk-bed"/><rect x="223" y="18" width="6" height="46" rx="2" class="tk-bed"/>';
   cells.forEach((c,i)=>{ const x=SLOT_X(i); s+=(c.k==='e'||c.k==='gap')?`<rect x="${x}" y="22" width="38" height="40" rx="5" class="tk-slot${c.k==='gap'?' gap':''}"/>`:crateSVG(x,c); });
   s+=`<path d="M458 76V38q0-10 10-10h32q8 0 13 7l17 21v20z" class="tk-cab tk-cab${num}"/><path d="M468 36h30l13 18h-43z" class="tk-glass"/><circle cx="480" cy="66" r="8" class="tk-num"/><text x="480" y="70" text-anchor="middle" class="tk-numt">${num}</text><rect x="524" y="58" width="12" height="8" rx="3" class="tk-light"/>`;
@@ -613,7 +655,7 @@ function renderWelcome(){
     <div class="welcome-fox">${fox('happy')}</div>
     <div class="eyebrow">Funk von der Zentrale</div>
     <h1 class="welcome-h">Willkommen in Zehner-City!</h1>
-    <p class="muted">Hier belädst du Laster mit Kisten, rechnest geschickt über die 10 und verdienst Münzen für deine Garage.</p>
+    <p class="muted">Hier belädst du Boote, Laster und Güterwagen mit Kisten, rechnest geschickt über die 10 und verdienst Münzen für deine Garage.</p>
     <label for="welcome-name" class="welcome-q">Wie heißt du?</label>
     <input class="field" id="welcome-name" maxlength="20" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Dein Vorname">
     <div class="ractions"><button class="btn btn-go big" data-act="welcome-go">${icon('play','fill')} Los geht's</button></div>
@@ -670,24 +712,24 @@ function goalHTML(){
 
 /* ---------- district ---------- */
 const HOWTO={
-  herz:()=>`<p class="lead">Verliebte Zahlen ergeben zusammen immer <b>10</b>: so viele Kisten passen auf einen Laster.</p>
+  herz:()=>`<p class="lead">Verliebte Zahlen ergeben zusammen immer <b>10</b>: so viele Kisten passen {auf} {einen} {N}.</p>
     <div class="hearts">${[[1,9],[2,8],[3,7],[4,6],[5,5]].map(([x,y])=>`<span class="hpair">${x} ${HEART} ${y}</span>`).join('')}</div>
-    <div class="visual">${frame10({n:7,op:'+'},1,true)}</div><div class="exsteps"><div>7 + 3 = 10</div><div>10 ${MI} 3 = 7</div></div>`,
-  bruecke:()=>`<p class="lead">Erst Laster 1 bis 10 voll machen. Der Rest kommt auf Laster 2.</p>
+    <div class="visual">${withVeh('boat',()=>frame10({n:7,op:'+'},1,true))}</div><div class="exsteps"><div>7 + 3 = 10</div><div>10 ${MI} 3 = 7</div></div>`,
+  bruecke:()=>`<p class="lead">Erst {N} 1 bis 10 voll machen. Der Rest kommt {auf} {N} 2.</p>
     <div class="exsteps"><div>8 + 5 = ?</div><div><mark>8 + 2</mark> = 10</div><div>10 + 3 = 13</div></div>
     <div class="visual">${frame20({a:8,b:5,op:'+'},2,true)}</div>
     <div class="exsteps"><div class="note">So schreibt ihr es in der Schule:</div><div>8 + 9 = 17</div><div>8 + 2 + 7 = 17</div></div>`,
-  tunnel:()=>`<p class="lead">Erst Laster 2 leer machen. Dann den Rest von Laster 1 abladen.</p>
+  tunnel:()=>`<p class="lead">Erst {N} 2 leer machen. Dann den Rest von {N} 1 abladen.</p>
     <div class="exsteps"><div>13 ${MI} 8 = ?</div><div><mark>13 ${MI} 3</mark> = 10</div><div>10 ${MI} 5 = 5</div></div>
-    <div class="visual">${frame20({a:13,b:8,op:MI},2,true)}</div>
+    <div class="visual">${withVeh('lore',()=>frame20({a:13,b:8,op:MI},2,true))}</div>
     <div class="exsteps"><div class="note">So schreibt ihr es in der Schule:</div><div>13 ${MI} 8 = 5</div><div>13 ${MI} 3 ${MI} 5 = 5</div></div>`,
   familie:()=>`<p class="lead">Eine Ladung, drei Zahlen, vier Aufgaben: die Aufgabe, die <b>Tauschaufgabe</b> und zwei <b>Umkehraufgaben</b>.</p>
     <div class="visual">${house({a:5,b:2,c:7},1)}</div>
     <div class="exsteps"><div>5 + 2 = 7</div><div>2 + 5 = 7</div><div>7 ${MI} 2 = 5</div><div>7 ${MI} 5 = 2</div></div>`,
-  tower:()=>`<p class="lead">Analogieaufgaben: Die Kisten rechnen gleich, der volle Laster (10) bleibt einfach stehen.</p>
+  tower:()=>`<p class="lead">Analogieaufgaben: Die Kisten rechnen gleich, {der} volle {N} (10) bleibt einfach stehen.</p>
     <div class="exsteps"><div>4 + 5 = 9</div><div>1<span class="ones">4</span> + <span class="ones">5</span> = 1<span class="ones">9</span></div><div>2<span class="ones">4</span> + <span class="ones">5</span> = 2<span class="ones">9</span></div></div>
     <div class="visual">${zeTable({x:14,b:5,op:'+'})}</div>`,
-  flug:()=>`<p class="lead">Bis 100 klappen dieselben Tricks. Jeder volle Laster ist ein Zehner.</p>
+  flug:()=>`<p class="lead">Bis 100 klappen dieselben Tricks. {Jeder} volle {N} ist ein Zehner.</p>
     <div class="exsteps"><div>3 + 4 = 7 → 30 + 40 = 70</div><div>38 + 5 = <mark>38 + 2</mark> + 3 = 43</div><div>43 ${MI} 5 = <mark>43 ${MI} 3</mark> ${MI} 2 = 38</div></div>
     <div class="visual">${numline({a:38,b:5,op:'+',T:40},3,true)}</div>`
 };
@@ -696,12 +738,12 @@ function renderDistrict(id){
   const ms=D.missions.map((m,mi)=>{
     const un=missionUnlocked(id,mi),rec=state.missions[id+':'+mi],st=rec?rec.stars:0;
     return `<article class="mcard${un?'':' locked'}" style="--tc:var(--d-${id})"><span class="mnum">${mi+1}</span>
-      <div><h3>${m.title}</h3><p>${m.desc}</p><div class="mstars" aria-label="${st} von 3 Sternen">${[1,2,3].map(i=>starOn(i<=st)).join('')}</div></div>
+      <div><h3>${tx(m.title,id)}</h3><p>${tx(m.desc,id)}</p><div class="mstars" aria-label="${st} von 3 Sternen">${[1,2,3].map(i=>starOn(i<=st)).join('')}</div></div>
       ${un?`<button class="btn btn-go" data-act="play" data-id="${id}" data-mi="${mi}">${icon('play','fill')} ${rec?'Nochmal':'Los!'}</button>`:`<span class="mlock">${icon('lock')}Erst Mission ${mi}</span>`}</article>`;
   }).join('');
   $('#screen-district').innerHTML=`<div class="wrap"><div class="topbar"><button class="btn" data-act="home">${icon('back')} Stadt</button></div>
     <header class="dhead" style="--tc:var(--d-${id})">${dIcon(id)}<div><div class="eyebrow light">${D.skill}</div><h1>${D.name}</h1></div></header>
-    <div class="dgrid"><section class="mlist" aria-label="Missionen">${ms}</section><section class="card howto"><h2>So geht's</h2>${HOWTO[id]()}</section></div></div>`;
+    <div class="dgrid"><section class="mlist" aria-label="Missionen">${ms}</section><section class="card howto"><h2>So geht's</h2>${tx(HOWTO[id](),id)}</section></div></div>`;
 }
 
 /* ---------- 3D world (js/world3d.js, loaded on demand) ---------- */
@@ -712,7 +754,7 @@ const World={mod:null,state:'idle',
         .catch(err=>{ console.warn('3D unavailable',err); this.fail(); }); }
     return this.state==='ready'?this.mod:null;
   },
-  fail(){ this.state='failed'; if(this.mod) this.mod.dispose(); if(M&&current==='mission'){ M.lastVis=null; const el=$('#m-visual'); if(el) el.innerHTML=''; drawVisual(); drawRows(); } },
+  fail(){ this.state='failed'; if(this.mod) this.mod.dispose(); if(M){ M.tasks.forEach(t=>localize(t,t.skill)); if(M.ld) M.ld.msg=tx(M.ld.msg,curDid()); } if(M&&current==='mission'){ M.lastVis=null; const el=$('#m-visual'); if(el) el.innerHTML=''; drawVisual(); drawRows(); } },
   dispose(){ if(this.mod) this.mod.dispose(); }
 };
 const WORLD_OF={herz:'harbor',bruecke:'bridge',tunnel:'tunnel',familie:'suburb',tower:'tower',flug:'station'};
@@ -740,7 +782,7 @@ const reduceMotion=(()=>{ try{ return matchMedia('(prefers-reduced-motion: reduc
 function startMission(did,mi){
   let tasks,title,sub;
   if(did==='hq'){ tasks=genHQ(); title='Tagesauftrag'; sub='Zentrale'; mi=0; }
-  else { const D=DIST[did],m=D.missions[mi]; tasks=sampleTasks(GEN[m.gen],GEN[m.gen].n,did); title=m.title; sub=D.name; }
+  else { const D=DIST[did],m=D.missions[mi]; tasks=sampleTasks(GEN[m.gen],GEN[m.gen].n,did); title=tx(m.title,did); sub=D.name; }
   if(!tasks.length){ toast('Für diesen Auftrag gibt es noch keine Aufgaben.'); return; }
   M={did,mi,title,sub,tasks,ti:0,bi:0,entry:'',firstTry:0,coins:0,streak:0,taskDone:false,taskWrong:false,feedback:null,stepMsg:null,nudge:null,praise:'',before:unlockedNames(),finished:false,intro:true,busy:false};
   prepTask(); quitArmed=false; show('mission');
@@ -1099,9 +1141,10 @@ function renderParents(){
    the rule "truck 1 first" (or "empty truck 2 first" for minus) makes the split at 10 happen. */
 function initLoad(t){
   const L=t.load,ld={mode:L.mode,t1:[],t2:[],dock:0,out:0,target:0,acted:false,done:false,anim:null,pulse:0,msg:'',msgCls:''};
-  if(L.mode==='add'){ for(let i=0;i<10;i++){ ld.t1.push(i<L.a?'a':'e'); ld.t2.push('e'); } ld.dock=L.b; ld.msg=`Lade die ${L.b} Kisten auf. Erst Laster 1!`; }
-  else if(L.mode==='fill'){ for(let i=0;i<10;i++) ld.t1.push(i<L.n?'a':'e'); ld.dock=10-L.n+3; ld.msg='Mach Laster 1 voll!'; }
-  else { for(let i=0;i<10;i++){ ld.t1.push(i<Math.min(L.a,10)?'n':'e'); ld.t2.push(i<L.a-10?'n':'e'); } ld.target=L.b; ld.msg=`Lade ${L.b} Kisten ab. Erst Laster 2!`; }
+  if(L.mode==='add'){ for(let i=0;i<10;i++){ ld.t1.push(i<L.a?'a':'e'); ld.t2.push('e'); } ld.dock=L.b; ld.msg=`Lade die ${L.b} Kisten auf. Erst {N} 1!`; }
+  else if(L.mode==='fill'){ for(let i=0;i<10;i++) ld.t1.push(i<L.n?'a':'e'); ld.dock=10-L.n+3; ld.msg='Mach {N} 1 voll!'; }
+  else { for(let i=0;i<10;i++){ ld.t1.push(i<Math.min(L.a,10)?'n':'e'); ld.t2.push(i<L.a-10?'n':'e'); } ld.target=L.b; ld.msg=`Lade ${L.b} Kisten ab. Erst {N} 2!`; }
+  ld.msg=tx(ld.msg,t.skill);
   return ld;
 }
 function loadSceneHTML(){
@@ -1117,12 +1160,12 @@ function loadSceneHTML(){
 }
 function drawLoadBubble(el){
   const L=M.ld,mood=L.msgCls==='good'?'happy':L.msgCls==='hint'?'think':'';
-  const tip=!L.acted&&M.ti===0?(L.mode==='sub'?'Tippe auf einen Laster oder zieh Kisten zum Abladeplatz.':'Tippe auf einen Laster oder zieh die Kisten hinauf.'):'';
+  const tip=!L.acted&&M.ti===0?tx(L.mode==='sub'?'Tippe auf {einen} {N} oder zieh Kisten zum Abladeplatz.':'Tippe auf {einen} {N} oder zieh die Kisten {hinauf}.',curDid()):'';
   el.className='bubble'+(L.msgCls?' '+L.msgCls:'');
   el.innerHTML=`<span class="ava ${mood}">${fox(mood)}</span><div class="msg"><span class="main">${fmt(L.msg)}</span>${tip?`<span class="sub">${fmt(tip)}</span>`:''}</div>${Speech.ok?`<button class="iconbtn soft" data-act="speak" aria-label="Vorlesen">${icon('speaker')}</button>`:''}`;
   M.lastSpeech=L.msg;
 }
-function loadMsg(text,cls){ M.ld.msg=text; M.ld.msgCls=cls||''; drawBubble(); }
+function loadMsg(text,cls){ M.ld.msg=tx(text,curDid()); M.ld.msgCls=cls||''; drawBubble(); }
 const lastIdx=(arr,k)=>arr.lastIndexOf(k);
 function loadAct(t){
   if(!M||M.phase!=='load'||M.busy) return;
@@ -1132,32 +1175,32 @@ function loadAct(t){
     if(L.dock<=0) return;
     const free1=L.t1.indexOf('e'),free2=L.t2.indexOf('e');
     if(t===1){
-      if(free1<0){ loadMsg(L.mode==='fill'?'Laster 1 ist schon voll.':'Laster 1 ist voll. Lade auf Laster 2!','hint'); L.pulse=L.mode==='fill'?0:2; drawVisual(); return; }
+      if(free1<0){ loadMsg(L.mode==='fill'?'{N} 1 ist schon voll.':'{N} 1 ist voll. Lade {auf} {N} 2!','hint'); L.pulse=L.mode==='fill'?0:2; drawVisual(); return; }
       L.t1[free1]='b'; L.anim={t:1,i:free1};
     } else {
-      if(free1>=0){ loadMsg('Erst Laster 1 voll machen!','hint'); L.pulse=1; Sound.play('wrong'); drawVisual(); return; }
+      if(free1>=0){ loadMsg('Erst {N} 1 voll machen!','hint'); L.pulse=1; Sound.play('wrong'); drawVisual(); return; }
       if(free2<0) return;
       L.t2[free2]='b'; L.anim={t:2,i:free2};
     }
     L.dock--; Sound.play('tap');
     const justFull=t===1&&L.t1.indexOf('e')<0;
-    if(justFull){ setTimeout(()=>Sound.play('honk'),120); if(L.mode==='fill'){ drawVisual(); finishLoad(); return; } loadMsg('Laster 1 ist voll: 10! Der Rest kommt auf Laster 2.','good'); }
-    else if(L.msgCls==='hint') loadMsg(L.t1.indexOf('e')<0?'Weiter auf Laster 2.':'Weiter so!','');
+    if(justFull){ setTimeout(()=>Sound.play('honk'),120); if(L.mode==='fill'){ drawVisual(); finishLoad(); return; } loadMsg('{N} 1 ist voll: 10! Der Rest kommt {auf} {N} 2.','good'); }
+    else if(L.msgCls==='hint') loadMsg(L.t1.indexOf('e')<0?'Weiter {auf} {N} 2.':'Weiter so!','');
     drawVisual();
     if(L.mode==='add'&&L.dock===0) finishLoad();
   } else {
     if(L.out>=L.target) return;
     const last2=lastIdx(L.t2,'n'),last1=lastIdx(L.t1,'n');
     if(t===2){
-      if(last2<0){ loadMsg('Laster 2 ist schon leer. Jetzt Laster 1!','hint'); L.pulse=1; drawVisual(); return; }
+      if(last2<0){ loadMsg('{N} 2 ist schon leer. Jetzt {N} 1!','hint'); L.pulse=1; drawVisual(); return; }
       L.t2[last2]='x'; L.anim={t:2,i:last2};
     } else {
-      if(last2>=0){ loadMsg('Erst Laster 2 leer machen!','hint'); L.pulse=2; Sound.play('wrong'); drawVisual(); return; }
+      if(last2>=0){ loadMsg('Erst {N} 2 leer machen!','hint'); L.pulse=2; Sound.play('wrong'); drawVisual(); return; }
       if(last1<0) return;
       L.t1[last1]='x'; L.anim={t:1,i:last1};
     }
     L.out++; Sound.play('tap');
-    if(t===2&&lastIdx(L.t2,'n')<0){ setTimeout(()=>Sound.play('honk'),120); loadMsg('Laster 2 ist leer! Auf Laster 1 sind 10. Weiter mit Laster 1.','good'); }
+    if(t===2&&lastIdx(L.t2,'n')<0){ setTimeout(()=>Sound.play('honk'),120); loadMsg('{N} 2 ist leer! {Auf} {N} 1 sind 10. Weiter mit {N} 1.','good'); }
     else if(L.msgCls==='hint') loadMsg('Weiter so!','');
     drawVisual();
     if(L.out===L.target) finishLoad();
@@ -1165,13 +1208,13 @@ function loadAct(t){
 }
 function loadHint(){
   const L=M.ld; if(!L||L.done) return;
-  if(L.mode==='sub'){ const two=lastIdx(L.t2,'n')>=0; L.pulse=two?2:1; loadMsg(two?'Tippe auf Laster 2, bis er leer ist.':'Jetzt von Laster 1 abladen.','hint'); }
-  else { const one=L.t1.indexOf('e')>=0; L.pulse=one?1:2; loadMsg(one?'Tippe auf Laster 1, bis er voll ist.':'Jetzt kommt der Rest auf Laster 2.','hint'); }
+  if(L.mode==='sub'){ const two=lastIdx(L.t2,'n')>=0; L.pulse=two?2:1; loadMsg(two?'Tippe auf {N} 2, bis {er} leer ist.':'Jetzt von {N} 1 abladen.','hint'); }
+  else { const one=L.t1.indexOf('e')>=0; L.pulse=one?1:2; loadMsg(one?'Tippe auf {N} 1, bis {er} voll ist.':'Jetzt kommt der Rest {auf} {N} 2.','hint'); }
   Sound.play('tap'); drawVisual();
 }
 function finishLoad(){
   const L=M.ld; L.done=true; M.busy=true;
-  loadMsg(L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten drauf.':'Alles geladen!','good');
+  loadMsg(L.mode==='sub'?'Alles abgeladen!':L.mode==='fill'?'Voll! Jetzt sind 10 Kisten {drin}.':'Alles geladen!','good');
   Sound.play('step'); burst($('#m-visual'),14);
   setTimeout(()=>{ if(!M||current!=='mission') return; M.busy=false; curTask().loadDone=true; M.phase='calc'; M.ld=null; M.lastVis=null; drawAll(); },1500);
 }
@@ -1195,7 +1238,7 @@ document.addEventListener('pointerup',e=>{
   if(!drag||e.pointerId!==drag.id) return;
   const d=drag; drag=null; d.g.remove(); if(d.src&&d.src.isConnected) d.src.style.visibility='';
   if(!M||M.phase!=='load') return;
-  if(!d.moved){ if(!d.from) loadMsg('Zieh die Kiste auf einen Laster. Oder tippe auf den Laster.','hint'); return; }
+  if(!d.moved){ if(!d.from) loadMsg('Zieh die Kiste {auf} {einen} {N}. Oder tippe auf {den} {N}.','hint'); return; }
   const el=document.elementFromPoint(e.clientX,e.clientY); if(!el) return;
   if(M.ld.mode==='sub'){ if(el.closest('[data-dock]')) loadAct(d.from); }
   else { const tb=el.closest('.truckbtn'); if(tb) loadAct(+tb.dataset.t); }
